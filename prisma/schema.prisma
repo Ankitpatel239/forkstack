@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // ========== ENUMS ==========
@@ -13,6 +12,18 @@ enum Role {
   VENDOR_OWNER
   TEAM
   SUPPORT
+}
+
+model PlatformPlan {
+  id          String           @id @default(cuid())
+  name        String           @unique // e.g., "BASIC", "PRO", "ENTERPRISE"
+  displayName String           // e.g., "Starter Pack"
+  description String?
+  price       Float
+  features    String[]         // List of feature flags/names
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 }
 
 enum SubscriptionPlan {
@@ -87,6 +98,7 @@ model User {
 
   // For vendor owners (one-to-one)
   ownedVendor       VendorProfile? @relation("VendorOwner")
+  managedVendors    VendorProfile[] @relation("AccountManager")
   
   // For staff (many-to-many via assignment)
   vendorAssignments UserVendorAssignment[]
@@ -260,7 +272,8 @@ model Offer {
 
   vendor      VendorProfile @relation(fields: [vendorId], references: [id])
   items       OfferItem[]
-  promoCode   PromoCode?    // optional: linked to a promo code
+  promoCodeId String?       
+  promoCode   PromoCode?    @relation(fields: [promoCodeId], references: [id])
 }
 
 model OfferItem {
@@ -290,6 +303,7 @@ model PromoCode {
 
   vendor      VendorProfile @relation(fields: [vendorId], references: [id])
   items       PromoCodeItem[]
+  offers      Offer[]
 }
 
 model PromoCodeItem {
@@ -332,15 +346,17 @@ model Order {
 }
 
 model OrderItem {
-  id           String   @id @default(cuid())
-  orderId      String
-  menuItemId   String   // can be from inventory or menu
-  quantity     Int
-  unitPrice    Float
-  totalPrice   Float
+  id              String   @id @default(cuid())
+  orderId         String
+  menuItemId      String?  
+  inventoryItemId String?  
+  quantity        Int
+  unitPrice       Float
+  totalPrice      Float
 
-  order        Order      @relation(fields: [orderId], references: [id])
-  menuItem     MenuItem   @relation(fields: [menuItemId], references: [id])
+  order           Order          @relation(fields: [orderId], references: [id])
+  menuItem        MenuItem?      @relation(fields: [menuItemId], references: [id])
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
 }
 
 model OrderCombo {
