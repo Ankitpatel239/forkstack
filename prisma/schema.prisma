@@ -1,0 +1,473 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========== ENUMS ==========
+enum Role {
+  ADMIN
+  VENDOR_OWNER
+  TEAM
+  SUPPORT
+}
+
+enum SubscriptionPlan {
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+  EXPIRED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum ParcelStatus {
+  PENDING
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  RETURNED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  LEAVE
+}
+
+enum OfferType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  BOGO
+  FREE_SHIPPING
+}
+
+enum OrderSource {
+  VENDOR_DASHBOARD
+  QR_TABLE
+  API
+}
+
+// ========== USER & AUTH ==========
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  password          String
+  name              String
+  phone             String?
+  role              Role
+  isActive          Boolean   @default(true)
+  joinDate          DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // For vendor owners (one-to-one)
+  ownedVendor       VendorProfile? @relation("VendorOwner")
+  
+  // For staff (many-to-many via assignment)
+  vendorAssignments UserVendorAssignment[]
+  
+  // For salary/attendance (only TEAM)
+  salary            Float?
+  attendance        Attendance[]
+  salaryRecords     SalaryRecord[]
+}
+
+// ========== VENDOR & TENANT ==========
+model VendorProfile {
+  id                    String             @id @default(cuid())
+  ownerId               String?            @unique
+  businessName          String
+  businessPhone         String
+  businessEmail         String
+  gstin                 String?
+  address               String
+  logoUrl               String?
+  themeColor            String?            @default("#10B981")
+  tenantSlug            String             @unique   // e.g., "sweetbakery"
+  customDomain          String?            @unique   // e.g., "portal.sweetbakery.com"
+  
+  // Subscription
+  subscriptionPlan      SubscriptionPlan   @default(BASIC)
+  subscriptionStatus    SubscriptionStatus @default(ACTIVE)
+  subscriptionStart     DateTime           @default(now())
+  subscriptionEnd       DateTime
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  
+  // WhatsApp credentials (encrypted)
+  whatsappAccessTokenEncrypted  String?
+  whatsappPhoneNumberId         String?
+  whatsappBusinessAccountId     String?
+  whatsappConnectedAt           DateTime?
+  whatsappApiKey                String?            @unique   // for external API
+  
+  // Account management
+  accountManagerId      String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  // Relations
+  owner                 User?              @relation("VendorOwner", fields: [ownerId], references: [id])
+  accountManager        User?              @relation("AccountManager", fields: [accountManagerId], references: [id])
+  staffAssignments      UserVendorAssignment[]
+  tables                Table[]
+  menuItems             MenuItem[]
+  combos                Combo[]
+  offers                Offer[]
+  promoCodes            PromoCode[]
+  inventory             InventoryItem[]
+  orders                Order[]
+  parcels               Parcel[]
+  payments              Payment[]
+  whatsappLogs          WhatsAppLog[]
+  subscriptionPayments  SubscriptionPayment[]
+}
+
+// Many-to-many between User (TEAM) and VendorProfile
+model UserVendorAssignment {
+  id            String   @id @default(cuid())
+  userId        String
+  vendorId      String
+  roleInVendor  String   // e.g., "MANAGER", "CASHIER", "KITCHEN"
+  isActive      Boolean  @default(true)
+  assignedAt    DateTime @default(now())
+  
+  user          User          @relation(fields: [userId], references: [id])
+  vendor        VendorProfile @relation(fields: [vendorId], references: [id])
+  
+  @@unique([userId, vendorId])
+}
+
+// ========== TABLE & QR CODE ==========
+model Table {
+  id          String   @id @default(cuid())
+  vendorId    String
+  tableNumber String   // e.g., "T01", "Table 5"
+  qrCodeUrl   String?  // S3 URL of generated QR image
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  orders      Order[]
+}
+
+// ========== MENU / INVENTORY ==========
+model MenuItem {
+  id          String   @id @default(cuid())
+  vendorId    String
+  name        String
+  description String?
+  price       Float
+  category    String   // e.g., "Beverages", "Main Course"
+  isAvailable Boolean  @default(true)
+  imageUrl    String?
+  preparationTime Int?
+  taxRate     Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  comboItems  ComboItem[]
+  offerItems  OfferItem[]
+  orderItems  OrderItem[]
+  promoCodeItems PromoCodeItem[]
+}
+
+model InventoryItem {
+  id                 String    @id @default(cuid())
+  vendorId           String
+  name               String
+  sku                String    @unique
+  category           String
+  description        String?
+  price              Float
+  costPrice          Float?
+  quantity           Int       @default(0)
+  lowStockThreshold  Int       @default(5)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  vendor             VendorProfile @relation(fields: [vendorId], references: [id])
+  orderItems         OrderItem[]
+}
+
+// ========== COMBOS ==========
+model Combo {
+  id          String   @id @default(cuid())
+  vendorId    String
+  name        String
+  description String?
+  totalPrice  Float    // discounted combo price
+  discount    Float?   // optional discount amount
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  items       ComboItem[]
+  orders      OrderCombo[]
+}
+
+model ComboItem {
+  id          String   @id @default(cuid())
+  comboId     String
+  menuItemId  String
+  quantity    Int      @default(1)
+  
+  combo       Combo     @relation(fields: [comboId], references: [id])
+  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id])
+}
+
+// ========== OFFERS ==========
+model Offer {
+  id          String   @id @default(cuid())
+  vendorId    String
+  title       String
+  description String?
+  type        OfferType
+  value       Float?    // e.g., 20 for 20%, or 10 for $10 off
+  minOrderValue Float?
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  items       OfferItem[]
+  promoCode   PromoCode?    // optional: linked to a promo code
+}
+
+model OfferItem {
+  id          String   @id @default(cuid())
+  offerId     String
+  menuItemId  String
+  
+  offer       Offer     @relation(fields: [offerId], references: [id])
+  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id])
+}
+
+// ========== PROMO CODES ==========
+model PromoCode {
+  id          String   @id @default(cuid())
+  vendorId    String
+  code        String   @unique
+  type        OfferType
+  value       Float
+  maxUses     Int?
+  usedCount   Int      @default(0)
+  maxUsesPerUser Int?
+  minOrderValue Float?
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  items       PromoCodeItem[]
+}
+
+model PromoCodeItem {
+  id          String   @id @default(cuid())
+  promoCodeId String
+  menuItemId  String
+  
+  promoCode   PromoCode @relation(fields: [promoCodeId], references: [id])
+  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id])
+}
+
+// ========== ORDERS ==========
+model Order {
+  id               String       @id @default(cuid())
+  orderNumber      String       @unique
+  vendorId         String
+  tableId          String?      // if QR order
+  customerName     String?
+  customerPhone    String
+  customerEmail    String?
+  customerAddress  String?
+  specialInstructions String?
+  orderSource      OrderSource  @default(VENDOR_DASHBOARD)
+  totalAmount      Float
+  discount         Float        @default(0)
+  tax              Float        @default(0)
+  finalAmount      Float
+  status           OrderStatus  @default(PENDING)
+  orderDate        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  notes            String?
+
+  vendor           VendorProfile @relation(fields: [vendorId], references: [id])
+  table            Table?        @relation(fields: [tableId], references: [id])
+  items            OrderItem[]
+  combos           OrderCombo[]
+  parcels          Parcel[]
+  payment          Payment?
+  discounts        OrderDiscount[]
+}
+
+model OrderItem {
+  id           String   @id @default(cuid())
+  orderId      String
+  menuItemId   String   // can be from inventory or menu
+  quantity     Int
+  unitPrice    Float
+  totalPrice   Float
+
+  order        Order      @relation(fields: [orderId], references: [id])
+  menuItem     MenuItem   @relation(fields: [menuItemId], references: [id])
+}
+
+model OrderCombo {
+  id          String   @id @default(cuid())
+  orderId     String
+  comboId     String
+  quantity    Int
+  unitPrice   Float
+  totalPrice  Float
+
+  order       Order   @relation(fields: [orderId], references: [id])
+  combo       Combo   @relation(fields: [comboId], references: [id])
+}
+
+model OrderDiscount {
+  id          String   @id @default(cuid())
+  orderId     String
+  discountType String   // "OFFER", "PROMO_CODE"
+  referenceId String    // offerId or promoCodeId
+  amount      Float
+  description String?
+  
+  order       Order   @relation(fields: [orderId], references: [id])
+}
+
+// ========== PARCELS ==========
+model Parcel {
+  id              String       @id @default(cuid())
+  orderId         String
+  vendorId        String
+  trackingNumber  String?      @unique
+  courierName     String?
+  status          ParcelStatus @default(PENDING)
+  shippedDate     DateTime?
+  deliveredDate   DateTime?
+  weight          Float?
+  dimensions      String?
+  shippingCost    Float?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  order           Order         @relation(fields: [orderId], references: [id])
+  vendor          VendorProfile @relation(fields: [vendorId], references: [id])
+}
+
+// ========== PAYMENTS ==========
+model Payment {
+  id            String        @id @default(cuid())
+  orderId       String        @unique
+  vendorId      String
+  amount        Float
+  method        String        // cash, card, upi, bank
+  transactionId String?
+  status        PaymentStatus @default(PENDING)
+  paidAt        DateTime?
+  notes         String?
+  createdAt     DateTime      @default(now())
+
+  order         Order         @relation(fields: [orderId], references: [id])
+  vendor        VendorProfile @relation(fields: [vendorId], references: [id])
+}
+
+// ========== TEAM ATTENDANCE ==========
+model Attendance {
+  id          String           @id @default(cuid())
+  userId      String
+  date        DateTime         @default(now())
+  status      AttendanceStatus
+  checkIn     DateTime?
+  checkOut    DateTime?
+  hoursWorked Float?
+  notes       String?
+
+  user        User             @relation(fields: [userId], references: [id])
+}
+
+// ========== SALARY RECORDS ==========
+model SalaryRecord {
+  id         String   @id @default(cuid())
+  userId     String
+  month      Int
+  year       Int
+  baseSalary Float
+  bonus      Float    @default(0)
+  deductions Float    @default(0)
+  netSalary  Float
+  paid       Boolean  @default(false)
+  paidAt     DateTime?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+// ========== WHATSAPP LOGS ==========
+model WhatsAppLog {
+  id         String   @id @default(cuid())
+  vendorId   String
+  toPhone    String
+  message    String
+  status     String   // sent, failed, pending
+  response   String?
+  createdAt  DateTime @default(now())
+
+  vendor     VendorProfile @relation(fields: [vendorId], references: [id])
+}
+
+// ========== SUBSCRIPTION PAYMENTS (to platform) ==========
+model SubscriptionPayment {
+  id         String           @id @default(cuid())
+  vendorId   String
+  amount     Float
+  plan       SubscriptionPlan
+  startDate  DateTime
+  endDate    DateTime
+  stripeId   String?
+  status     String
+  createdAt  DateTime         @default(now())
+
+  vendor     VendorProfile    @relation(fields: [vendorId], references: [id])
+}
+
+// ========== REPORTS (snapshots) ==========
+model Report {
+  id         String   @id @default(cuid())
+  type       String
+  title      String
+  data       Json
+  generatedBy String
+  createdAt  DateTime @default(now())
+}
