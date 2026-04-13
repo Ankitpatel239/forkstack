@@ -12,7 +12,8 @@ import {
   Filter,
   Search,
   ExternalLink,
-  Table as TableIcon
+  Table as TableIcon,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -114,34 +115,36 @@ export default async function OrdersPage() {
                            </div>
                            <div className="flex items-center gap-4 text-xs font-medium text-zinc-500">
                               <span className="flex items-center gap-1.5 uppercase font-bold tracking-tighter"><Clock size={12} className="text-emerald-500" /> {new Date(order.orderDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                              <span className="flex items-center gap-1.5 uppercase font-bold tracking-tighter"><User size={12} className="text-blue-500" /> {order.customerName || 'Walk-in Guest'}</span>
-                              {order.table && (
-                                <span className="flex items-center gap-1.5 uppercase font-bold tracking-tighter text-orange-500 bg-orange-500/5 px-1.5 rounded-sm"><TableIcon size={12} /> {order.table.tableNumber}</span>
-                              )}
-                           </div>
-                        </div>
-                     </div>
-
-                     <div className="flex items-center gap-12 overflow-x-auto no-scrollbar py-1">
-                        <div className="flex -space-x-3 shrink-0">
-                           {order.items.slice(0, 3).map((oi, idx) => (
-                              <div key={idx} className="h-10 w-10 rounded-full bg-zinc-800 border-2 border-zinc-900 flex items-center justify-center overflow-hidden shadow-lg" title={oi.menuItem?.name}>
-                                 {oi.menuItem?.imageUrl ? (
-                                   <img src={oi.menuItem.imageUrl} className="w-full h-full object-cover" />
-                                 ) : (
-                                   <span className="text-[10px] font-bold text-zinc-500">{(oi.menuItem?.name || 'I').charAt(0)}</span>
-                                 )}
-                              </div>
-                           ))}
-                           {order.items.length > 3 && (
-                             <div className="h-10 w-10 rounded-full bg-zinc-800 border-2 border-zinc-900 flex items-center justify-center text-[10px] font-bold text-zinc-400 shadow-xl">+ {order.items.length - 3}</div>
-                           )}
-                        </div>
-
-                        <div className="text-right shrink-0">
-                           <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-0.5">Grand Total</p>
-                           <p className="text-xl font-black text-white leading-none">${order.finalAmount.toFixed(2)}</p>
-                        </div>
+                                {order.payment && (
+                                  <Badge variant="outline" className={`text-[9px] font-black uppercase px-2 py-0 border-none ${order.payment.status === 'COMPLETED' ? 'text-emerald-500 bg-emerald-500/5' : 'text-orange-500 bg-orange-500/5'}`}>
+                                    {order.payment.method} • {order.payment.status}
+                                  </Badge>
+                                )}
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+ 
+                    <div className="flex items-center gap-12 overflow-x-auto no-scrollbar py-1">
+                       <div className="flex -space-x-3 shrink-0">
+                          {order.items.slice(0, 3).map((oi, idx) => (
+                             <div key={idx} className="h-10 w-10 rounded-full bg-zinc-800 border-2 border-zinc-900 flex items-center justify-center overflow-hidden shadow-lg" title={oi.menuItem?.name}>
+                                {oi.menuItem?.imageUrl ? (
+                                  <img src={oi.menuItem.imageUrl} className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-[10px] font-bold text-zinc-500">{(oi.menuItem?.name || 'I').charAt(0)}</span>
+                                )}
+                             </div>
+                          ))}
+                          {order.items.length > 3 && (
+                            <div className="h-10 w-10 rounded-full bg-zinc-800 border-2 border-zinc-900 flex items-center justify-center text-[10px] font-bold text-zinc-400 shadow-xl">+ {order.items.length - 3}</div>
+                          )}
+                       </div>
+ 
+                       <div className="text-right shrink-0">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-0.5">Grand Total</p>
+                          <p className="text-xl font-black text-white leading-none">₹{order.finalAmount.toFixed(2)}</p>
+                       </div>
 
                         <div className="flex items-center gap-2 shrink-0">
                            <Link href={`/vendor/orders/${order.id}`}>
@@ -172,7 +175,7 @@ export default async function OrdersPage() {
                         </div>
                      </div>
                   </div>
-               </div>
+            
             </Card>
           ))
         )}

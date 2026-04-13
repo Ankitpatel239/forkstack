@@ -83,6 +83,21 @@ enum OrderSource {
   API
 }
 
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
+}
+
 // ========== USER & AUTH ==========
 model User {
   id                String    @id @default(cuid())
@@ -139,6 +154,12 @@ model VendorProfile {
   whatsappApiKey                String?            @unique   // for external API
   
   // Account management
+  // Infrastructure & SEO
+  description           String?            @db.Text
+  isLocked              Boolean            @default(false)
+  lockPassword          String?
+  metaTags              String?            @db.Text
+  
   accountManagerId      String?
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
@@ -149,6 +170,7 @@ model VendorProfile {
   staffAssignments      UserVendorAssignment[]
   tables                Table[]
   menuItems             MenuItem[]
+  menuCategories        MenuCategory[]
   combos                Combo[]
   offers                Offer[]
   promoCodes            PromoCode[]
@@ -158,6 +180,34 @@ model VendorProfile {
   payments              Payment[]
   whatsappLogs          WhatsAppLog[]
   subscriptionPayments  SubscriptionPayment[]
+  payouts               Payout[]
+  drives                ConnectedDrive[]
+}
+
+model ConnectedDrive {
+  id          String   @id @default(cuid())
+  name        String   
+  type        String   @default("S3") 
+  bucket      String?  
+  region      String?  
+  accessKey   String?  
+  secretKey   String?  
+  endpoint    String?  
+  status      String   @default("ACTIVE") 
+  usage       Float    @default(0) 
+  capacity    Float    @default(15) // Free tier is 15GB
+  
+  // Google Specific
+  googleEmail   String?
+  accessToken   String?  @db.Text
+  refreshToken  String?  @db.Text
+  expiresAt     DateTime?
+  
+  vendorId    String
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // Many-to-many between User (TEAM) and VendorProfile
@@ -180,13 +230,33 @@ model Table {
   id          String   @id @default(cuid())
   vendorId    String
   tableNumber String   // e.g., "T01", "Table 5"
-  qrCodeUrl   String?  // S3 URL of generated QR image
+  capacity    Int      @default(2)
+  chairCount  Int      @default(2)
+  location    String?  // e.g., "Rooftop", "Indoors"
+  status      TableStatus @default(AVAILABLE)
+  qrCodeUrl   String?  // S3/Cloudinary URL of generated QR image
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   vendor      VendorProfile @relation(fields: [vendorId], references: [id])
   orders      Order[]
+}
+
+model MenuCategory {
+  id          String   @id @default(cuid())
+  vendorId    String
+  name        String
+  parentId    String?
+  sortOrder   Int      @default(0)
+  
+  parent      MenuCategory?  @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  children    MenuCategory[] @relation("SubCategories")
+  items       MenuItem[]
+  vendor      VendorProfile  @relation(fields: [vendorId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // ========== MENU / INVENTORY ==========
@@ -196,11 +266,30 @@ model MenuItem {
   name        String
   description String?
   price       Float
-  category    String   // e.g., "Beverages", "Main Course"
+  categoryId  String?
+  category    MenuCategory? @relation(fields: [categoryId], references: [id])
   isAvailable Boolean  @default(true)
   imageUrl    String?
-  preparationTime Int?
+  preparationTime Int?     // in minutes
   taxRate     Float?
+  
+  // Advanced Culinary Data
+  calories     Int?
+  protein      Float?
+  carbs        Float?
+  fats         Float?
+  isVegan      Boolean      @default(false)
+  isVegetarian Boolean      @default(false)
+  isGlutenFree Boolean      @default(false)
+  isHalal      Boolean      @default(false)
+  spiciness    Int          @default(0) // 0 (None) to 3 (Extreme)
+  allergens    String[]
+  ingredients  String[]
+  
+  // Fiscal Analytics
+  costPrice    Float?       // Internal cost for calculation
+  popularity   Int          @default(0)
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -209,6 +298,20 @@ model MenuItem {
   offerItems  OfferItem[]
   orderItems  OrderItem[]
   promoCodeItems PromoCodeItem[]
+  media          MenuItemMedia[]
+}
+
+model MenuItemMedia {
+  id          String   @id @default(cuid())
+  menuItemId  String
+  url         String
+  alt         String?
+  caption     String?
+  isMain      Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
 }
 
 model InventoryItem {
@@ -221,6 +324,7 @@ model InventoryItem {
   price              Float
   costPrice          Float?
   quantity           Int       @default(0)
+  unit               String    @default("units")
   lowStockThreshold  Int       @default(5)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
@@ -486,4 +590,21 @@ model Report {
   data       Json
   generatedBy String
   createdAt  DateTime @default(now())
+}
+
+// ========== PAYOUTS ==========
+model Payout {
+  id            String       @id @default(cuid())
+  vendorId      String
+  amount        Float
+  status        PayoutStatus @default(PENDING)
+  bankDetails   Json?        // Account number, IFSC, etc.
+  adminNotes    String?
+  vendorNotes   String?
+  transactionId String?      // Reference from the bank/payment gateway
+  requestedAt   DateTime     @default(now())
+  processedAt   DateTime?
+  updatedAt     DateTime     @updatedAt
+
+  vendor        VendorProfile @relation(fields: [vendorId], references: [id])
 }

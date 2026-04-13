@@ -26,24 +26,62 @@ import {
   MessageSquare,
   Brain,
   Handshake,
-  Timer
+  Timer,
+  Banknote
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { HeaderSecurityToggle } from '@/components/dashboard/HeaderSecurityToggle';
+import { DashboardLockScreen } from '@/components/dashboard/DashboardLockScreen';
+import { useEffect } from 'react';
+import { Lock as LockIcon } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isWorkstationLocked, setIsWorkstationLocked] = useState(false);
+  const [lockPassword, setLockPassword] = useState<string | null>(null);
+
+  // Sync workstation lock with session storage
+  useEffect(() => {
+    const isLocked = localStorage.getItem('workstation_locked') === 'true';
+    if (isLocked) setIsWorkstationLocked(true);
+
+    async function fetchLockData() {
+      if (session?.user?.role === 'VENDOR_OWNER') {
+        try {
+          const res = await fetch('/api/vendor/lock-config');
+          const data = await res.json();
+          setLockPassword(data.lockPassword);
+        } catch (e) {
+          console.error('Failed to sync security node');
+        }
+      }
+    }
+    fetchLockData();
+  }, [session]);
+
+  const handleLock = () => {
+    localStorage.setItem('workstation_locked', 'true');
+    setIsWorkstationLocked(true);
+  };
+
+  const handleUnlock = () => {
+    localStorage.removeItem('workstation_locked');
+    setIsWorkstationLocked(false);
+  };
 
   const vendorNavItems = [
     { name: 'Overview', href: '/vendor/dashboard', icon: LayoutDashboard },
     { name: 'Orders', href: '/vendor/orders', icon: ShoppingBag },
     { name: 'Menu Items', href: '/vendor/menu/items', icon: ChefHat },
+    { name: 'Dining Tables', href: '/vendor/tables', icon: LayoutDashboard },
     { name: 'Inventory', href: '/vendor/inventory', icon: Store },
     { name: 'Staff', href: '/vendor/staff', icon: Users },
+    { name: 'Payments & Fiscal', href: '/vendor/payments', icon: Wallet },
     { name: 'Settings', href: '/vendor/settings', icon: Settings },
   ];
 
@@ -57,6 +95,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: 'Global Broadcast', href: '/admin/broadcast', icon: Send },
     { name: 'Marketing Registry', href: '/admin/marketing', icon: MessageSquare },
     { name: 'Billing & Ledger', href: '/admin/billing', icon: Wallet },
+    { name: 'Payout Settlements', href: '/admin/payments', icon: Banknote },
     { name: 'Resolution Command', href: '/admin/support', icon: LifeBuoy },
     { name: 'Network Health', href: '/admin/health', icon: Activity },
     { name: 'Revenue Reports', href: '/admin/reports', icon: BarChart3 },
@@ -148,7 +187,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto flex flex-col relative bg-zinc-950">
-        <header className="h-20 flex items-center justify-between px-6 md:px-10 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-30">
+        <header className="h-24 min-h-[96px] flex items-center justify-between px-6 md:px-12 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-30 shadow-2xl shadow-black/20">
            <div className="flex items-center gap-4">
              <button 
                onClick={() => setIsSidebarOpen(true)}
@@ -167,17 +206,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <input type="text" placeholder="Search data..." className="bg-transparent border-none focus:ring-0 text-xs flex-1 ml-2 outline-none" />
               </div>
 
-              <div className="flex items-center gap-2">
-                <button className="relative p-2.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all group">
-                  <Bell size={18} />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full animate-pulse group-hover:scale-125 transition-transform" />
-                </button>
+                {session?.user?.role === 'VENDOR_OWNER' && (
+                  <button 
+                    onClick={handleLock}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-500 hover:bg-orange-500 hover:text-zinc-950 transition-all group shadow-lg shadow-orange-500/5 active:scale-95"
+                    title="Engage Workstation Lock"
+                  >
+                    <LockIcon size={16} className="group-hover:rotate-12 transition-transform" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.1em]">Secure</span>
+                  </button>
+                )}
+
                 <div className="h-10 w-[1px] bg-zinc-800 mx-2 hidden md:block" />
+                
+                {session?.user?.role === 'VENDOR_OWNER' && (
+                  <HeaderSecurityToggle />
+                )}
+
                 <Badge variant="outline" className="hidden md:flex border-emerald-500/20 text-emerald-500 bg-emerald-500/5 px-3 py-1 text-[10px] font-black uppercase tracking-widest">
                   Live System
                 </Badge>
-              </div>
-           </div>
+            </div>
         </header>
 
         <div className="p-6 md:p-10 container relative max-w-full">
@@ -189,6 +238,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </main>
+
+      {isWorkstationLocked && (
+        <DashboardLockScreen 
+          onUnlock={handleUnlock} 
+          correctPassword={lockPassword || undefined} 
+        />
+      )}
     </div>
   );
 }

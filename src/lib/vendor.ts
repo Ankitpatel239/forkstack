@@ -29,3 +29,9 @@ export async function requireVendor() {
   }
   return vendor;
 }
+export async function getVendorBySlug(slug: string) {
+  if (!slug) return null;
+  return prisma.vendorProfile.findUnique({
+    where: { tenantSlug: slug }
+  });
+}
