@@ -13,7 +13,7 @@ import {
   Clock,
   Filter,
   User,
-  ShieldNoti as ShieldIcon,
+
   Fingerprint
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';

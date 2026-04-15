@@ -11,7 +11,8 @@ export default async function VendorPublicMenu({ params }: { params: { vendorSlu
     where: { tenantSlug: params.vendorSlug },
     include: { 
       menuItems: {
-        where: { isAvailable: true }
+        where: { isAvailable: true },
+        include: { category: true }
       }
     }
   });
@@ -25,7 +26,7 @@ export default async function VendorPublicMenu({ params }: { params: { vendorSlu
   }
 
   // Pre-calculate categories based on real menu items
-  const categories = Array.from(new Set(vendor.menuItems.map(item => item.category)));
+  const categories = Array.from(new Set(vendor.menuItems.map(item => item.category?.name || 'Uncategorized')));
   const rating = 4.9; // Mock rating for now as it's not in schema
 
   return (
@@ -144,7 +145,7 @@ export default async function VendorPublicMenu({ params }: { params: { vendorSlu
                    <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-2">
                          <h4 className="text-lg font-bold text-zinc-100 group-hover:text-emerald-400 transition-colors uppercase italic tracking-tight">{item.name}</h4>
-                         <Badge variant="outline" className="text-[9px] h-4 border-zinc-800 text-zinc-500 font-black uppercase tracking-tighter px-1">{item.category}</Badge>
+                         <Badge variant="outline" className="text-[9px] h-4 border-zinc-800 text-zinc-500 font-black uppercase tracking-tighter px-1">{item?.categoryId}</Badge>
                       </div>
                       <p className="text-zinc-500 text-xs font-medium leading-relaxed italic line-clamp-2">{item.description}</p>
                       <div className="flex items-center justify-between pt-2">

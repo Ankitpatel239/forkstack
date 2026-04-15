@@ -67,6 +67,7 @@ export async function uploadToGoogleDrive(vendorId: string, base64Data: string, 
   let token = drive.accessToken;
   const isExpired = drive.expiresAt && drive.expiresAt < new Date();
   if (!token || isExpired) token = await refreshAccessToken(drive.id, drive.refreshToken);
+  if (!token) throw new Error('Failed to obtain Google Drive access token');
 
   // 1. Manage Folder Structure: ForkStack > VendorSlug > [Branding|Menu]
   const rootId = await getOrCreateFolder(token, 'ForkStack_Media');
@@ -134,6 +135,7 @@ export async function deleteFromGoogleDrive(vendorId: string, fileUrl: string) {
   let token = drive.accessToken;
   const isExpired = drive.expiresAt && drive.expiresAt < new Date();
   if (!token || isExpired) token = await refreshAccessToken(drive.id, drive.refreshToken);
+  if (!token) return;
 
   // Extract ID: drive.google.com/thumbnail?id=FILE_ID&sz=w1000
   const urlObj = new URL(fileUrl);

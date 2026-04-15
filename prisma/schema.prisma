@@ -319,18 +319,62 @@ model InventoryItem {
   vendorId           String
   name               String
   sku                String    @unique
+  barcode            String?   @unique
   category           String
   description        String?
-  price              Float
-  costPrice          Float?
+  price              Float     @default(0) // Selling price if applicable
+  costPrice          Float?    // Purchase price
   quantity           Int       @default(0)
-  unit               String    @default("units")
+  unit               String    @default("units") // kg, ltr, pcs, pack
   lowStockThreshold  Int       @default(5)
+  supplier           String?   // Supplier name
+  brand              String?   // Brand name (useful for resellers)
+  location           String?   // Warehouse / Godown location / Shelf ID
+  expiryDate         DateTime? 
+  
+  isArchived          Boolean   @default(false)
+  
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
   vendor             VendorProfile @relation(fields: [vendorId], references: [id])
   orderItems         OrderItem[]
+  history            StockHistory[]
+  batches            StockBatch[]
+}
+
+model StockBatch {
+  id              String         @id @default(cuid())
+  inventoryItemId String
+  inventoryItem   InventoryItem  @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  batchNumber     String?        // e.g., "BATCH-2024-001"
+  quantity        Int            @default(0)
+  costPrice       Float          // Cost of this specific batch
+  receivedDate    DateTime       @default(now())
+  expiryDate      DateTime?
+  location        String?        // Specific shelf for this batch
+  isSoldOut       Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model StockHistory {
+  id              String         @id @default(cuid())
+  inventoryItemId String
+  inventoryItem   InventoryItem  @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  type            StockLogType   // IN, OUT, WASTE, CORRECTION
+  quantity        Int            // Quantity changed (+/-)
+  previousStock   Int
+  newStock        Int
+  reason          String?        // e.g., "Received from supplier", "Expired", "Daily usage"
+  createdAt       DateTime       @default(now())
+}
+
+enum StockLogType {
+  IN
+  OUT
+  WASTE
+  CORRECTION
 }
 
 // ========== COMBOS ==========

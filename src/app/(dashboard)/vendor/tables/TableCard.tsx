@@ -53,7 +53,8 @@ export function TableCard({ table, vendorSlug }: { table: any, vendorSlug: strin
     }
   };
 
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`${window.location.origin}/order/${vendorSlug}/${table.id}`)}`;
+  // const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`${window.location.origin}/order/${vendorSlug}/${table.id}`)}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://7df1-2401-4900-1ca3-5220-6061-4f92-e10d-fcc.ngrok-free.app/order/${vendorSlug}/${table.id}`;
 
   const statusIcons: any = {
     AVAILABLE: CheckCircle2,

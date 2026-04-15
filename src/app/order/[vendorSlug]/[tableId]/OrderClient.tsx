@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -7,23 +6,19 @@ import {
   Plus, 
   Minus, 
   ChevronRight, 
-  Search, 
   Clock, 
-  Star,
   Info,
   CheckCircle2,
   Phone,
   ArrowRight,
   ShieldCheck,
   CreditCard,
-  Banknote,
-  Navigation
+  Banknote
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { placeOrder } from '@/app/actions/orders';
+import { placeOrder, updateTableStatus } from '@/app/actions/orders';
 
 export function OrderClient({ vendor, table, categories }: { 
   vendor: any, 
@@ -44,8 +39,6 @@ export function OrderClient({ vendor, table, categories }: {
     const bookTable = async () => {
       if (table.status === 'AVAILABLE') {
         try {
-          // Import this from actions
-          const { updateTableStatus } = await import('@/app/actions/orders');
           await updateTableStatus(table.id, 'OCCUPIED');
         } catch (e) {}
       }
@@ -121,48 +114,58 @@ export function OrderClient({ vendor, table, categories }: {
           Your order is being prepared for <span className="text-emerald-500">{table.tableNumber}</span>.
           We'll notify you on WhatsApp shortly.
         </p>
-        <Button 
+        <button 
+          type="button"
           onClick={() => { setStep(1); setIsCheckoutOpen(false); }}
-          className="h-14 w-full max-w-xs rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-black uppercase tracking-widest text-[10px]"
+          className="h-14 w-full max-w-xs rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-black uppercase tracking-widest text-[10px] active:scale-95 touch-manipulation"
         >
           View Menu Again
-        </Button>
+        </button>
       </div>
     );
   }
 
+  const hasItems = cartItemsCount > 0;
+
   return (
-    <div className="max-w-md mx-auto min-h-screen pb-32">
+    <div className="max-w-md mx-auto min-h-screen pb-32 relative">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-zinc-900 px-6 py-6">
+      <div className="sticky top-0 z-40 bg-black/95 border-b border-zinc-900 px-6 py-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
-               {vendor.logoUrl ? <img src={vendor.logoUrl} className="h-full w-full object-cover rounded-2xl" /> : <ShoppingBag size={24} />}
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0">
+               {vendor.logoUrl ? <img src={vendor.logoUrl} className="h-full w-full object-cover rounded-2xl" alt="" /> : <ShoppingBag size={24} className="pointer-events-none" />}
             </div>
             <div>
               <h2 className="text-xl font-black italic uppercase tracking-tighter text-white">{vendor.businessName}</h2>
-              <div className="flex items-center gap-2">
-                 <Badge variant="outline" className="text-emerald-500 border-emerald-500/20 text-[7px] font-black uppercase px-2 py-0 bg-emerald-500/5">
-                   Table {table.tableNumber}
-                 </Badge>
-                 <span className="h-1 w-1 rounded-full bg-zinc-800" />
-                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1">
-                   <Clock size={10} /> 15-20 Mins
-                 </span>
-              </div>
+               <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-emerald-500 border-emerald-500/20 text-[7px] font-black uppercase px-2 py-0 bg-emerald-500/5">
+                    Table {table.tableNumber}
+                  </Badge>
+                  {hasItems && (
+                    <Badge className="bg-emerald-500 text-black text-[7px] font-black px-1.5 animate-pulse">
+                       {cartItemsCount} IN BAG
+                    </Badge>
+                  )}
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1">
+                    <Clock size={10} /> 15-20 Mins
+                  </span>
+               </div>
             </div>
           </div>
-          <Button variant="ghost" className="h-10 w-10 p-0 text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-xl">
-             <Info size={20} />
-          </Button>
+          <button 
+            type="button" 
+            className="h-10 w-10 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-xl relative z-10 active:scale-95 touch-manipulation"
+          >
+             <Info size={20} className="pointer-events-none" />
+          </button>
         </div>
       </div>
 
       {/* Hero Banner */}
       <div className="px-6 py-8">
          <div className="relative h-44 w-full rounded-[2.5rem] bg-gradient-to-br from-emerald-500 to-emerald-700 p-8 overflow-hidden group">
-            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform pointer-events-none">
                <ShoppingBag size={120} />
             </div>
             <div className="relative z-10 space-y-4">
@@ -174,15 +177,16 @@ export function OrderClient({ vendor, table, categories }: {
       </div>
 
       {/* Category Nav */}
-      <div className="sticky top-[89px] z-30 bg-black/60 backdrop-blur-md px-6 py-4 flex gap-3 overflow-x-auto no-scrollbar">
+      <div className="sticky top-[88px] z-30 bg-black/95 px-6 py-4 flex gap-3 overflow-x-auto no-scrollbar border-b border-zinc-900/50">
          {categories.map(cat => (
            <button
              key={cat.id}
+             type="button"
              onClick={() => setActiveCategory(cat.id)}
-             className={`px-6 h-11 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
+             className={`px-6 h-11 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all flex-shrink-0 cursor-pointer touch-manipulation ${
                activeCategory === cat.id 
                ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' 
-               : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300'
+               : 'bg-zinc-900 text-zinc-500 active:bg-zinc-800'
              }`}
            >
              {cat.name}
@@ -201,7 +205,7 @@ export function OrderClient({ vendor, table, categories }: {
             
             <div className="grid grid-cols-1 gap-6">
                {(cat.items || []).map((item: any) => (
-                 <div key={item.id} className="bg-zinc-900/30 border border-zinc-900 rounded-[2rem] p-5 flex gap-5 group transition-all hover:bg-zinc-900/50">
+                <div key={item.id} className="bg-zinc-900/30 border border-zinc-900 rounded-[2rem] p-5 flex gap-5 group relative z-10">
                     <div className="h-24 w-24 rounded-2xl bg-zinc-900 border border-zinc-800 shrink-0 overflow-hidden relative">
                        {item.imageUrl ? (
                          <img src={item.imageUrl} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
@@ -225,23 +229,31 @@ export function OrderClient({ vendor, table, categories }: {
                        
                        <div className="flex items-center justify-between">
                           <span className="text-lg font-black text-white italic">₹{item.price}</span>
-                          
                           {cart[item.id] ? (
-                            <div className="flex items-center gap-4 bg-emerald-500 rounded-xl p-1 shadow-lg shadow-emerald-500/10">
-                               <button onClick={() => removeFromCart(item.id)} className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-600 text-black">
-                                  <Minus size={14} />
+                            <div className="flex items-center gap-3 bg-emerald-500 rounded-xl p-1 shadow-lg shadow-emerald-500/10 relative z-[100]">
+                               <button 
+                                 type="button" 
+                                 onClick={() => removeFromCart(item.id)} 
+                                 className="h-10 w-10 flex items-center justify-center rounded-lg bg-emerald-600 text-black active:scale-90 cursor-pointer touch-manipulation"
+                               >
+                                  <Minus size={18} className="pointer-events-none" />
                                </button>
-                               <span className="text-xs font-black text-black">{cart[item.id]}</span>
-                               <button onClick={() => addToCart(item.id)} className="h-8 w-8 flex items-center justify-center rounded-lg bg-emerald-300 text-black">
-                                  <Plus size={14} />
+                               <span className="text-xs font-black text-black min-w-[2ch] text-center">{cart[item.id]}</span>
+                               <button 
+                                 type="button" 
+                                 onClick={() => addToCart(item.id)} 
+                                 className="h-10 w-10 flex items-center justify-center rounded-lg bg-emerald-300 text-black active:scale-90 cursor-pointer touch-manipulation"
+                               >
+                                  <Plus size={18} className="pointer-events-none" />
                                </button>
                             </div>
                           ) : (
                             <button 
+                              type="button"
                               onClick={() => addToCart(item.id)}
-                              className="h-10 px-4 bg-zinc-950 border border-zinc-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-500 hover:text-black transition-all"
+                              className="h-11 px-5 bg-zinc-950 border border-zinc-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 active:bg-emerald-500 active:text-black transition-all shadow-xl cursor-pointer touch-manipulation relative z-[100]"
                             >
-                               <Plus size={14} /> Add
+                               <Plus size={14} className="pointer-events-none" /> Add
                             </button>
                           )}
                        </div>
@@ -252,9 +264,9 @@ export function OrderClient({ vendor, table, categories }: {
           </div>
         ))}
       </div>
-
+      
       {/* Cart Bottom Bar */}
-      {cartItemsCount > 0 && (
+      {hasItems && (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-6 animate-in slide-in-from-bottom duration-500">
            <div className="max-w-md mx-auto h-20 bg-emerald-500 rounded-[2rem] shadow-[0_20px_50px_rgba(16,185,129,0.3)] flex items-center justify-between px-8 text-black group active:scale-95 transition-all">
               <div className="flex items-center gap-4">
@@ -267,8 +279,12 @@ export function OrderClient({ vendor, table, categories }: {
                     <span className="text-lg font-black italic -mt-1">₹{cartTotal.toFixed(2)}</span>
                  </div>
               </div>
-              <button onClick={() => setIsCheckoutOpen(true)} className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em]">
-                 Review Cart <ChevronRight size={18} />
+              <button 
+                type="button" 
+                onClick={() => setIsCheckoutOpen(true)} 
+                className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] relative z-10 active:scale-95 touch-manipulation"
+              >
+                 Review Cart <ChevronRight size={18} className="pointer-events-none" />
               </button>
            </div>
         </div>
@@ -279,9 +295,13 @@ export function OrderClient({ vendor, table, categories }: {
         <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-xl p-6 transition-all animate-in fade-in duration-300 overflow-y-auto">
            <div className="max-w-md mx-auto space-y-10">
               <div className="flex items-center justify-between">
-                 <button onClick={() => setIsCheckoutOpen(false)} className="text-[10px] font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2">
-                    <ChevronRight size={16} className="rotate-180" /> Back to Menu
-                 </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setIsCheckoutOpen(false)} 
+                    className="text-[10px] font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2 active:text-white active:scale-95 touch-manipulation"
+                  >
+                     <ChevronRight size={16} className="rotate-180 pointer-events-none" /> Back to Menu
+                  </button>
                  <Badge variant="outline" className="border-emerald-500/20 text-emerald-500 font-black italic">Checkout Step {step}/2</Badge>
               </div>
 
@@ -323,12 +343,13 @@ export function OrderClient({ vendor, table, categories }: {
                       </div>
                    </div>
 
-                   <Button 
+                   <button 
+                     type="button"
                      onClick={() => setStep(2)}
-                     className="h-16 w-full rounded-3xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-emerald-500/10"
+                     className="h-16 w-full rounded-3xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-emerald-500/10 touch-manipulation"
                    >
-                     Continue to Details <ArrowRight size={18} />
-                   </Button>
+                     Continue to Details <ArrowRight size={18} className="pointer-events-none" />
+                   </button>
                 </div>
               ) : (
                 <div className="space-y-10 animate-in slide-in-from-right duration-300">
@@ -365,22 +386,24 @@ export function OrderClient({ vendor, table, categories }: {
                          <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 italic">Payment Choice</Label>
                          <div className="grid grid-cols-2 gap-4">
                             <button 
+                              type="button"
                               onClick={() => setPaymentMethod('COD')}
-                              className={`h-16 rounded-[1.5rem] border p-4 flex items-center gap-3 transition-all ${
-                                paymentMethod === 'COD' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : 'bg-black border-zinc-900 text-zinc-500'
+                              className={`h-16 rounded-[1.5rem] border p-4 flex items-center gap-3 transition-all active:scale-95 touch-manipulation ${
+                                paymentMethod === 'COD' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'bg-black border-zinc-900 text-zinc-500'
                               }`}
                             >
-                               <Banknote size={20} />
-                               <span className="text-[10px] font-black uppercase tracking-widest leading-none">Cash on Delivery</span>
+                               <Banknote size={20} className="pointer-events-none" />
+                               <span className="text-[10px] font-black uppercase tracking-widest leading-none pointer-events-none text-left">Cash on Delivery</span>
                             </button>
                             <button 
+                              type="button"
                               onClick={() => setPaymentMethod('ONLINE')}
-                              className={`h-16 rounded-[1.5rem] border p-4 flex items-center gap-3 transition-all ${
-                                paymentMethod === 'ONLINE' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : 'bg-black border-zinc-900 text-zinc-500'
+                              className={`h-16 rounded-[1.5rem] border p-4 flex items-center gap-3 transition-all active:scale-95 touch-manipulation ${
+                                paymentMethod === 'ONLINE' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'bg-black border-zinc-900 text-zinc-500'
                               }`}
                             >
-                               <CreditCard size={20} />
-                               <span className="text-[10px] font-black uppercase tracking-widest leading-none">Online Payment</span>
+                               <CreditCard size={20} className="pointer-events-none" />
+                               <span className="text-[10px] font-black uppercase tracking-widest leading-none pointer-events-none text-left">Online Payment</span>
                             </button>
                          </div>
                       </div>
@@ -394,23 +417,46 @@ export function OrderClient({ vendor, table, categories }: {
                       </div>
                    </div>
 
-                   <Button 
+                   <button 
+                     type="button"
                      disabled={isSubmitting}
                      onClick={handleCheckout}
-                     className="h-20 w-full rounded-[2.5rem] bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 active:scale-95 transition-all shadow-[0_20px_40px_rgba(16,185,129,0.3)] shadow-emerald-500/20"
+                     className="h-20 w-full rounded-[2.5rem] bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 active:scale-95 transition-all shadow-[0_20px_40px_rgba(16,185,129,0.3)] shadow-emerald-500/20 disabled:opacity-50 touch-manipulation"
                    >
-                     {isSubmitting ? <Loader2 className="animate-spin" /> : <>Finalize & Order <CheckCircle2 size={24} /></>}
-                   </Button>
+                     {isSubmitting ? "Placing Order..." : <>Finalize & Order <CheckCircle2 size={24} className="pointer-events-none" /></>}
+                   </button>
                 </div>
               )}
            </div>
         </div>
       )}
 
-      {/* Styles for scrollbar */}
+      {/* Global styles for mobile touch */}
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        button, 
+        [role="button"], 
+        .cursor-pointer,
+        .touch-manipulation {
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+          cursor: pointer;
+        }
+        
+        button:active, 
+        .cursor-pointer:active {
+          transform: scale(0.98);
+        }
+        
+        button, 
+        button *,
+        .cursor-pointer,
+        .cursor-pointer * {
+          user-select: none;
+          -webkit-user-select: none;
+        }
       `}</style>
     </div>
   );
@@ -418,8 +464,4 @@ export function OrderClient({ vendor, table, categories }: {
 
 function Label({ children, className }: { children: any, className?: string }) {
   return <p className={className}>{children}</p>
-}
-
-function Loader2({ className }: { className: string }) {
-  return <ShoppingBag className={className} />
 }

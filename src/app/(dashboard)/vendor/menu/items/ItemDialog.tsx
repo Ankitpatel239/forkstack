@@ -169,13 +169,21 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
         costPrice: formData.costPrice ? parseFloat(formData.costPrice) : undefined,
         allergens: formData.allergens.split(',').map(s => s.trim()).filter(s => s),
         ingredients: formData.ingredients.split(',').map(s => s.trim()).filter(s => s),
+        media: formData.media.map((m: any) => ({
+          id: m.id,
+          url: m.url,
+          alt: m.alt || undefined,
+          caption: m.caption || undefined,
+          isMain: m.isMain,
+          delete: m.delete
+        }))
       };
 
       if (item) {
-        await updateMenuItem(item.id, payload);
+        await updateMenuItem(item.id, payload as any);
         toast.success('Menu item updated');
       } else {
-        await createMenuItem(payload);
+        await createMenuItem(payload as any);
         toast.success('New menu item created');
       }
       onOpenChange(false);

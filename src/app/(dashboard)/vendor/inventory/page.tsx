@@ -7,7 +7,11 @@ export default async function InventoryPage() {
   const vendor = await requireVendor();
   
   const items = await prisma.inventoryItem.findMany({
-    where: { vendorId: vendor.id },
+    where: { 
+      vendorId: vendor.id,
+      isArchived: false 
+    },
+    include: { batches: true },
     orderBy: { updatedAt: 'desc' }
   });
 
