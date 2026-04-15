@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,6 +55,7 @@ import {
 import { InventoryDialog } from './InventoryDialog';
 import { CodeGeneratorDialog } from './CodeGeneratorDialog';
 import { ItemAnalysisDialog } from './ItemAnalysisDialog';
+import { BulkTagDialog } from './BulkTagDialog';
 import { archiveInventoryItem, deleteInventoryItem, getItemHistory } from '@/app/actions/inventory';
 import { seedVendorInventory } from '@/app/actions/seed-inventory';
 import { toast } from 'sonner';
@@ -71,6 +73,8 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [isCodeGenOpen, setIsCodeGenOpen] = useState(false);
   const [codeGenItem, setCodeGenItem] = useState<any>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkPrintOpen, setIsBulkPrintOpen] = useState(false);
 
   const filteredItems = initialItems.filter(i => 
     i.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -130,6 +134,24 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
     } finally {
       setIsLoadingHistory(false);
     }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredItems.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredItems.map(i => i.id));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const getSelectedItems = () => {
+    return initialItems.filter(i => selectedIds.includes(i.id));
   };
 
   const handleArchive = async (id: string) => {
@@ -219,6 +241,13 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
           <table className="w-full text-left text-xs whitespace-nowrap">
             <thead className="bg-zinc-950/80 text-[9px] uppercase font-black tracking-[0.15em] text-zinc-700 border-b border-zinc-900">
               <tr>
+                <th className="px-5 py-3 w-10">
+                   <Checkbox 
+                     checked={selectedIds.length > 0 && selectedIds.length === filteredItems.length}
+                     onCheckedChange={toggleSelectAll}
+                     className="border-zinc-800 data-[state=checked]:bg-emerald-500 data-[state=checked]:text-zinc-950"
+                   />
+                </th>
                 <th className="px-5 py-3">Product Profile</th>
                 <th className="px-5 py-3">Classification</th>
                 <th className="px-5 py-3">In-Stock Analysis</th>
@@ -236,7 +265,14 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
                   const itemValuation = (activeBatches || []).reduce((acc: number, b: any) => acc + (b.quantity * b.costPrice), 0);
 
                   return (
-                    <tr key={item.id} className="hover:bg-zinc-900/30 transition-all border-b border-zinc-900/20 group">
+                    <tr key={item.id} className={`hover:bg-zinc-900/30 transition-all border-b border-zinc-900/20 group ${selectedIds.includes(item.id) ? 'bg-emerald-500/5' : ''}`}>
+                      <td className="px-5 py-2.5">
+                         <Checkbox 
+                           checked={selectedIds.includes(item.id)}
+                           onCheckedChange={() => toggleSelectOne(item.id)}
+                           className="border-zinc-800 data-[state=checked]:bg-emerald-500 data-[state=checked]:text-zinc-950"
+                         />
+                      </td>
                       <td className="px-5 py-2.5">
                          <div className="space-y-0.5">
                             <p className="font-bold text-zinc-300 group-hover:text-emerald-400 transition-colors uppercase text-[11px] tracking-tight">{item.name}</p>
@@ -370,6 +406,38 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
         item={analysisItem}
         history={historyData}
       />
+
+      <BulkTagDialog 
+        open={isBulkPrintOpen}
+        onOpenChange={setIsBulkPrintOpen}
+        items={getSelectedItems()}
+      />
+
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 duration-500">
+           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl p-2 flex items-center gap-4 min-w-[300px] border-emerald-500/20 bg-gradient-to-tr from-zinc-950 to-zinc-900/50 backdrop-blur-xl">
+              <div className="flex flex-col px-4 border-r border-zinc-900">
+                 <span className="text-[10px] font-black italic text-emerald-500">{selectedIds.length} Assets</span>
+                 <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">Selection Active</span>
+              </div>
+              <div className="flex items-center gap-2 pr-2">
+                 <Button 
+                   onClick={() => setIsBulkPrintOpen(true)}
+                   className="h-10 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-[10px] font-black uppercase tracking-widest px-6 rounded-xl shadow-lg shadow-emerald-500/10"
+                 >
+                    <Tag className="w-3.5 h-3.5 mr-2" /> Print Bulk Tags
+                 </Button>
+                 <Button 
+                   variant="ghost"
+                   onClick={() => setSelectedIds([])}
+                   className="h-10 text-zinc-500 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl"
+                 >
+                    Clear
+                 </Button>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
     </TooltipProvider>
   );
