@@ -9,6 +9,7 @@ import {
   Package, 
   History,
   TrendingUp,
+  BarChart3,
   ArrowUpRight, 
   MoreVertical,
   Edit,
@@ -24,7 +25,8 @@ import {
   ArrowRight,
   Scan,
   Tag,
-  RotateCcw
+  RotateCcw,
+  QrCode
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -50,6 +52,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { InventoryDialog } from './InventoryDialog';
+import { CodeGeneratorDialog } from './CodeGeneratorDialog';
+import { ItemAnalysisDialog } from './ItemAnalysisDialog';
 import { archiveInventoryItem, deleteInventoryItem, getItemHistory } from '@/app/actions/inventory';
 import { seedVendorInventory } from '@/app/actions/seed-inventory';
 import { toast } from 'sonner';
@@ -62,8 +66,11 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
   const [isSeeding, setIsSeeding] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [historyItem, setHistoryItem] = useState<any>(null);
+  const [analysisItem, setAnalysisItem] = useState<any>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [isCodeGenOpen, setIsCodeGenOpen] = useState(false);
+  const [codeGenItem, setCodeGenItem] = useState<any>(null);
 
   const filteredItems = initialItems.filter(i => 
     i.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -107,6 +114,19 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
       setHistoryData(data);
     } catch (error) {
       toast.error('Log error');
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const showAnalysis = async (item: any) => {
+    setAnalysisItem(item);
+    setIsLoadingHistory(true);
+    try {
+      const data = await getItemHistory(item.id);
+      setHistoryData(data);
+    } catch (error) {
+      toast.error('Data error');
     } finally {
       setIsLoadingHistory(false);
     }
@@ -275,8 +295,14 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
                                <DropdownMenuItem onClick={() => handleEdit(item)} className="cursor-pointer text-[10px] font-bold py-2 px-3 rounded-lg focus:bg-emerald-500 focus:text-zinc-950">
                                   <Edit className="w-3.5 h-3.5 mr-2" /> Replenish & Audit
                                </DropdownMenuItem>
+                               <DropdownMenuItem onClick={() => showAnalysis(item)} className="cursor-pointer text-[10px] font-bold py-2 px-3 rounded-lg focus:bg-emerald-500 focus:text-zinc-950">
+                                  <BarChart3 className="w-3.5 h-3.5 mr-2" /> Performance Intel
+                               </DropdownMenuItem>
                                <DropdownMenuItem onClick={() => showHistory(item)} className="cursor-pointer text-[10px] font-bold py-2 px-3 rounded-lg focus:bg-zinc-900">
                                   <History className="w-3.5 h-3.5 mr-2 text-zinc-600" /> Logs
+                               </DropdownMenuItem>
+                               <DropdownMenuItem onClick={() => { setCodeGenItem(item); setIsCodeGenOpen(true); }} className="cursor-pointer text-[10px] font-bold py-2 px-3 rounded-lg focus:bg-zinc-900">
+                                  <QrCode className="w-3.5 h-3.5 mr-2 text-zinc-600" /> Generate Physical Tag
                                </DropdownMenuItem>
                                <DropdownMenuSeparator className="bg-zinc-900 mx-1" />
                                <DropdownMenuItem onClick={() => handleArchive(item.id)} className="cursor-pointer text-red-500 text-[10px] font-bold py-2 px-3 rounded-lg focus:bg-red-500/10">
@@ -330,6 +356,19 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
         open={isDialogOpen} 
         onOpenChange={setIsDialogOpen}
         item={selectedItem}
+      />
+
+      <CodeGeneratorDialog 
+        open={isCodeGenOpen}
+        onOpenChange={setIsCodeGenOpen}
+        item={codeGenItem}
+      />
+
+      <ItemAnalysisDialog 
+        open={!!analysisItem}
+        onOpenChange={(open) => !open && setAnalysisItem(null)}
+        item={analysisItem}
+        history={historyData}
       />
     </div>
     </TooltipProvider>

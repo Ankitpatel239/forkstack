@@ -106,7 +106,8 @@ export async function logStockChange(
   change: number, 
   type: 'IN' | 'OUT' | 'WASTE' | 'CORRECTION',
   reason: string,
-  newCostPrice?: number 
+  newCostPrice?: number,
+  newLocation?: string 
 ) {
   const vendor = await requireVendor();
 
@@ -151,7 +152,16 @@ export async function logStockChange(
   }
 
   // Recalculate totals from batches to ensure consistency
+  const totalQty = currentItem.batches.reduce((acc, b) => acc + (b.id === id ? change : b.quantity), 0); // This is not quite right, better to just use syncItemTotals but add location update
+
   await syncItemTotals(id);
+  
+  if (newLocation !== undefined) {
+    await prisma.inventoryItem.update({
+      where: { id },
+      data: { location: newLocation }
+    });
+  }
   
   const updatedItem = await prisma.inventoryItem.findUnique({ where: { id } });
 

@@ -147,7 +147,7 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
            const val = parseFloat(formData.adjustmentValue) || 0;
            if (val <= 0) { setLoading(false); return; }
            const realChange = adjustmentType === 'IN' ? val : -val;
-           await logStockChange(item.id, realChange, adjustmentType, formData.changeReason || "Manual Fix", adjustmentType === 'IN' ? (parseFloat(formData.newBatchCost) || 0) : undefined);
+           await logStockChange(item.id, realChange, adjustmentType, formData.changeReason || "Manual Fix", adjustmentType === 'IN' ? (parseFloat(formData.newBatchCost) || 0) : undefined, formData.location);
            router.refresh();
         } else {
            const { quantity, adjustmentValue, newBatchCost, changeReason, ...cleanData } = formData;
@@ -223,9 +223,15 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
                   )}
                </div>
 
-               <div className="space-y-1.5">
-                  <Label className="text-[9px] font-bold uppercase text-zinc-500">Log Entry Description</Label>
-                  <Input value={formData.changeReason} onChange={e => setFormData({...formData, changeReason: e.target.value})} placeholder="Reason..." className="bg-zinc-900 h-10 px-4 rounded-lg text-[10px]" />
+               <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                     <Label className="text-[9px] font-bold uppercase text-zinc-500">Log Entry Description</Label>
+                     <Input value={formData.changeReason} onChange={e => setFormData({...formData, changeReason: e.target.value})} placeholder="Reason..." className="bg-zinc-900 h-10 px-4 rounded-lg text-[10px]" />
+                  </div>
+                  <div className="space-y-1.5">
+                     <Label className="text-[9px] font-bold uppercase text-zinc-500">Item Location</Label>
+                     <Input value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="Shelf / Aisle" className="bg-zinc-900 h-10 px-4 rounded-lg text-xs" />
+                  </div>
                </div>
 
                <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-900 space-y-3">
