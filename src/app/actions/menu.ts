@@ -91,6 +91,14 @@ export async function createMenuItem(data: {
   const item = await prisma.menuItem.create({
     data: {
       ...(({ media, ...rest }) => rest)(data),
+      price: Number(data.price) || 0,
+      preparationTime: data.preparationTime !== undefined ? (Number(data.preparationTime) || 15) : undefined,
+      calories: data.calories !== undefined ? (Number(data.calories) || 0) : undefined,
+      protein: data.protein !== undefined ? (Number(data.protein) || 0) : undefined,
+      carbs: data.carbs !== undefined ? (Number(data.carbs) || 0) : undefined,
+      fats: data.fats !== undefined ? (Number(data.fats) || 0) : undefined,
+      spiciness: data.spiciness !== undefined ? (Number(data.spiciness) || 0) : undefined,
+      costPrice: data.costPrice !== undefined ? (Number(data.costPrice) || 0) : undefined,
       vendorId: vendor.id,
       imageUrl: thumbUrl,
       isAvailable: true,
@@ -170,6 +178,14 @@ export async function updateMenuItem(id: string, data: {
     where: { id },
     data: {
       ...(({ media, ...rest }) => rest)(data),
+      price: data.price !== undefined ? (Number(data.price) || 0) : undefined,
+      preparationTime: data.preparationTime !== undefined ? (Number(data.preparationTime) || 15) : undefined,
+      calories: data.calories !== undefined ? (Number(data.calories) || 0) : undefined,
+      protein: data.protein !== undefined ? (Number(data.protein) || 0) : undefined,
+      carbs: data.carbs !== undefined ? (Number(data.carbs) || 0) : undefined,
+      fats: data.fats !== undefined ? (Number(data.fats) || 0) : undefined,
+      spiciness: data.spiciness !== undefined ? (Number(data.spiciness) || 0) : undefined,
+      costPrice: data.costPrice !== undefined ? (Number(data.costPrice) || 0) : undefined,
       imageUrl: thumbUrl,
       media: {
         create: processedMedia

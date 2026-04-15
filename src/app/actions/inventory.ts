@@ -37,22 +37,22 @@ export async function createInventoryItem(data: {
       sku: finalSku,
       barcode: data.barcode,
       category: data.category,
-      quantity: data.quantity,
+      quantity: Number(data.quantity) || 0,
       unit: data.unit,
-      lowStockThreshold: data.lowStockThreshold,
-      costPrice: data.costPrice,
-      price: data.price || 0,
+      lowStockThreshold: Number(data.lowStockThreshold) || 0,
+      costPrice: data.costPrice !== undefined ? (Number(data.costPrice) || 0) : undefined,
+      price: data.price !== undefined ? (Number(data.price) || 0) : 0,
       supplier: data.supplier,
       brand: data.brand,
       location: data.location,
-      expiryDate: data.expiryDate,
+      expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined,
       vendorId: vendor.id,
-      batches: data.quantity > 0 ? {
+      batches: (Number(data.quantity) || 0) > 0 ? {
         create: {
-          quantity: data.quantity,
-          costPrice: data.costPrice || 0,
+          quantity: Number(data.quantity) || 0,
+          costPrice: data.costPrice !== undefined ? (Number(data.costPrice) || 0) : 0,
           receivedDate: new Date(),
-          expiryDate: data.expiryDate,
+          expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined,
           location: data.location,
           batchNumber: `BAT-${Date.now().toString().slice(-6)}`
         }
@@ -241,7 +241,17 @@ export async function updateInventoryItem(id: string, data: {
   const item = await prisma.inventoryItem.update({
     where: { id, vendorId: vendor.id },
     data: {
-      ...data,
+      name: data.name,
+      sku: data.sku,
+      barcode: data.barcode,
+      category: data.category,
+      unit: data.unit,
+      lowStockThreshold: Number(data.lowStockThreshold) || 0,
+      costPrice: data.costPrice !== undefined ? (Number(data.costPrice) || 0) : undefined,
+      price: data.price !== undefined ? (Number(data.price) || 0) : undefined,
+      supplier: data.supplier,
+      brand: data.brand,
+      location: data.location,
       expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined
     }
   });

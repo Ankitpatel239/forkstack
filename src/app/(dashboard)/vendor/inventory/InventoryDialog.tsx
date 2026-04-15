@@ -126,7 +126,7 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
     if (!editQty || !editReason) return;
     setLoading(true);
     try {
-      await updateStockBatch(batchId, parseFloat(editQty), editReason);
+      await updateStockBatch(batchId, parseFloat(editQty) || 0, editReason);
       setEditingBatchId(null);
       router.refresh();
       setTimeout(() => onOpenChange(false), 300);
@@ -144,17 +144,32 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
     try {
       if (item) {
         if (mode === 'REPLENISH') {
-           const val = parseFloat(formData.adjustmentValue);
+           const val = parseFloat(formData.adjustmentValue) || 0;
            if (val <= 0) { setLoading(false); return; }
            const realChange = adjustmentType === 'IN' ? val : -val;
-           await logStockChange(item.id, realChange, adjustmentType, formData.changeReason || "Manual Fix", adjustmentType === 'IN' ? parseFloat(formData.newBatchCost) : undefined);
+           await logStockChange(item.id, realChange, adjustmentType, formData.changeReason || "Manual Fix", adjustmentType === 'IN' ? (parseFloat(formData.newBatchCost) || 0) : undefined);
            router.refresh();
         } else {
-           await updateInventoryItem(item.id, { ...formData, lowStockThreshold: parseFloat(formData.lowStockThreshold), costPrice: parseFloat(formData.costPrice), price: parseFloat(formData.price) } as any);
+           const { quantity, adjustmentValue, newBatchCost, changeReason, ...cleanData } = formData;
+           await updateInventoryItem(item.id, { 
+             ...cleanData, 
+             lowStockThreshold: parseFloat(formData.lowStockThreshold) || 0, 
+             costPrice: parseFloat(formData.costPrice) || 0, 
+             price: parseFloat(formData.price) || 0,
+             expiryDate: cleanData.expiryDate ? new Date(cleanData.expiryDate) : undefined
+           });
            router.refresh();
         }
       } else {
-        await createInventoryItem({ ...formData, quantity: parseFloat(formData.quantity), lowStockThreshold: parseFloat(formData.lowStockThreshold), costPrice: parseFloat(formData.costPrice), price: parseFloat(formData.price) } as any);
+        const { adjustmentValue, newBatchCost, changeReason, ...cleanData } = formData;
+        await createInventoryItem({ 
+          ...cleanData, 
+          quantity: parseFloat(formData.quantity) || 0, 
+          lowStockThreshold: parseFloat(formData.lowStockThreshold) || 0, 
+          costPrice: parseFloat(formData.costPrice) || 0, 
+          price: parseFloat(formData.price) || 0,
+          expiryDate: cleanData.expiryDate ? new Date(cleanData.expiryDate) : undefined
+        });
         router.refresh();
       }
       onOpenChange(false);

@@ -157,16 +157,16 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
     setLoading(true);
     
     try {
-      const payload = {
+        const payload = {
         ...formData,
-        price: parseFloat(formData.price),
-        preparationTime: parseInt(formData.preparationTime),
-        calories: formData.calories ? parseInt(formData.calories) : undefined,
-        protein: formData.protein ? parseFloat(formData.protein) : undefined,
-        carbs: formData.carbs ? parseFloat(formData.carbs) : undefined,
-        fats: formData.fats ? parseFloat(formData.fats) : undefined,
-        spiciness: parseInt(formData.spiciness),
-        costPrice: formData.costPrice ? parseFloat(formData.costPrice) : undefined,
+        price: parseFloat(formData.price) || 0,
+        preparationTime: parseInt(formData.preparationTime) || 15,
+        calories: formData.calories ? (parseInt(formData.calories) || 0) : undefined,
+        protein: formData.protein ? (parseFloat(formData.protein) || 0) : undefined,
+        carbs: formData.carbs ? (parseFloat(formData.carbs) || 0) : undefined,
+        fats: formData.fats ? (parseFloat(formData.fats) || 0) : undefined,
+        spiciness: parseInt(formData.spiciness) || 0,
+        costPrice: formData.costPrice ? (parseFloat(formData.costPrice) || 0) : undefined,
         allergens: formData.allergens.split(',').map(s => s.trim()).filter(s => s),
         ingredients: formData.ingredients.split(',').map(s => s.trim()).filter(s => s),
         media: formData.media.map((m: any) => ({
