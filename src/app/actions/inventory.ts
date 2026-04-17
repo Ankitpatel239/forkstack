@@ -312,3 +312,54 @@ export async function checkoutItems(itemsToDeduct: { id: string, quantity: numbe
   revalidatePath('/vendor/inventory');
   return { success: true };
 }
+
+export async function getInventoryCategories() {
+  const vendor = await requireVendor();
+  return await prisma.inventoryCategory.findMany({
+    where: { vendorId: vendor.id },
+    orderBy: { name: 'asc' }
+  });
+}
+
+export async function upsertInventoryCategory(name: string, id?: string) {
+  const vendor = await requireVendor();
+  if (id) {
+    const updated = await prisma.inventoryCategory.update({
+      where: { id, vendorId: vendor.id },
+      data: { name }
+    });
+    revalidatePath('/vendor/inventory');
+    return updated;
+  }
+  const created = await prisma.inventoryCategory.create({
+    data: { name, vendorId: vendor.id }
+  });
+  revalidatePath('/vendor/inventory');
+  return created;
+}
+
+export async function deleteInventoryCategory(id: string) {
+  const vendor = await requireVendor();
+  await prisma.inventoryCategory.delete({
+    where: { id, vendorId: vendor.id }
+  });
+  revalidatePath('/vendor/inventory');
+  return { success: true };
+}
+
+export async function getGlobalInventoryHistory(startDate: Date, endDate: Date) {
+  const vendor = await requireVendor();
+  return await prisma.stockHistory.findMany({
+    where: {
+      inventoryItem: { vendorId: vendor.id },
+      createdAt: {
+        gte: startDate,
+        lte: endDate
+      }
+    },
+    include: {
+      inventoryItem: true
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+}

@@ -55,6 +55,7 @@ import {
 import { InventoryDialog } from './InventoryDialog';
 import { CodeGeneratorDialog } from './CodeGeneratorDialog';
 import { ItemAnalysisDialog } from './ItemAnalysisDialog';
+import { GlobalAnalysisDialog } from './GlobalAnalysisDialog';
 import { BulkTagDialog } from './BulkTagDialog';
 import { archiveInventoryItem, deleteInventoryItem, getItemHistory } from '@/app/actions/inventory';
 import { seedVendorInventory } from '@/app/actions/seed-inventory';
@@ -64,6 +65,8 @@ import Link from 'next/link';
 
 export default function InventoryClientPage({ initialItems }: { initialItems: any[] }) {
   const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -75,6 +78,7 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
   const [codeGenItem, setCodeGenItem] = useState<any>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkPrintOpen, setIsBulkPrintOpen] = useState(false);
+  const [isGlobalAnalysisOpen, setIsGlobalAnalysisOpen] = useState(false);
 
   const filteredItems = initialItems.filter(i => 
     i.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -82,6 +86,12 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
     i.category?.toLowerCase().includes(search.toLowerCase()) ||
     i.brand?.toLowerCase().includes(search.toLowerCase()) ||
     i.location?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const currentItems = filteredItems.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const lowStockItems = initialItems.filter(i => i.quantity <= i.lowStockThreshold);
@@ -179,8 +189,16 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
              disabled={isSeeding}
              className="h-9 rounded-lg border-zinc-800 bg-transparent text-zinc-500 text-[10px] font-bold px-4 hover:bg-zinc-900"
            >
-             {isSeeding ? "..." : <Layers className="w-3 h-3 mr-2" />}
+             <Layers className="w-3 h-3 mr-2" />
              Sample Data
+           </Button>
+           <Button 
+             variant="outline"
+             onClick={() => setIsGlobalAnalysisOpen(true)}
+             className="h-9 rounded-lg border-zinc-800 bg-transparent text-zinc-500 text-[10px] font-black px-4 hover:bg-zinc-900"
+           >
+             <BarChart3 className="w-3 h-3 mr-2 text-emerald-500" />
+             Strategic Intel
            </Button>
            <Link href="/vendor/inventory/sell">
              <Button 
@@ -230,7 +248,7 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
         <input 
           type="text" 
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
           placeholder="Filter catalog..." 
           className="bg-transparent border-none focus:ring-0 text-xs font-medium flex-1 outline-none text-white tracking-tight" 
         />
@@ -243,7 +261,7 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
               <tr>
                 <th className="px-5 py-3 w-10">
                    <Checkbox 
-                     checked={selectedIds.length > 0 && selectedIds.length === filteredItems.length}
+                     checked={selectedIds.length > 0 && selectedIds.length === currentItems.length}
                      onCheckedChange={toggleSelectAll}
                      className="border-zinc-800 data-[state=checked]:bg-emerald-500 data-[state=checked]:text-zinc-950"
                    />
@@ -256,10 +274,10 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-900/50">
-              {filteredItems.length === 0 ? (
-                <tr><td colSpan={5} className="py-20 text-center text-zinc-800 font-bold uppercase text-[10px]">Empty Catalog</td></tr>
+              {currentItems.length === 0 ? (
+                <tr><td colSpan={6} className="py-20 text-center text-zinc-800 font-bold uppercase text-[10px]">Empty Catalog</td></tr>
               ) : (
-                filteredItems.map((item) => {
+                currentItems.map((item) => {
                   const activeBatches = item.batches?.filter((b: any) => !b.isSoldOut && b.quantity > 0)
                     .sort((a: any, b: any) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime());
                   const itemValuation = (activeBatches || []).reduce((acc: number, b: any) => acc + (b.quantity * b.costPrice), 0);
@@ -301,7 +319,7 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
                                   <Tooltip key={batch.id}>
                                      <TooltipTrigger asChild>
                                         <div 
-                                          className={`h-full cursor-help ${bIdx === 0 ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+                                          className={`h-full cursor-help ${bIdx === 0 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'bg-zinc-700'}`}
                                           style={{ width: `${(batch.quantity / Math.max(1, item.quantity)) * 100}%` }}
                                         />
                                      </TooltipTrigger>
@@ -312,6 +330,19 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
                                   </Tooltip>
                                ))}
                             </div>
+                            {activeBatches && activeBatches.length > 0 && (
+                               <div className="flex items-center gap-1.5 mt-1.5 animate-in fade-in duration-700">
+                                  <div className="px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md">
+                                     <p className="text-[7px] font-black uppercase text-emerald-500 tracking-tighter flex items-center gap-1">
+                                        <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                                        FIFO: {activeBatches[0].quantity} {item.unit}
+                                     </p>
+                                  </div>
+                                  {activeBatches.length > 1 && (
+                                     <span className="text-[7px] font-bold text-zinc-700 uppercase">+{activeBatches.length - 1} Batches</span>
+                                  )}
+                               </div>
+                            )}
                          </div>
                       </td>
                       <td className="px-5 py-2.5">
@@ -353,6 +384,51 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="bg-zinc-950/80 border-t border-zinc-900 px-5 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">
+                Node {currentPage} <span className="text-zinc-800 mx-1">/</span> {totalPages || 1}
+              </span>
+              <div className="flex gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`h-6 w-6 rounded-md text-[9px] font-black transition-all ${
+                        currentPage === pageNum 
+                        ? 'bg-emerald-500 text-zinc-950' 
+                        : 'bg-zinc-900 text-zinc-600 hover:text-white'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => prev - 1)}
+                className="h-8 border-zinc-800 bg-transparent text-zinc-500 text-[9px] font-bold px-3 hover:bg-zinc-900"
+              >
+                Prev
+              </Button>
+              <Button
+                variant="outline"
+                disabled={currentPage === totalPages || totalPages === 0}
+                onClick={() => setCurrentPage(prev => prev + 1)}
+                className="h-8 border-zinc-800 bg-transparent text-zinc-500 text-[9px] font-bold px-3 hover:bg-zinc-900"
+              >
+                Next
+              </Button>
+            </div>
         </div>
       </div>
 
@@ -405,6 +481,11 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
         onOpenChange={(open) => !open && setAnalysisItem(null)}
         item={analysisItem}
         history={historyData}
+      />
+
+      <GlobalAnalysisDialog 
+        open={isGlobalAnalysisOpen}
+        onOpenChange={setIsGlobalAnalysisOpen}
       />
 
       <BulkTagDialog 

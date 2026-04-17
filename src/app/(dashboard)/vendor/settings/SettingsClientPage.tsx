@@ -57,6 +57,11 @@ import { toast } from 'sonner';
 
 import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
+import { 
+  getInventoryCategories, 
+  upsertInventoryCategory, 
+  deleteInventoryCategory 
+} from '@/app/actions/inventory';
 
 export function SettingsClientPage({ vendor, initialDrives = [] }: { vendor: any, initialDrives: any[] }) {
   const searchParams = useSearchParams();
@@ -98,6 +103,46 @@ export function SettingsClientPage({ vendor, initialDrives = [] }: { vendor: any
     logoUrl: vendor.logoUrl || ''
   });
 
+  const [inventoryCategories, setInventoryCategories] = useState<any[]>([]);
+  const [newCatName, setNewCatName] = useState('');
+  const [catLoading, setCatLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'Inventory Catalog') {
+      loadCategories();
+    }
+  }, [activeTab]);
+
+  const loadCategories = async () => {
+    const cats = await getInventoryCategories();
+    setInventoryCategories(cats);
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCatName) return;
+    setCatLoading(true);
+    try {
+      await upsertInventoryCategory(newCatName);
+      setNewCatName('');
+      loadCategories();
+      toast.success('Category registered');
+    } catch (e) {
+      toast.error('Failed to create category');
+    } finally {
+      setCatLoading(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    try {
+      await deleteInventoryCategory(id);
+      loadCategories();
+      toast.success('Category purged');
+    } catch (e) {
+      toast.error('Failed to delete');
+    }
+  };
+
   const handleSave = async () => {
     setLoading(true);
     try {
@@ -116,6 +161,7 @@ export function SettingsClientPage({ vendor, initialDrives = [] }: { vendor: any
     { label: 'Platform Config', icon: Zap, sub: 'System parameters' },
     { label: 'Notifications', icon: Bell, sub: 'Alert nodes' },
     { label: 'Security & Access', icon: Lock, sub: 'Encryption & locks' },
+    { label: 'Inventory Catalog', icon: Box, sub: 'Categories & Units' },
     { label: 'Billing & Tiers', icon: CreditCard, sub: 'Fiscal cycles' },
   ];
 
@@ -479,6 +525,61 @@ export function SettingsClientPage({ vendor, initialDrives = [] }: { vendor: any
                </div>
             </div>
          )}
+
+         {activeTab === 'Inventory Catalog' && (
+            <div className="bg-zinc-900 shadow-2xl border border-zinc-800 rounded-3xl overflow-hidden">
+               <div className="p-10 border-b border-zinc-800 bg-zinc-950/20">
+                  <h2 className="text-2xl font-black text-white italic uppercase tracking-tighter">Inventory Taxonomy</h2>
+                  <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Manage classifications for your batch integrity and stock portfolio.</p>
+               </div>
+               
+               <div className="p-10 space-y-10">
+                  <div className="flex gap-4">
+                     <div className="flex-1 relative group">
+                        <Tags className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-emerald-500 transition-colors" size={18} />
+                        <Input 
+                          value={newCatName}
+                          onChange={e => setNewCatName(e.target.value)}
+                          placeholder="New category label..."
+                          className="bg-zinc-950 border-zinc-800 h-14 pl-14 text-zinc-100 font-black italic rounded-2xl focus:border-emerald-500/50" 
+                        />
+                     </div>
+                     <Button 
+                       onClick={handleAddCategory}
+                       disabled={catLoading}
+                       className="h-14 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest px-8 rounded-2xl shadow-lg transition-all active:scale-95"
+                     >
+                       {catLoading ? <Loader2 className="animate-spin" /> : <><Plus size={20} className="mr-2" /> Bind Class</>}
+                     </Button>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                     {inventoryCategories.length === 0 ? (
+                        <div className="col-span-3 py-10 text-center border border-dashed border-zinc-800 rounded-2xl opacity-40">
+                           <p className="text-[10px] font-black uppercase tracking-widest">No taxonomy defined.</p>
+                        </div>
+                     ) : (
+                        inventoryCategories.map((cat: any) => (
+                           <div key={cat.id} className="bg-zinc-950 border border-zinc-800 p-5 rounded-2xl flex items-center justify-between group hover:border-emerald-500/30 transition-all">
+                              <div className="flex items-center gap-3">
+                                 <div className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-600 group-hover:text-emerald-500 transition-colors">
+                                    <Tags size={14} />
+                                 </div>
+                                 <span className="text-[11px] font-black uppercase tracking-tight text-white">{cat.name}</span>
+                              </div>
+                              <button 
+                                 onClick={() => handleDeleteCategory(cat.id)}
+                                 className="opacity-0 group-hover:opacity-100 p-2 text-zinc-700 hover:text-red-500 transition-all"
+                              >
+                                 <Trash2 size={14} />
+                              </button>
+                           </div>
+                        ))
+                     )}
+                  </div>
+               </div>
+            </div>
+          )}
 
          {['Platform Config', 'Notifications', 'Billing & Tiers'].includes(activeTab) && (
             <div className="bg-zinc-950/20 border-2 border-dashed border-zinc-900 rounded-[3rem] py-32 text-center">

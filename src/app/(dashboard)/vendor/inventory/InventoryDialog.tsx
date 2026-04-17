@@ -26,7 +26,13 @@ import {
   PlusCircle,
   AlertTriangle
 } from 'lucide-react';
-import { createInventoryItem, logStockChange, updateStockBatch, updateInventoryItem } from '@/app/actions/inventory';
+import { 
+  createInventoryItem, 
+  logStockChange, 
+  updateStockBatch, 
+  updateInventoryItem,
+  getInventoryCategories
+} from '@/app/actions/inventory';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
@@ -62,7 +68,8 @@ interface InventoryDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const CATEGORIES = [
+// Default categories fallback
+const DEFAULT_CATEGORIES = [
   "Raw Materials", "Finished Goods", "FMCG", "Electronics", "Textiles", 
   "Hardware", "Packaging", "Office Supplies", "Furniture", "Automotive", 
   "Food & Beverages", "Dairy", "Produce", "Others"
@@ -76,6 +83,7 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
   const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
   const [editQty, setEditQty] = useState<string>('');
   const [editReason, setEditReason] = useState<string>('');
+  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
   
   const [formData, setFormData] = useState({
     name: item?.name || '',
@@ -98,6 +106,13 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
 
   useEffect(() => {
     if (open) {
+      // Fetch dynamic categories
+      getInventoryCategories().then(cats => {
+        if (cats && cats.length > 0) {
+          setCategories(cats.map(c => c.name));
+        }
+      });
+
       setMode(item ? 'REPLENISH' : 'DETAILS');
       setAdjustmentType('IN');
       setEditingBatchId(null);
@@ -270,7 +285,7 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
                     <Select value={formData.category} onValueChange={v => setFormData({...formData, category: v})}>
                       <SelectTrigger className="bg-zinc-900 h-10 rounded-lg text-xs font-bold"><SelectValue /></SelectTrigger>
                       <SelectContent className="bg-zinc-950 border-zinc-800 text-white">
-                        {CATEGORIES.map(cat => <SelectItem key={cat} value={cat} className="text-xs py-2">{cat}</SelectItem>)}
+                        {categories.map(cat => <SelectItem key={cat} value={cat} className="text-xs py-2">{cat}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>

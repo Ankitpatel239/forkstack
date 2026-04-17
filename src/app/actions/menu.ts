@@ -236,3 +236,109 @@ export async function toggleMenuItemAvailability(id: string, currentStatus: bool
 
   revalidatePath('/vendor/menu/items');
 }
+
+// OFFERS
+export async function createOffer(data: any) {
+  const vendor = await requireVendor();
+  const offer = await prisma.offer.create({
+    data: {
+      title: data.title,
+      description: data.description,
+      type: data.type,
+      value: Number(data.value) || 0,
+      minOrderValue: Number(data.minOrderValue) || 0,
+      startDate: new Date(data.startDate),
+      endDate: new Date(data.endDate),
+      validDays: data.validDays || [],
+      vendorId: vendor.id,
+      items: data.menuItemIds ? {
+        create: data.menuItemIds.map((id: string) => ({ menuItemId: id }))
+      } : undefined
+    }
+  });
+  revalidatePath('/vendor/menu/offers');
+  return offer;
+}
+
+export async function updateOffer(id: string, data: any) {
+  const vendor = await requireVendor();
+  
+  // Delete old items if updating
+  if (data.menuItemIds) {
+    await prisma.offerItem.deleteMany({ where: { offerId: id } });
+  }
+
+  const offer = await prisma.offer.update({
+    where: { id, vendorId: vendor.id },
+    data: {
+      title: data.title,
+      description: data.description,
+      type: data.type,
+      value: Number(data.value) || 0,
+      minOrderValue: Number(data.minOrderValue) || 0,
+      startDate: data.startDate ? new Date(data.startDate) : undefined,
+      endDate: data.endDate ? new Date(data.endDate) : undefined,
+      validDays: data.validDays,
+      isActive: data.isActive,
+      items: data.menuItemIds ? {
+        create: data.menuItemIds.map((id: string) => ({ menuItemId: id }))
+      } : undefined
+    }
+  });
+  revalidatePath('/vendor/menu/offers');
+  return offer;
+}
+
+export async function getOffers() {
+  const vendor = await requireVendor();
+  return prisma.offer.findMany({
+    where: { vendorId: vendor.id },
+    include: { items: { include: { menuItem: true } } },
+    orderBy: { createdAt: 'desc' }
+  });
+}
+
+export async function deleteOffer(id: string) {
+  const vendor = await requireVendor();
+  await prisma.offer.delete({ where: { id, vendorId: vendor.id } });
+  revalidatePath('/vendor/menu/offers');
+  return { success: true };
+}
+
+// COMBOS
+export async function createCombo(data: any) {
+  const vendor = await requireVendor();
+  const combo = await prisma.combo.create({
+    data: {
+      name: data.name,
+      description: data.description,
+      totalPrice: Number(data.totalPrice) || 0,
+      discount: Number(data.discount) || 0,
+      vendorId: vendor.id,
+      items: {
+        create: data.items.map((it: any) => ({
+          menuItemId: it.menuItemId,
+          quantity: Number(it.quantity) || 1
+        }))
+      }
+    }
+  });
+  revalidatePath('/vendor/menu/combos');
+  return combo;
+}
+
+export async function getCombos() {
+  const vendor = await requireVendor();
+  return prisma.combo.findMany({
+    where: { vendorId: vendor.id },
+    include: { items: { include: { menuItem: true } } },
+    orderBy: { createdAt: 'desc' }
+  });
+}
+
+export async function deleteCombo(id: string) {
+  const vendor = await requireVendor();
+  await prisma.combo.delete({ where: { id, vendorId: vendor.id } });
+  revalidatePath('/vendor/menu/combos');
+  return { success: true };
+}

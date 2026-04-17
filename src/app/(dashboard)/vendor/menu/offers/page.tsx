@@ -1,3 +1,7 @@
-export default function Page() {
-  return <div>offers Page</div>;
+import { getOffers } from "@/app/actions/menu";
+import OffersClientPage from "./OffersClientPage";
+
+export default async function Page() {
+  const offers = await getOffers();
+  return <OffersClientPage initialOffers={offers} />;
 }
