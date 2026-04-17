@@ -107,7 +107,7 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
   useEffect(() => {
     if (open) {
       // Fetch dynamic categories
-      getInventoryCategories().then(cats => {
+      getInventoryCategories().then((cats: any) => {
         if (cats && cats.length > 0) {
           setCategories(cats.map((c: any) => c.name));
         }

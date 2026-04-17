@@ -46,12 +46,12 @@ export default async function VendorPaymentsPage() {
   const totalRevenue = await prisma.payment.aggregate({
     where: { vendorId: vendor.id, status: 'COMPLETED' },
     _sum: { amount: true }
-  }).then(res => res._sum.amount || 0);
+  }).then((res: any) => res._sum.amount || 0);
 
   const totalWithdrawn = await prisma.payout.aggregate({
     where: { vendorId: vendor.id, status: 'COMPLETED' },
     _sum: { amount: true }
-  }).then(res => res._sum.amount || 0);
+  }).then((res: any) => res._sum.amount || 0);
 
   const pendingPayouts = await prisma.payout.aggregate({
     where: { 
@@ -59,7 +59,7 @@ export default async function VendorPaymentsPage() {
       status: { in: ['PENDING', 'APPROVED', 'PROCESSING'] } 
     },
     _sum: { amount: true }
-  }).then(res => res._sum.amount || 0);
+  }).then((res: any) => res._sum.amount || 0);
 
   const availableBalance = totalRevenue - totalWithdrawn - pendingPayouts;
 
