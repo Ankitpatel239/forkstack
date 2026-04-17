@@ -48,7 +48,7 @@ export default async function AdminPayoutsPage() {
            { label: 'Total Volume', val: `₹${totalAmount.toLocaleString()}`, icon: Banknote, color: 'blue' },
            { label: 'Pending Processing', val: pendingCount, icon: Clock, color: 'orange' },
            { label: 'System Health', val: 'Operational', icon: CheckCircle2, color: 'emerald' },
-         ].map((s, i) => (
+         ].map((s: any, i: number) => (
            <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
                 <s.icon size={60} />
@@ -99,7 +99,7 @@ export default async function AdminPayoutsPage() {
                        </td>
                     </tr>
                   ) : (
-                    payouts.map((p) => (
+                    payouts.map((p: any) => (
                        <tr key={p.id} className="hover:bg-zinc-800/10 transition-colors group">
                           <td className="px-8 py-6">
                              <div className="flex items-center gap-4">

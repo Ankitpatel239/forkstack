@@ -45,7 +45,7 @@ export default async function AdminBillingPage() {
            { label: 'Active MRR', val: '$124.5k', icon: CreditCard, color: 'blue' },
            { label: 'Renewal Rate', val: '94.2%', icon: BadgeCheck, color: 'purple' },
            { label: 'Pending Payouts', val: '$4,200', icon: History, color: 'orange' },
-         ].map((s, i) => (
+         ].map((s: any, i: number) => (
            <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 group relative overflow-hidden">
               <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
                 <s.icon size={60} />
@@ -95,7 +95,7 @@ export default async function AdminBillingPage() {
                        </td>
                     </tr>
                   ) : (
-                    payments.map((p) => (
+                    payments.map((p: any) => (
                        <tr key={p.id} className="hover:bg-zinc-800/10 transition-colors group">
                           <td className="px-8 py-6">
                              <div className="space-y-1">
