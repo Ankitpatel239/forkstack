@@ -23,8 +23,8 @@ export default async function TablesPage() {
     orderBy: { tableNumber: 'asc' }
   });
 
-  const totalCapacity = tables.reduce((acc, t) => acc + t.capacity, 0);
-  const occupiedCount = tables.filter(t => t.status === 'OCCUPIED').length;
+  const totalCapacity = tables.reduce((acc: any, t: any) => acc + t.capacity, 0);
+  const occupiedCount = tables.filter((t: any) => t.status === 'OCCUPIED').length;
 
   return (
     <div className="space-y-10">

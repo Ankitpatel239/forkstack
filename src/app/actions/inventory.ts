@@ -88,8 +88,8 @@ async function syncItemTotals(id: string) {
 
   if (!latestItem) return;
 
-  const totalQty = latestItem.batches.reduce((acc, b) => acc + b.quantity, 0);
-  const totalValue = latestItem.batches.reduce((acc, b) => acc + (b.quantity * b.costPrice), 0);
+  const totalQty = latestItem.batches.reduce((acc: any, b: any) => acc + b.quantity, 0);
+  const totalValue = latestItem.batches.reduce((acc: any, b: any) => acc + (b.quantity * b.costPrice), 0);
   const avgCost = totalQty > 0 ? (totalValue / totalQty) : (latestItem.costPrice || 0);
 
   await prisma.inventoryItem.update({

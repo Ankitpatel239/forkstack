@@ -116,7 +116,7 @@ export async function addOrderItems(orderId: string, items: { menuItemId: string
   });
 
   // 2. Update order total
-  const additionalTotal = items.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
+  const additionalTotal = items.reduce((acc: any, item: any) => acc + (item.unitPrice * item.quantity), 0);
   const newTotal = order.totalAmount + additionalTotal;
 
   await prisma.order.update({

@@ -46,15 +46,15 @@ export function OrderClient({ vendor, table, categories }: {
     bookTable();
   }, [table.id, table.status]);
 
-  const cartItemsCount = Object.values(cart).reduce((a, b) => a + b, 0);
+  const cartItemsCount = Object.values(cart).reduce((a: any, b: any) => a + b, 0);
   
   const allItems = useMemo(() => {
-    return categories.flatMap(c => c.items);
+    return categories.flatMap((c: any) => c.items);
   }, [categories]);
 
   const cartTotal = useMemo(() => {
-    return Object.entries(cart).reduce((total, [itemId, qty]) => {
-      const item = allItems.find(i => i.id === itemId);
+    return Object.entries(cart).reduce((total: any, [itemId, qty]: [string, number]) => {
+      const item = allItems.find((i: any) => i.id === itemId);
       return total + (item?.price || 0) * qty;
     }, 0);
   }, [cart, allItems]);
@@ -79,8 +79,8 @@ export function OrderClient({ vendor, table, categories }: {
 
     setIsSubmitting(true);
     try {
-      const items = Object.entries(cart).map(([id, qty]) => {
-        const item = allItems.find(i => i.id === id);
+      const items = Object.entries(cart).map(([id, qty]: [string, number]) => {
+        const item = allItems.find((i: any) => i.id === id);
         return { menuItemId: id, quantity: qty, unitPrice: item!.price };
       });
 

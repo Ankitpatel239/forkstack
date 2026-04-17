@@ -63,10 +63,10 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
         .filter((h: any) => (h.type === 'OUT' || h.type === 'WASTE') && 
                     new Date(h.createdAt) >= date && 
                     new Date(h.createdAt) < nextDay)
-        .reduce((sum, h) => sum + Math.abs(h.quantity), 0);
+        .reduce((sum: any, h: any) => sum + Math.abs(h.quantity), 0);
     });
 
-    const totalSales = dailyValues.reduce((a, b) => a + b, 0);
+    const totalSales = dailyValues.reduce((a: any, b: any) => a + b, 0);
     const velocity = totalSales / 7;
     
     // Compare with previous 7 days for growth
@@ -150,7 +150,7 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
                   </div>
                   <div className="bg-zinc-900/40 p-4 rounded-2xl border border-zinc-900">
                      <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Weekly Volume</p>
-                     <h4 className="text-xl font-black italic text-emerald-500 tracking-tighter">{stats.daily.reduce((a,b)=>a+b,0)} Units</h4>
+                     <h4 className="text-xl font-black italic text-emerald-500 tracking-tighter">{stats.daily.reduce((a: any, b: any) => a + b, 0)} Units</h4>
                   </div>
                </div>
 
