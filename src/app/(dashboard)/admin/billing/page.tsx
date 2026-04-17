@@ -23,7 +23,7 @@ export default async function AdminBillingPage() {
     take: 50
   });
 
-  const totalRevenue = payments.reduce((acc, p) => acc + p.amount, 0);
+  const totalRevenue = payments.reduce((acc: number, p) => acc + p.amount, 0);
 
   return (
     <div className="space-y-10 pb-20">
