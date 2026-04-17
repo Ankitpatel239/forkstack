@@ -24,7 +24,7 @@ export default async function AdminPayoutsPage() {
     orderBy: { requestedAt: 'desc' }
   });
 
-  const pendingCount = payouts.filter(p => p.status === 'PENDING').length;
+  const pendingCount = payouts.filter((p: any) => p.status === 'PENDING').length;
   const totalAmount = payouts.reduce((acc: number, p: any) => acc + (p.amount || 0), 0);
 
   return (

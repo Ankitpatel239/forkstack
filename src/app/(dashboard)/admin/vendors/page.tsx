@@ -86,7 +86,7 @@ export default async function AdminVendorsPage() {
                  </td>
                </tr>
             ) : (
-                vendors.map((vendor) => (
+                vendors.map((vendor: any) => (
                     <tr key={vendor.id} className="hover:bg-zinc-800/10 transition-colors group">
                       <td className="px-6 py-6">
                         <div className="flex items-center gap-5">

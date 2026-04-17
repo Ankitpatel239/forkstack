@@ -86,17 +86,17 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
       return;
     }
     setCart(prev => {
-      const existing = prev.find(i => i.id === item.id);
+      const existing = prev.find((i: any) => i.id === item.id);
       if (existing) {
         if (existing.cartQuantity >= item.quantity) return prev;
-        return prev.map(i => i.id === item.id ? { ...i, cartQuantity: i.cartQuantity + 1 } : i);
+        return prev.map((i: any) => i.id === item.id ? { ...i, cartQuantity: i.cartQuantity + 1 } : i);
       }
       return [...prev, { ...item, cartQuantity: 1 }];
     });
   };
 
   const updateCartQuantity = (id: string, delta: number) => {
-    setCart(prev => prev.map(i => {
+    setCart(prev => prev.map((i: any) => {
       if (i.id === id) {
         const newQty = Math.max(0, i.cartQuantity + delta);
         if (newQty > i.quantity) return i;
@@ -113,7 +113,7 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
     if (cart.length === 0) return;
     setIsProcessing(true);
     try {
-      await checkoutItems(cart.map(i => ({ id: i.id, quantity: i.cartQuantity })));
+      await checkoutItems(cart.map((i: any) => ({ id: i.id, quantity: i.cartQuantity })));
       toast.success("Checkout success");
       window.location.reload(); 
     } catch (error) {
@@ -155,7 +155,7 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
 
         <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {filteredItems.map(item => (
+              {filteredItems.map((item: any) => (
                 <button 
                   key={item.id}
                   onClick={() => addToCart(item)}
@@ -206,7 +206,7 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
                   <p className="text-[10px] font-bold uppercase tracking-widest">Basket Empty</p>
                </div>
             ) : (
-               cart.map(item => (
+               cart.map((item: any) => (
                   <div key={item.id} className="flex items-center justify-between gap-3 bg-zinc-900/40 p-3 rounded-xl border border-zinc-900/50 group animate-in slide-in-from-right-2 duration-300">
                      <div className="flex-1 min-w-0">
                         <p className="font-bold text-[11px] text-zinc-200 truncate tracking-tight">{item.name}</p>

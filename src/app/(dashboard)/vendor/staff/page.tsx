@@ -33,7 +33,7 @@ export default async function WorkforcePage() {
 
   const attendance = await prisma.attendance.findMany({
     where: {
-      userId: { in: staff.map(s => s.userId) },
+      userId: { in: staff.map((s: any) => s.userId) },
       date: { gte: today }
     }
   });
@@ -41,7 +41,7 @@ export default async function WorkforcePage() {
   // Fetch recent salary records
   const salaries = await prisma.salaryRecord.findMany({
     where: {
-      userId: { in: staff.map(s => s.userId) }
+      userId: { in: staff.map((s: any) => s.userId) }
     },
     orderBy: { createdAt: 'desc' },
     take: 10

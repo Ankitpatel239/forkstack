@@ -72,7 +72,7 @@ export default function RegisterPage() {
                 { icon: <Store className="h-5 w-5 text-emerald-500" />, text: "QR Ordering & Table Management" },
                 { icon: <Zap className="h-5 w-5 text-emerald-500" />, text: "WhatsApp Integration & Alerts" },
                 { icon: <Lock className="h-5 w-5 text-emerald-500" />, text: "Secure Multi-Role Access Control" }
-              ].map((item, i) => (
+              ].map((item: any, i: number) => (
                 <div key={i} className="flex items-center gap-4 text-zinc-300 font-bold tracking-tight">
                   <div className="h-10 w-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center">
                     {item.icon}

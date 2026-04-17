@@ -41,7 +41,7 @@ export default function AdminReportsPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-         {channelData.map((channel, i) => (
+         {channelData.map((channel: any, i: any) => (
            <Card key={i} className="bg-zinc-900/40 border-zinc-800 shadow-2xl relative overflow-hidden group">
               <div className={`absolute top-0 right-0 p-6 opacity-5 -mr-4 -mt-4 text-${channel.color}-500 transform group-hover:scale-125 transition-transform`}>
                  <Zap size={100} />
@@ -85,7 +85,7 @@ export default function AdminReportsPage() {
                     <div className="w-full border-t border-zinc-600" />
                  </div>
 
-                 {[45, 60, 50, 85, 95, 75, 55, 60, 85, 100, 90, 80].map((h, i) => (
+                 {[45, 60, 50, 85, 95, 75, 55, 60, 85, 100, 90, 80].map((h: any, i: any) => (
                    <div key={i} className="flex-1 group relative h-full flex flex-col justify-end">
                       <div className="absolute bottom-0 w-full h-full bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors rounded-t-lg" />
                       <div 
@@ -118,7 +118,7 @@ export default function AdminReportsPage() {
                    { label: 'Basic', val: '542', pct: '42%', color: 'emerald' },
                    { label: 'Pro', val: '412', pct: '32%', color: 'blue' },
                    { label: 'Enterprise', val: '330', pct: '26%', color: 'purple' }
-                 ].map((tier, i) => (
+                 ].map((tier: any, i: any) => (
                    <div key={i} className="space-y-1.5">
                       <div className="flex justify-between text-[11px] font-black uppercase tracking-widest text-zinc-500">
                          <span>{tier.label}</span>
@@ -161,7 +161,7 @@ export default function AdminReportsPage() {
          </CardHeader>
          <CardContent className="p-0">
             <div className="divide-y divide-zinc-800 text-[11px]">
-               {[1, 2, 3, 4, 5].map((i) => (
+               {[1, 2, 3, 4, 5].map((i: any) => (
                   <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-zinc-800/10 transition-colors group">
                      <div className="flex items-center gap-4">
                         <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]" />

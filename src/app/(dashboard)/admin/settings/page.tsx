@@ -43,7 +43,7 @@ export default function AdminSettingsPage() {
       <div className="grid gap-10 lg:grid-cols-12">
         {/* Sidebar Nav */}
         <div className="lg:col-span-3 space-y-2">
-           {sections.map((item, i) => (
+           {sections.map((item: any, i: any) => (
              <button 
                key={i} 
                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${item.active ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20 shadow-lg shadow-emerald-500/5' : 'text-zinc-500 hover:text-white hover:bg-zinc-900/50'}`}
@@ -81,7 +81,7 @@ export default function AdminSettingsPage() {
                       { label: 'WhatsApp QR Engine', desc: 'Allows vendors to link business accounts.', icon: MessageSquare, active: true },
                       { label: 'Mobile Table POS', desc: 'Enables customer-facing QR menu ordering.', icon: Smartphone, active: true },
                       { label: 'Automated Fiscal Audit', desc: 'Monthly revenue snapshot generation.', icon: Database, active: false }
-                    ].map((service, i) => (
+                    ].map((service: any, i: any) => (
                       <div key={i} className="flex items-center justify-between p-4 bg-zinc-950/50 rounded-2xl border border-zinc-800 hover:border-zinc-700 transition-colors group">
                         <div className="flex items-center gap-4">
                            <div className={`h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center ${service.active ? 'text-emerald-500' : 'text-zinc-700'}`}>

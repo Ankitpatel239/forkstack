@@ -84,8 +84,8 @@ export default function CategoryClientPage({ initialCategories }: { initialCateg
 
   const buildTree = (cats: any[], parentId: string | null = null): any[] => {
     return cats
-      .filter(c => c.parentId === parentId)
-      .map(c => ({
+      .filter((c: any) => c.parentId === parentId)
+      .map((c: any) => ({
         ...c,
         children: buildTree(cats, c.id)
       }));
@@ -114,7 +114,7 @@ export default function CategoryClientPage({ initialCategories }: { initialCateg
           </div>
 
           <div className="space-y-4 relative z-10">
-            {categoryTree.map(category => (
+            {categoryTree.map((category: any) => (
               <CategoryNode 
                 key={category.id} 
                 category={category} 
@@ -145,7 +145,7 @@ export default function CategoryClientPage({ initialCategories }: { initialCateg
               { label: 'Easy to Organize', icon: Check },
               { label: 'Sub-category Support', icon: Check },
               { label: 'Instant Updates', icon: Check },
-            ].map(item => (
+            ].map((item: any) => (
               <div key={item.label} className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-500">
                 <item.icon size={14} className="text-emerald-500" /> {item.label}
               </div>
@@ -250,7 +250,7 @@ function CategoryNode({ category, onEdit, onAddSub, onDelete, depth = 0 }: { cat
 
       {isOpen && hasChildren && (
         <div className="pl-12 border-l border-zinc-900 space-y-2 mt-2 ml-6">
-          {category.children!.map(child => (
+          {category.children!.map((child: any) => (
             <CategoryNode 
               key={child.id} 
               category={child} 

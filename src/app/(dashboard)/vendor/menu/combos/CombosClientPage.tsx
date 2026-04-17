@@ -75,7 +75,7 @@ export default function CombosClientPage({ initialCombos }: { initialCombos: any
             <p className="text-[10px] font-black uppercase tracking-[0.3em]">No synthesized bundles detected.</p>
           </div>
         ) : (
-          filteredCombos.map((combo) => (
+          filteredCombos.map((combo: any) => (
             <div key={combo.id} className="bg-zinc-900/40 border border-zinc-800/80 p-8 rounded-[2.5rem] group hover:border-emerald-500/20 transition-all relative overflow-hidden shadow-2xl">
               <div className="flex justify-between items-start relative z-10">
                 <div className="space-y-4">

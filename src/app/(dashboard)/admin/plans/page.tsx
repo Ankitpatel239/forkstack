@@ -49,7 +49,7 @@ export default async function AdminPlansPage() {
       </div>
 
       <div className="grid gap-8 md:grid-cols-3">
-        {mockPlans.map((plan) => (
+        {mockPlans.map((plan: any) => (
           <div key={plan.id} className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl relative group">
              {/* Header */}
              <div className="p-8 border-b border-zinc-800 bg-zinc-950/20">
@@ -91,7 +91,7 @@ export default async function AdminPlansPage() {
              <div className="p-8 space-y-6">
                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Entitlements:</p>
                 <div className="space-y-3">
-                   {plan.features.map((feature, i) => (
+                   {plan.features.map((feature: any, i: any) => (
                       <div key={i} className="flex items-center gap-3 text-xs font-bold text-zinc-400">
                          <div className="h-5 w-5 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
                             <Check size={12} strokeWidth={4} />

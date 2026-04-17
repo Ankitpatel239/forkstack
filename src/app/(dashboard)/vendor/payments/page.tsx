@@ -86,7 +86,7 @@ export default async function VendorPaymentsPage() {
           { label: 'Total Revenue', val: `₹${totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'blue' },
           { label: 'Pending Payouts', val: `₹${pendingPayouts.toLocaleString()}`, icon: Clock, color: 'orange' },
           { label: 'Total Withdrawn', val: `₹${totalWithdrawn.toLocaleString()}`, icon: History, color: 'zinc' },
-        ].map((s, i) => (
+        ].map((s: any, i: number) => (
           <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 group relative overflow-hidden">
             <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
               <s.icon size={60} />
@@ -111,7 +111,7 @@ export default async function VendorPaymentsPage() {
             {vendor.payments.length === 0 ? (
               <div className="p-10 text-center text-zinc-500 text-[10px] font-black uppercase tracking-widest">No transactions yet</div>
             ) : (
-              vendor.payments.map((p) => (
+              vendor.payments.map((p: any) => (
                 <div key={p.id} className="p-5 flex items-center justify-between hover:bg-zinc-800/20 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
@@ -145,7 +145,7 @@ export default async function VendorPaymentsPage() {
             {vendor.payouts.length === 0 ? (
               <div className="p-10 text-center text-zinc-500 text-[10px] font-black uppercase tracking-widest">No payout requests found</div>
             ) : (
-              vendor.payouts.map((p) => (
+              vendor.payouts.map((p: any) => (
                 <div key={p.id} className="p-5 flex items-center justify-between hover:bg-zinc-800/20 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${

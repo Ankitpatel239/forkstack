@@ -79,7 +79,7 @@ export default function KitchenDisplay() {
 
               <div className="border-t pt-2">
                 <ul className="space-y-1">
-                  {order.items.map((item, idx) => (
+                  {order.items.map((item: any, idx: any) => (
                     <li key={idx} className="text-sm">
                       {item.quantity}× {item.name}
                     </li>

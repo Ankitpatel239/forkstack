@@ -78,7 +78,7 @@ export default async function MenuItemsPage() {
                   </td>
                 </tr>
               ) : (
-                items.map((item) => (
+                items.map((item: any) => (
                   <MenuItemRow key={item.id} item={item} categories={categories} />
                 ))
               )}

@@ -143,7 +143,7 @@ export function BulkTagDialog({ items, open, onOpenChange }: BulkTagDialogProps)
             `}} />
 
             <div id="printable-area" className="grid grid-cols-2 gap-4">
-               {items.map((item) => (
+               {items.map((item: any) => (
                  <div key={item.id} className="print-tag bg-white text-black p-4 rounded-2xl border border-zinc-200 shadow-sm flex flex-col items-center gap-3 relative overflow-hidden min-h-[250px] justify-between text-center">
                     {/* Design Header */}
                     <div className="w-full">

@@ -65,7 +65,7 @@ export default async function TablesPage() {
              <p className="text-sm text-zinc-600 font-bold max-w-xs">Start by adding your first dining table to generate a unique QR code.</p>
           </div>
         ) : (
-          tables.map((table) => (
+          tables.map((table: any) => (
             <TableCard key={table.id} table={table} vendorSlug={vendor.tenantSlug} />
           ))
         )}

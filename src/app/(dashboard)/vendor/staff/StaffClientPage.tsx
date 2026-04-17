@@ -70,7 +70,7 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
       </div>
 
       <div className="grid gap-6 md:grid-cols-4">
-        {stats.map((s, i) => (
+        {stats.map((s: any, i: number) => (
           <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 group relative overflow-hidden shadow-xl">
             <div className={`absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-${s.color}-500`}>
               <s.icon size={60} />

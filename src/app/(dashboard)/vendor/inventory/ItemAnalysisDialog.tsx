@@ -55,12 +55,12 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
     });
 
     // Aggregate real sales/usage (OUT, WASTE) per day
-    const dailyValues = last7Days.map(date => {
+    const dailyValues = last7Days.map((date: any) => {
       const nextDay = new Date(date);
       nextDay.setDate(date.getDate() + 1);
       
       return history
-        .filter(h => (h.type === 'OUT' || h.type === 'WASTE') && 
+        .filter((h: any) => (h.type === 'OUT' || h.type === 'WASTE') && 
                     new Date(h.createdAt) >= date && 
                     new Date(h.createdAt) < nextDay)
         .reduce((sum, h) => sum + Math.abs(h.quantity), 0);
@@ -93,11 +93,11 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
   // Small SVG Line Chart Component
   const SimpleLineChart = ({ data, color = '#10b981', height = 60 }: { data: number[], color?: string, height?: number }) => {
     const max = Math.max(...data, 1);
-    const points = data.map((d, i) => `${(i / (data.length - 1)) * 100},${height - (d / max) * height}`).join(' ');
+    const points = data.map((d: any, i: any) => `${(i / (data.length - 1)) * 100},${height - (d / max) * height}`).join(' ');
     
     return (
       <svg className="w-full" height={height} viewBox={`0 0 100 ${height}`} preserveAspectRatio="none">
-        <path d={`M 0 ${height} ${points.split(' ').map((p, i) => i === 0 ? `L ${p}` : `L ${p}`).join(' ')} L 100 ${height} Z`} fill={`${color}20` } />
+        <path d={`M 0 ${height} ${points.split(' ').map((p: any, i: any) => i === 0 ? `L ${p}` : `L ${p}`).join(' ')} L 100 ${height} Z`} fill={`${color}20` } />
         <polyline fill="none" stroke={color} strokeWidth="2" points={points} strokeLinejoin="round" />
       </svg>
     );
@@ -207,7 +207,7 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
                     { label: 'Demand Index', val: '+24%', icon: TrendingUp, color: 'text-emerald-500' },
                     { label: 'Stock Valuation', val: `₹${(item?.costPrice * item?.quantity || 0).toLocaleString()}`, icon: Package, color: 'text-blue-500' },
                     { label: 'Fulfillment Rate', val: '98.2%', icon: Activity, color: 'text-purple-500' }
-                  ].map((s, i) => (
+                  ].map((s: any, i: any) => (
                     <div key={i} className="flex items-center justify-between p-4 bg-zinc-900/40 border border-zinc-900 rounded-2xl hover:bg-zinc-900/60 transition-all">
                        <div className="flex items-center gap-3">
                           <s.icon size={16} className={s.color} />

@@ -71,19 +71,19 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
   };
 
   const metrics = useMemo(() => {
-    const sales = history.filter(h => h.type === 'OUT').reduce((acc, h) => acc + Math.abs(h.quantity), 0);
-    const intake = history.filter(h => h.type === 'IN').reduce((acc, h) => acc + Math.abs(h.quantity), 0);
-    const waste = history.filter(h => h.type === 'WASTE').reduce((acc, h) => acc + Math.abs(h.quantity), 0);
+    const sales = history.filter((h: any) => h.type === 'OUT').reduce((acc: any, h: any) => acc + Math.abs(h.quantity), 0);
+    const intake = history.filter((h: any) => h.type === 'IN').reduce((acc: any, h: any) => acc + Math.abs(h.quantity), 0);
+    const waste = history.filter((h: any) => h.type === 'WASTE').reduce((acc: any, h: any) => acc + Math.abs(h.quantity), 0);
     
     // Day-wise grouping for charts
     const intervals = eachDayOfInterval({ start: dateRange.from, end: dateRange.to });
-    const dailyData = intervals.map(day => {
+    const dailyData = intervals.map((day: any) => {
        const key = format(day, 'MMM dd');
-       const dayLogs = history.filter(h => format(new Date(h.createdAt), 'MMM dd') === key);
+       const dayLogs = history.filter((h: any) => format(new Date(h.createdAt), 'MMM dd') === key);
        return {
          day: key,
-         sales: dayLogs.filter(h => h.type === 'OUT').reduce((acc, h) => acc + Math.abs(h.quantity), 0),
-         waste: dayLogs.filter(h => h.type === 'WASTE').reduce((acc, h) => acc + Math.abs(h.quantity), 0)
+         sales: dayLogs.filter((h: any) => h.type === 'OUT').reduce((acc: any, h: any) => acc + Math.abs(h.quantity), 0),
+         waste: dayLogs.filter((h: any) => h.type === 'WASTE').reduce((acc: any, h: any) => acc + Math.abs(h.quantity), 0)
        };
     });
 
@@ -91,11 +91,11 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
   }, [history, dateRange]);
 
   const SimpleBarChart = ({ data }: { data: any[] }) => {
-    const max = Math.max(...data.map(d => d.sales), 1);
+    const max = Math.max(...data.map((d: any) => d.sales), 1);
     return (
       <TooltipProvider>
       <div className="flex items-end gap-1.5 h-32 w-full pt-6">
-        {data.map((d, i) => (
+        {data.map((d: any, i: any) => (
           <Tooltip key={i}>
             <TooltipTrigger asChild>
               <div className="flex-1 flex flex-col items-center gap-2 group cursor-pointer">
@@ -250,7 +250,7 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
                        ) : history.length === 0 ? (
                           <p className="text-center py-10 text-[10px] font-black text-zinc-800 uppercase tracking-widest border border-dashed border-zinc-900 rounded-2xl leading-none block">Null feed in range.</p>
                        ) : (
-                          history.slice(0, 10).map((log, idx) => (
+                          history.slice(0, 10).map((log: any, idx: any) => (
                              <div key={idx} className="flex items-center justify-between p-4 bg-zinc-900/30 border border-zinc-900/50 rounded-2xl group hover:border-emerald-500/20 transition-all">
                                 <div className="flex items-center gap-3">
                                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${log.type === 'IN' ? 'bg-blue-500/10 text-blue-500' : log.type === 'WASTE' ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-500'}`}>

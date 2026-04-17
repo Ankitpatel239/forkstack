@@ -136,7 +136,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-4 px-4">
             Management
           </div>
-          {navItems.map((item) => {
+          {navItems.map((item: any) => {
             const isActive = pathname?.startsWith(item.href);
             return (
               <Link

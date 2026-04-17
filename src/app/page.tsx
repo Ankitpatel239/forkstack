@@ -277,7 +277,7 @@ export default async function HomePage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
-            {features.map((feature, index) => (
+            {features.map((feature: any, index: number) => (
               <div key={index} className="group relative transition-all">
                 <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 transition-colors group-hover:bg-emerald-500 group-hover:text-zinc-950">
                   {feature.icon}
@@ -309,7 +309,7 @@ export default async function HomePage() {
                   { title: "Onboard your venue", desc: "Create your profile, set your tax rates, and configure your branded subdomain in minutes." },
                   { title: "Define your menu", desc: "Our intuitive builder lets you create complex items, options, and categories with zero friction." },
                   { title: "Deploy QR codes", desc: "Generate unique trackable QR codes for every table. Print them out and you're ready to serve." }
-                ].map((step, i) => (
+                ].map((step: any, i: number) => (
                   <div key={i} className="flex gap-6">
                     <div className="flex-shrink-0 h-10 w-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center font-bold text-emerald-400">
                       {i + 1}
@@ -347,10 +347,10 @@ export default async function HomePage() {
           <h3 className="text-4xl md:text-5xl font-bold tracking-tight mb-16 italic font-serif">"The partner we were missing."</h3>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((item, i) => (
+            {testimonials.map((item: any, i: number) => (
               <Card key={i} className="bg-card/50 hover:bg-card transition-colors border-none shadow-xl text-left p-8">
                 <div className="flex gap-1 mb-4">
-                  {[...Array(item.stars)].map((_, s) => (
+                  {[...Array(item.stars)].map((_: any, s: number) => (
                     <Star key={s} className="h-4 w-4 fill-emerald-500 text-emerald-500" />
                   ))}
                 </div>
@@ -380,7 +380,7 @@ export default async function HomePage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {pricingPlans.map((plan, idx) => (
+            {pricingPlans.map((plan: any, idx: number) => (
               <div 
                 key={idx} 
                 className={`relative flex flex-col p-8 rounded-3xl transition-all duration-300 ${
@@ -407,7 +407,7 @@ export default async function HomePage() {
                 </div>
                 
                 <div className="flex-1 mb-8 space-y-4">
-                  {plan.features.map((f, i) => (
+                  {plan.features.map((f: any, i: number) => (
                     <div key={i} className="flex items-center gap-3 text-sm">
                       <CheckCircle2 className={`h-4 w-4 ${plan.popular ? 'text-emerald-400' : 'text-emerald-500'}`} />
                       <span>{f}</span>
@@ -440,7 +440,7 @@ export default async function HomePage() {
           </div>
           
           <Accordion type="single" collapsible className="w-full space-y-4">
-            {faqs.map((faq, i) => (
+            {faqs.map((faq: any, i: number) => (
               <AccordionItem key={i} value={`faq-${i}`} className="border rounded-2xl px-6 bg-card/40 overflow-hidden">
                 <AccordionTrigger className="text-left font-bold text-lg hover:no-underline py-6">
                   {faq.question}
@@ -469,7 +469,7 @@ export default async function HomePage() {
                 Building the future of hospitality. One automated workflow at a time.
               </p>
               <div className="flex gap-4">
-                {['twitter', 'linkedin', 'instagram', 'facebook'].map(social => (
+                {['twitter', 'linkedin', 'instagram', 'facebook'].map((social: any) => (
                   <div key={social} className="h-10 w-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center hover:bg-emerald-500 hover:text-zinc-950 transition-all cursor-pointer">
                     <Zap className="h-4 w-4" />
                   </div>

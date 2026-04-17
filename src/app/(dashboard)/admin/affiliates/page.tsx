@@ -48,7 +48,7 @@ export default function AdminAffiliatesPage() {
            { label: 'Network Reach', val: '224 Partners', icon: Users, color: 'blue' },
            { label: 'Commission Payout', val: '$28,400', icon: DollarSign, color: 'emerald' },
            { label: 'Conversion Lift', val: '+18.4%', icon: TrendingUp, color: 'purple' },
-         ].map((s, i) => (
+         ].map((s: any, i: number) => (
            <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 group flex items-center justify-between relative overflow-hidden transition-all hover:bg-zinc-800/40">
               <div className="absolute top-0 right-0 p-3 opacity-5 -mr-2 -mt-2 group-hover:scale-125 transition-transform">
                 <s.icon size={80} />
@@ -89,7 +89,7 @@ export default function AdminAffiliatesPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-900">
-             {partners.map((p) => (
+             {partners.map((p: any) => (
                 <tr key={p.id} className="hover:bg-zinc-800/10 transition-all group">
                    <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
@@ -149,7 +149,7 @@ export default function AdminAffiliatesPage() {
                  { label: 'Enterprise Referral', reward: '$100.00', status: 'Ready' },
                  { label: 'Market Expansion Wave', reward: '5% Multiplier', status: 'Locked' },
                  { label: 'Retention Milestone', reward: '$50.00', status: 'Active' },
-               ].map((b, i) => (
+               ].map((b: any, i: number) => (
                   <div key={i} className="flex items-center justify-between p-4 bg-zinc-950/50 rounded-2xl border border-zinc-800 hover:border-emerald-500/20 transition-all group">
                      <div className="flex items-center gap-4">
                         <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-700 group-hover:text-emerald-500">

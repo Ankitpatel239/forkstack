@@ -54,7 +54,7 @@ export default function OffersClientPage({ initialOffers }: { initialOffers: any
   const toggleStatus = async (offer: any) => {
     try {
       await updateOffer(offer.id, { isActive: !offer.isActive });
-      setOffers(offers.map(o => o.id === offer.id ? { ...o, isActive: !o.isActive } : o));
+      setOffers(offers.map((o: any) => o.id === offer.id ? { ...o, isActive: !o.isActive } : o));
       toast.success(`Offer ${!offer.isActive ? 'activated' : 'deactivated'}`);
     } catch (e) {
       toast.error('Sync failed');
@@ -91,7 +91,7 @@ export default function OffersClientPage({ initialOffers }: { initialOffers: any
             <p className="text-[10px] font-black uppercase tracking-widest">No active marketing vectors detected.</p>
           </div>
         ) : (
-          filteredOffers.map((offer) => (
+          filteredOffers.map((offer: any) => (
             <div key={offer.id} className={`bg-zinc-950 border ${offer.isActive ? 'border-zinc-800 hover:border-emerald-500/30' : 'border-zinc-900 opacity-60'} p-6 rounded-[2rem] transition-all relative overflow-hidden group shadow-2xl hover:scale-[1.02]`}>
               
               <div className="flex justify-between items-start relative z-10">
@@ -148,7 +148,7 @@ export default function OffersClientPage({ initialOffers }: { initialOffers: any
                  <div className="space-y-2">
                     <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 px-1">Broadcast Schedule (Day-wise)</p>
                     <div className="flex gap-1">
-                       {DAYS.map((day, idx) => {
+                       {DAYS.map((day: string, idx: number) => {
                          const isActive = offer.validDays.length === 0 || offer.validDays.includes(idx);
                          return (
                            <div 

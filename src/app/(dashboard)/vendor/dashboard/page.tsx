@@ -42,7 +42,7 @@ export default function VendorDashboard() {
 
       {/* Metric Cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, i) => (
+        {stats.map((stat: any, i: any) => (
           <Card key={i} className="bg-zinc-900/40 border-zinc-800 shadow-xl relative overflow-hidden group">
             <div className={`absolute top-0 right-0 p-4 opacity-5 -mr-4 -mt-4 text-${stat.color}-500 group-hover:opacity-10 transition-opacity`}>
               <stat.icon size={80} />
@@ -80,7 +80,7 @@ export default function VendorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="h-[300px] w-full flex items-end justify-between gap-1 md:gap-3 px-2">
-              {[30, 45, 25, 60, 85, 40, 55, 95, 70, 45, 30, 20, 15, 40, 60, 80, 55].map((h, i) => (
+              {[30, 45, 25, 60, 85, 40, 55, 95, 70, 45, 30, 20, 15, 40, 60, 80, 55].map((h: any, i: any) => (
                 <div key={i} className="flex-1 group relative h-full flex flex-col justify-end">
                   <div 
                     className={`w-full transition-all rounded-t-sm ${i === 7 ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-zinc-800 group-hover:bg-zinc-700'}`} 

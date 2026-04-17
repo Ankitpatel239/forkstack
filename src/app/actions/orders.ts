@@ -106,7 +106,7 @@ export async function addOrderItems(orderId: string, items: { menuItemId: string
 
   // 1. Create new items
   await prisma.orderItem.createMany({
-    data: items.map(item => ({
+    data: items.map((item: any) => ({
       orderId,
       menuItemId: item.menuItemId,
       quantity: item.quantity,

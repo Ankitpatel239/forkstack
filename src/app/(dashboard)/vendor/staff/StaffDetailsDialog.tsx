@@ -146,7 +146,7 @@ export function StaffDetailsDialog({ staffMember, open, onOpenChange }: any) {
                    </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                   {['PRESENT', 'ABSENT', 'LEAVE'].map(s => (
+                   {['PRESENT', 'ABSENT', 'LEAVE'].map((s: string) => (
                      <button
                        key={s}
                        type="button"
@@ -213,7 +213,7 @@ export function StaffDetailsDialog({ staffMember, open, onOpenChange }: any) {
           <TabsContent value="calendar">
              <div className="space-y-6">
                 <div className="grid grid-cols-7 gap-1">
-                   {[...Array(31)].map((_, i) => (
+                   {[...Array(31)].map((_: any, i: number) => (
                      <div key={i} className={`aspect-square rounded-lg border border-zinc-900 flex flex-col items-center justify-center gap-1 ${i < 5 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-zinc-950'}`}>
                         <span className="text-[8px] font-bold text-zinc-700">{i + 1}</span>
                         {i < 5 && <CheckCircle2 size={10} className="text-emerald-500" />}

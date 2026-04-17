@@ -49,7 +49,7 @@ export default function AdminMarketingPage() {
            { label: 'Relay Approval', val: '98%', icon: CheckCircle2, color: 'emerald' },
            { label: 'Marketing Reach', val: '124.8k', icon: Star, color: 'purple' },
            { label: 'API Relay Node', val: 'Operational', icon: Zap, color: 'orange' },
-         ].map((s, i) => (
+         ].map((s: any, i: number) => (
            <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 group flex items-center justify-between relative overflow-hidden transition-all hover:bg-zinc-800/40">
               <div className="absolute top-0 right-0 p-3 opacity-5 -mr-2 -mt-2 group-hover:opacity-10 transition-opacity">
                 <s.icon size={60} />
@@ -89,7 +89,7 @@ export default function AdminMarketingPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-900">
-             {templates.map((t) => (
+             {templates.map((t: any) => (
                 <tr key={t.id} className="hover:bg-zinc-800/10 transition-colors group">
                    <td className="px-8 py-6">
                       <div className="flex items-center gap-4">

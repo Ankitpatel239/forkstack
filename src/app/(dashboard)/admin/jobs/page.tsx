@@ -51,7 +51,7 @@ export default function AdminJobsPage() {
            { label: 'Task Throughput', val: '1.2k/hr', icon: Hash, color: 'blue' },
            { label: 'Active Workers', val: '8 Nodes', icon: Cpu, color: 'purple' },
            { label: 'Storage Used', val: '42.4 GB', icon: Database, color: 'orange' },
-         ].map((s, i) => (
+         ].map((s: any, i: number) => (
            <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex items-center justify-between group overflow-hidden relative transition-all hover:bg-zinc-800/40">
               <div className="absolute top-0 right-0 p-3 opacity-5 -mr-2 -mt-2 group-hover:opacity-10 transition-opacity">
                 <s.icon size={60} />
@@ -87,7 +87,7 @@ export default function AdminJobsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-900">
-               {jobs.map((job) => (
+               {jobs.map((job: any) => (
                   <tr key={job.id} className="hover:bg-zinc-800/10 transition-all group">
                      <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
@@ -146,7 +146,7 @@ export default function AdminJobsPage() {
                <Badge className="bg-blue-500/10 text-blue-500 border-none font-black text-[9px]">Live Cluster Feed</Badge>
             </div>
             <div className="h-48 flex items-end justify-between gap-1 px-4">
-               {[20, 45, 30, 80, 60, 90, 70, 40, 50, 85, 95, 65].map((h, i) => (
+               {[20, 45, 30, 80, 60, 90, 70, 40, 50, 85, 95, 65].map((h: number, i: number) => (
                   <div key={i} className="flex-1 group relative h-full flex items-end">
                      <div 
                         className={`w-full transition-all rounded-t-sm ${i % 3 === 0 ? 'bg-emerald-500/40 group-hover:bg-emerald-500' : 'bg-zinc-800 group-hover:bg-zinc-700'}`} 

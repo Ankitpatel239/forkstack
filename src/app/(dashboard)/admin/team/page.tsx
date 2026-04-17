@@ -56,7 +56,7 @@ export default async function AdminAccessPage() {
            { label: 'Global Registry', val: users.length, icon: User, color: 'blue' },
            { label: 'Admin clearance', val: users.filter(u => u.role === 'ADMIN').length, icon: ShieldCheck, color: 'purple' },
            { label: 'Active Sessions', val: '24', icon: Lock, color: 'orange' }
-         ].map((s, i) => (
+         ].map((s: any, i: any) => (
            <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 group flex items-center justify-between relative overflow-hidden">
               <div className="absolute top-0 right-0 p-3 opacity-5 -mr-2 -mt-2 group-hover:opacity-10 transition-opacity">
                 <s.icon size={60} />
@@ -96,7 +96,7 @@ export default async function AdminAccessPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-900">
-            {users.map((user) => (
+            {users.map((user: any) => (
               <tr key={user.id} className="hover:bg-zinc-800/10 transition-colors group">
                 <td className="px-6 py-6">
                    <div className="flex items-center gap-4">

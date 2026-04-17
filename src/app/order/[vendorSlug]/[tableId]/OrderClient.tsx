@@ -178,7 +178,7 @@ export function OrderClient({ vendor, table, categories }: {
 
       {/* Category Nav */}
       <div className="sticky top-[88px] z-30 bg-black/95 px-6 py-4 flex gap-3 overflow-x-auto no-scrollbar border-b border-zinc-900/50">
-         {categories.map(cat => (
+         {categories.map((cat: any) => (
            <button
              key={cat.id}
              type="button"
@@ -196,7 +196,7 @@ export function OrderClient({ vendor, table, categories }: {
 
       {/* Menu List */}
       <div className="px-6 space-y-12 py-8">
-        {categories.map(cat => (
+        {categories.map((cat: any) => (
           <div key={cat.id} id={cat.id} className="space-y-6">
             <div className="flex items-center gap-3">
                <h4 className="text-sm font-black italic uppercase tracking-widest text-zinc-500">{cat.name}</h4>
@@ -313,7 +313,7 @@ export function OrderClient({ vendor, table, categories }: {
                    </div>
 
                    <div className="space-y-4">
-                      {Object.entries(cart).map(([id, qty]) => {
+                      {Object.entries(cart).map(([id, qty]: [string, number]) => {
                         const item = allItems.find(i => i.id === id);
                         return (
                           <div key={id} className="flex items-center justify-between p-4 bg-zinc-900/40 rounded-2xl border border-zinc-900">

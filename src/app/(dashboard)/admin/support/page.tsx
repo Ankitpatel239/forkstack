@@ -73,7 +73,7 @@ export default function AdminSupportPage() {
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl">
          <div className="p-0">
-            {tickets.map((ticket, i) => (
+            {tickets.map((ticket: any, i: any) => (
                <div key={ticket.id} className="p-8 flex flex-col lg:flex-row lg:items-center justify-between border-b border-zinc-900/50 hover:bg-zinc-800/20 transition-all group last:border-b-0">
                   <div className="flex items-start gap-6">
                      <div className={`h-14 w-14 rounded-2xl flex flex-col items-center justify-center border shrink-0 ${

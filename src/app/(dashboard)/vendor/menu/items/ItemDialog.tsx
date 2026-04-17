@@ -167,8 +167,8 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
         fats: formData.fats ? (parseFloat(formData.fats) || 0) : undefined,
         spiciness: parseInt(formData.spiciness) || 0,
         costPrice: formData.costPrice ? (parseFloat(formData.costPrice) || 0) : undefined,
-        allergens: formData.allergens.split(',').map(s => s.trim()).filter(s => s),
-        ingredients: formData.ingredients.split(',').map(s => s.trim()).filter(s => s),
+        allergens: formData.allergens.split(',').map((s: string) => s.trim()).filter((s: string) => s),
+        ingredients: formData.ingredients.split(',').map((s: string) => s.trim()).filter((s: string) => s),
         media: formData.media.map((m: any) => ({
           id: m.id,
           url: m.url,
@@ -272,7 +272,7 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                               <SelectValue placeholder="Choose Category" />
                            </SelectTrigger>
                            <SelectContent className="bg-zinc-900 border-zinc-800 text-white font-black italic">
-                              {flattenedCategories.map(c => (
+                              {flattenedCategories.map((c: any) => (
                                 <SelectItem key={c.id} value={c.id}>
                                    {'\u00A0'.repeat(c.depth * 4)}{c.depth > 0 ? '↳ ' : ''}{c.name}
                                 </SelectItem>
@@ -298,7 +298,7 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                      <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Spiciness Level</Label>
                         <div className="flex gap-2">
-                           {[0, 1, 2, 3].map(lvl => (
+                           {[0, 1, 2, 3].map((lvl: number) => (
                               <button 
                                 key={lvl} 
                                 type="button" 
@@ -480,7 +480,7 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                         { label: 'Vegetarian', state: 'isVegetarian', icon: Soup, color: 'text-green-500' },
                         { label: 'Gluten-Free', state: 'isGlutenFree', icon: Scale, color: 'text-amber-500' },
                         { label: 'Halal', state: 'isHalal', icon: Globe, color: 'text-blue-500' },
-                     ].map((diet) => (
+                     ].map((diet: any) => (
                         <div key={diet.state} className="flex items-center justify-between bg-zinc-900/40 p-5 rounded-2xl border border-zinc-900 hover:border-zinc-800 transition-all">
                            <div className="flex items-center gap-3">
                               <diet.icon size={16} className={diet.color} />
@@ -501,7 +501,7 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Spiciness Level</span>
                      </div>
                      <div className="flex gap-4">
-                        {[0, 1, 2, 3].map((level) => (
+                        {[0, 1, 2, 3].map((level: number) => (
                           <button 
                             key={level}
                             type="button"

@@ -26,7 +26,7 @@ export default async function VendorPublicMenu({ params }: { params: { vendorSlu
   }
 
   // Pre-calculate categories based on real menu items
-  const categories = Array.from(new Set(vendor.menuItems.map(item => item.category?.name || 'Uncategorized')));
+  const categories = Array.from(new Set(vendor.menuItems.map((item: any) => item.category?.name || 'Uncategorized')));
   const rating = 4.9; // Mock rating for now as it's not in schema
 
   return (
@@ -87,7 +87,7 @@ export default async function VendorPublicMenu({ params }: { params: { vendorSlu
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
            {/* Category Scroller */}
            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 flex-1 outline-none">
-              {categories.map((cat, i) => (
+              {categories.map((cat: any, i: number) => (
                 <button 
                   key={i} 
                   className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all ${i === 0 ? 'bg-emerald-500 text-zinc-950 shadow-lg shadow-emerald-500/20' : 'text-zinc-500 hover:text-white'}`}
@@ -112,7 +112,7 @@ export default async function VendorPublicMenu({ params }: { params: { vendorSlu
               </div>
            </div>
            <div className="flex gap-6 overflow-x-auto no-scrollbar pb-4 pt-1">
-              {vendor.menuItems.slice(0, 3).map((item, i) => (
+              {vendor.menuItems.slice(0, 3).map((item: any, i: number) => (
                 <div key={item.id} className="min-w-[280px] md:min-w-[340px] group cursor-pointer">
                   <div className="relative h-48 rounded-2xl overflow-hidden mb-4 ring-1 ring-zinc-800 group-hover:ring-emerald-500/50 transition-all duration-500">
                     <img 
@@ -140,7 +140,7 @@ export default async function VendorPublicMenu({ params }: { params: { vendorSlu
            </div>
 
            <div className="grid gap-x-12 gap-y-10 md:grid-cols-2">
-              {vendor.menuItems.map((item) => (
+              {vendor.menuItems.map((item: any) => (
                 <div key={item.id} className="flex gap-4 group cursor-pointer">
                    <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-2">

@@ -204,7 +204,7 @@ export function SettingsClientPage({ vendor, initialDrives = [] }: { vendor: any
     <div className="grid gap-10 lg:grid-cols-12">
       {/* Sidebar Nav */}
       <div className="lg:col-span-3 space-y-3">
-         {tabs.map((item, i) => (
+         {tabs.map((item: any, i: number) => (
            <button 
              key={i} 
              onClick={() => setActiveTab(item.label)}

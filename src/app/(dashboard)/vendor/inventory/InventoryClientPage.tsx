@@ -150,7 +150,7 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
     if (selectedIds.length === filteredItems.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(filteredItems.map(i => i.id));
+      setSelectedIds(filteredItems.map((i: any) => i.id));
     }
   };
 
@@ -277,7 +277,7 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
               {currentItems.length === 0 ? (
                 <tr><td colSpan={6} className="py-20 text-center text-zinc-800 font-bold uppercase text-[10px]">Empty Catalog</td></tr>
               ) : (
-                currentItems.map((item) => {
+                currentItems.map((item: any) => {
                   const activeBatches = item.batches?.filter((b: any) => !b.isSoldOut && b.quantity > 0)
                     .sort((a: any, b: any) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime());
                   const itemValuation = (activeBatches || []).reduce((acc: number, b: any) => acc + (b.quantity * b.costPrice), 0);
@@ -393,7 +393,7 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
                 Node {currentPage} <span className="text-zinc-800 mx-1">/</span> {totalPages || 1}
               </span>
               <div className="flex gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
+                {Array.from({ length: Math.min(5, totalPages) }).map((_: any, i: any) => {
                   const pageNum = i + 1;
                   return (
                     <button
@@ -445,7 +445,7 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
               <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-emerald-500 h-4 w-4" /></div>
             ) : (
               <div className="space-y-6 relative border-l border-zinc-900 ml-2 pl-6">
-                {historyData.map((log) => (
+                {historyData.map((log: any) => (
                   <div key={log.id} className="relative group">
                     <div className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-zinc-800 border-2 border-black z-10" />
                     <div className="space-y-1">

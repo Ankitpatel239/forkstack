@@ -55,7 +55,7 @@ export default function AdminHealthPage() {
            { label: 'Traffic Load', val: 'Low (12.4%)', icon: Network, color: 'blue' },
            { label: 'API Uptime', val: '99.98%', icon: Globe, color: 'purple' },
            { label: 'Hardware Latency', val: '18ms', icon: Cpu, color: 'orange' },
-         ].map((s, i) => (
+         ].map((s: any, i: number) => (
            <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex items-center justify-between group overflow-hidden relative">
               <div className="absolute top-0 right-0 p-3 opacity-5 -mr-2 -mt-2 group-hover:scale-125 transition-transform">
                 <s.icon size={60} />
@@ -80,7 +80,7 @@ export default function AdminHealthPage() {
                  <Badge className="bg-emerald-500/10 text-emerald-500 border-none px-3 font-black text-[10px] uppercase">All Nodes Healthy</Badge>
               </div>
               <div className="p-0">
-                 {nodes.map((node, i) => (
+                 {nodes.map((node: any, i: number) => (
                     <div key={i} className="p-6 flex items-center justify-between border-b border-zinc-900/50 hover:bg-zinc-800/20 transition-all group last:border-b-0">
                        <div className="flex items-center gap-5">
                           <div className={`h-12 w-12 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-${node.color}-500 shadow-inner group-hover:scale-105 transition-transform`}>
@@ -116,7 +116,7 @@ export default function AdminHealthPage() {
                    { label: 'CPU Cluster Load', pct: '42%', color: 'blue' },
                    { label: 'Memory Allocation', pct: '68%', color: 'purple' },
                    { label: 'Disk IOPS', pct: '12%', color: 'emerald' },
-                 ].map((bar, i) => (
+                 ].map((bar: any, i: number) => (
                    <div key={i} className="space-y-2">
                        <div className="flex justify-between text-[11px] font-black uppercase tracking-widest text-zinc-500 leading-none px-1">
                           <span>{bar.label}</span>
@@ -140,7 +140,7 @@ export default function AdminHealthPage() {
               </div>
 
               <div className="space-y-6 flex-1">
-                 {logs.map((log, i) => (
+                 {logs.map((log: any, i: number) => (
                     <div key={i} className="flex gap-4 group">
                        <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${log.type === 'Error' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : (log.type === 'Warn' ? 'bg-orange-500' : 'bg-emerald-500')}`} />
                        <div className="space-y-1">

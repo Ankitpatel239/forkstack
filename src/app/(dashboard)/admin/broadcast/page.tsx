@@ -113,7 +113,7 @@ export default function AdminBroadcastPage() {
                       { label: 'Dashboard Notice', icon: Zap, active: true },
                       { label: 'Email Relay', icon: Mail, active: true },
                       { label: 'WhatsApp Alert', icon: MessageSquare, active: false }
-                    ].map((channel, i) => (
+                    ].map((channel: any, i: number) => (
                       <div key={i} className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${channel.active ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-zinc-950 border-zinc-800 text-zinc-600'} cursor-pointer hover:border-emerald-500/30 transition-all`}>
                          <channel.icon size={14} />
                          <span className="text-[10px] font-black uppercase tracking-widest">{channel.label}</span>
@@ -142,7 +142,7 @@ export default function AdminBroadcastPage() {
               <h3 className="text-lg font-black text-white italic tracking-tight uppercase leading-none border-b border-zinc-800 pb-4">Transmission History</h3>
               
               <div className="space-y-6">
-                 {history.map((item) => (
+                 {history.map((item: any) => (
                     <div key={item.id} className="relative pl-6 border-l border-zinc-800 space-y-2 group">
                        <div className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                        <div className="flex items-center justify-between">

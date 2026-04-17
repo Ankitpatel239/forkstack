@@ -109,7 +109,7 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
       // Fetch dynamic categories
       getInventoryCategories().then(cats => {
         if (cats && cats.length > 0) {
-          setCategories(cats.map(c => c.name));
+          setCategories(cats.map((c: any) => c.name));
         }
       });
 
@@ -252,7 +252,7 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
                <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-900 space-y-3">
                   <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700 flex items-center gap-2">Audit History Control</p>
                   <div className="space-y-2">
-                     {item.batches?.filter(b => b.quantity > 0).sort((a,b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime()).map((batch, idx) => (
+                     {item.batches?.filter((b: any) => b.quantity > 0).sort((a: any,b: any) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime()).map((batch: any, idx: any) => (
                         <div key={batch.id}>
                            {editingBatchId === batch.id ? (
                               <div className="p-3 rounded-lg bg-zinc-900 border border-emerald-500/30 flex gap-2">
@@ -285,7 +285,7 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
                     <Select value={formData.category} onValueChange={v => setFormData({...formData, category: v})}>
                       <SelectTrigger className="bg-zinc-900 h-10 rounded-lg text-xs font-bold"><SelectValue /></SelectTrigger>
                       <SelectContent className="bg-zinc-950 border-zinc-800 text-white">
-                        {categories.map(cat => <SelectItem key={cat} value={cat} className="text-xs py-2">{cat}</SelectItem>)}
+                        {categories.map((cat: any) => <SelectItem key={cat} value={cat} className="text-xs py-2">{cat}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>

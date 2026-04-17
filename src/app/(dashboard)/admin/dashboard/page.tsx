@@ -50,7 +50,7 @@ export default function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, i) => (
+        {stats.map((stat: any, i: any) => (
           <Card key={i} className="bg-zinc-900/30 border-zinc-800 overflow-hidden relative group">
             <div className="absolute top-0 right-0 p-3 opacity-5 -mr-4 -mt-4 group-hover:opacity-10 transition-opacity">
               <stat.icon size={120} />
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="h-[350px] w-full flex flex-col justify-end gap-2 pt-10">
               <div className="flex items-end justify-between h-full gap-2 px-2">
-                {[40, 65, 45, 90, 75, 55, 85, 40, 60, 80, 50, 70].map((h, i) => (
+                {[40, 65, 45, 90, 75, 55, 85, 40, 60, 80, 50, 70].map((h: number, i: number) => (
                   <div key={i} className="flex-1 group relative">
                     <div 
                       className="w-full bg-zinc-800 group-hover:bg-emerald-500/40 transition-all rounded-t-sm" 
@@ -136,7 +136,7 @@ export default function AdminDashboard() {
                  { label: 'QR Engine', val: '99.9%', color: 'emerald' },
                  { label: 'WA Relays', val: '94.2%', color: 'blue' },
                  { label: 'Auth Gate', val: '100%', color: 'emerald' }
-              ].map((s, i) => (
+              ].map((s: any, i: number) => (
                 <div key={i} className="space-y-2">
                   <div className="flex justify-between text-xs font-bold uppercase tracking-tighter">
                     <span className="text-zinc-400">{s.label}</span>
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-900">
-              {recentVendors.map((vendor, i) => (
+              {recentVendors.map((vendor: any, i: number) => (
                 <tr key={i} className="hover:bg-zinc-800/20 transition-colors group">
                   <td className="px-6 py-5 font-bold text-zinc-100">{vendor.name}</td>
                   <td className="px-6 py-5 text-zinc-400 font-medium">{vendor.owner}</td>

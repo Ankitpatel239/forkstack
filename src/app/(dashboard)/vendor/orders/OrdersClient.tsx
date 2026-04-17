@@ -59,7 +59,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
       await updateOrderStatus(orderId, newStatus as any);
       toast.success(`Order ${newStatus.toLowerCase()} updated`);
       // Update local state for instant feedback
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      setOrders(prev => prev.map((o: any) => o.id === orderId ? { ...o, status: newStatus } : o));
     } catch (e) {
       toast.error('Failed to update status');
     }
@@ -129,7 +129,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
             />
          </div>
          <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto no-scrollbar pb-2 md:pb-0">
-            {['Today', 'Yesterday', 'Last 7 Days'].map(t => (
+            {['Today', 'Yesterday', 'Last 7 Days'].map((t: string) => (
               <Button key={t} variant="outline" className="rounded-2xl h-16 px-8 border-zinc-800 bg-zinc-900/40 text-[10px] uppercase font-black tracking-widest text-zinc-500 hover:text-white hover:border-zinc-700">
                 {t}
               </Button>
@@ -147,7 +147,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 italic">No matches found in this stream</p>
           </div>
         ) : (
-          filteredOrders.map((order) => (
+          filteredOrders.map((order: any) => (
             <div key={order.id} className="group relative bg-zinc-900/30 border border-zinc-900 rounded-[2.5rem] p-6 lg:p-8 transition-all hover:border-zinc-800 hover:bg-zinc-900/40 shadow-xl overflow-hidden">
                {/* Background Hint */}
                <div className="absolute top-0 right-0 p-8 text-black opacity-[0.02] group-hover:scale-110 transition-transform pointer-events-none">

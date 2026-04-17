@@ -285,7 +285,7 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
                           <SelectValue placeholder="Search menu..." />
                         </SelectTrigger>
                         <SelectContent className="bg-zinc-950 border-zinc-900 text-white">
-                          {menuItems.map(item => (
+                          {menuItems.map((item: any) => (
                             <SelectItem key={item.id} value={item.id} className="focus:bg-emerald-500 focus:text-black">
                               {item.name} — ₹{item.price}
                             </SelectItem>
@@ -413,7 +413,7 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
               <div className="space-y-2">
                 <label className="text-[9px] font-black uppercase text-zinc-500 tracking-widest ml-1">Current Progress</label>
                 <div className="grid grid-cols-2 gap-2">
-                   {['PENDING', 'PROCESSING', 'DELIVERED', 'CANCELLED'].map((s) => (
+                   {['PENDING', 'PROCESSING', 'DELIVERED', 'CANCELLED'].map((s: string) => (
                     <Button 
                       key={s}
                       variant="outline"

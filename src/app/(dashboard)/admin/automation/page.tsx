@@ -51,7 +51,7 @@ export default function AdminAutomationPage() {
            { label: 'Automation Depth', val: '84%', icon: Zap, color: 'blue' },
            { label: 'Active Scripts', val: '12 Active', icon: Terminal, color: 'purple' },
            { label: 'Compute Power', val: '4.8 PFLOPS', icon: Cpu, color: 'orange' },
-         ].map((s, i) => (
+         ].map((s: any, i: number) => (
            <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 group flex items-center justify-between relative overflow-hidden transition-all hover:bg-zinc-800/40">
               <div className="absolute top-0 right-0 p-3 opacity-5 -mr-2 -mt-2 group-hover:opacity-10 transition-opacity">
                 <s.icon size={60} />
@@ -80,7 +80,7 @@ export default function AdminAutomationPage() {
               </div>
               
               <div className="divide-y divide-zinc-900/50">
-                 {scripts.map((script) => (
+                 {scripts.map((script: any) => (
                     <div key={script.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-zinc-800/20 transition-all group">
                        <div className="flex items-start gap-4 flex-1">
                           <div className={`h-12 w-12 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center ${script.status === 'Active' ? 'text-emerald-500' : 'text-zinc-700'}`}>
@@ -150,7 +150,7 @@ export default function AdminAutomationPage() {
                    { label: 'Allow Dynamic Tier Scaling', active: false },
                    { label: 'Propagate Global SEO Updates', active: true },
                    { label: 'Simulate High-Traffic Nodes', active: false },
-                 ].map((rule, i) => (
+                 ].map((rule: any, i: number) => (
                     <div key={i} className="flex items-center justify-between group">
                        <span className={`text-[11px] font-black uppercase tracking-widest leading-relaxed transition-colors ${rule.active ? 'text-zinc-400' : 'text-zinc-600'}`}>
                           {rule.label}
