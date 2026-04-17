@@ -134,8 +134,8 @@ export async function logStockChange(
   else if ((type === 'OUT' || type === 'WASTE' || (type === 'CORRECTION' && change < 0))) {
     let amountToDeduct = Math.abs(change);
     const sortedBatches = currentItem.batches
-      .filter(b => !b.isSoldOut && b.quantity > 0)
-      .sort((a, b) => a.receivedDate.getTime() - b.receivedDate.getTime());
+      .filter((b: any) => !b.isSoldOut && b.quantity > 0)
+      .sort((a: any, b: any) => a.receivedDate.getTime() - b.receivedDate.getTime());
 
     for (const batch of sortedBatches) {
       if (amountToDeduct <= 0) break;
@@ -152,7 +152,7 @@ export async function logStockChange(
   }
 
   // Recalculate totals from batches to ensure consistency
-  const totalQty = currentItem.batches.reduce((acc, b) => acc + (b.id === id ? change : b.quantity), 0); // This is not quite right, better to just use syncItemTotals but add location update
+  const totalQty = currentItem.batches.reduce((acc: any, b: any) => acc + (b.id === id ? change : b.quantity), 0); // This is not quite right, better to just use syncItemTotals but add location update
 
   await syncItemTotals(id);
   

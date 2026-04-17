@@ -36,7 +36,7 @@ export default function OffersClientPage({ initialOffers }: { initialOffers: any
   const [offers, setOffers] = useState(initialOffers);
   const [search, setSearch] = useState('');
 
-  const filteredOffers = offers.filter(o => 
+  const filteredOffers = offers.filter((o: any) => 
     o.title.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -44,7 +44,7 @@ export default function OffersClientPage({ initialOffers }: { initialOffers: any
     if (!confirm('Purge this promotion node?')) return;
     try {
       await deleteOffer(id);
-      setOffers(offers.filter(o => o.id !== id));
+      setOffers(offers.filter((o: any) => o.id !== id));
       toast.success('Promotion purged from system');
     } catch (e) {
       toast.error('Purge failed');

@@ -30,7 +30,7 @@ export default function CombosClientPage({ initialCombos }: { initialCombos: any
   const [combos, setCombos] = useState(initialCombos);
   const [search, setSearch] = useState('');
 
-  const filteredCombos = combos.filter(c => 
+  const filteredCombos = combos.filter((c: any) => 
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -38,7 +38,7 @@ export default function CombosClientPage({ initialCombos }: { initialCombos: any
     if (!confirm('Decommission this bundle?')) return;
     try {
       await deleteCombo(id);
-      setCombos(combos.filter(c => c.id !== id));
+      setCombos(combos.filter((c: any) => c.id !== id));
       toast.success('Bundle decommissioned');
     } catch (e) {
       toast.error('Failed');

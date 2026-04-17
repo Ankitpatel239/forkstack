@@ -42,7 +42,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
   const [orders, setOrders] = useState(initialOrders);
 
   const filteredOrders = useMemo(() => {
-    return orders.filter(order => {
+    return orders.filter((order: any) => {
       const matchesSearch = 
         order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
         (order.customerName || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -75,8 +75,8 @@ export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
     }
   };
 
-  const activeCount = orders.filter(o => o.status === 'PENDING').length;
-  const cookingCount = orders.filter(o => o.status === 'PROCESSING').length;
+  const activeCount = orders.filter((o: any) => o.status === 'PENDING').length;
+  const cookingCount = orders.filter((o: any) => o.status === 'PROCESSING').length;
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700">

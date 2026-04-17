@@ -80,7 +80,7 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
   const [isBulkPrintOpen, setIsBulkPrintOpen] = useState(false);
   const [isGlobalAnalysisOpen, setIsGlobalAnalysisOpen] = useState(false);
 
-  const filteredItems = initialItems.filter(i => 
+  const filteredItems = initialItems.filter((i: any) => 
     i.name.toLowerCase().includes(search.toLowerCase()) || 
     i.sku?.toLowerCase().includes(search.toLowerCase()) ||
     i.category?.toLowerCase().includes(search.toLowerCase()) ||
@@ -94,10 +94,10 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
     currentPage * itemsPerPage
   );
 
-  const lowStockItems = initialItems.filter(i => i.quantity <= i.lowStockThreshold);
+  const lowStockItems = initialItems.filter((i: any) => i.quantity <= i.lowStockThreshold);
 
   const totalValuation = useMemo(() => {
-    return initialItems.reduce((acc, item) => {
+    return initialItems.reduce((acc: any, item: any) => {
       const itemBatchValue = (item.batches || []).reduce((bAcc: number, b: any) => bAcc + (b.quantity * b.costPrice), 0);
       return acc + (itemBatchValue > 0 ? itemBatchValue : (item.costPrice || 0) * item.quantity);
     }, 0);

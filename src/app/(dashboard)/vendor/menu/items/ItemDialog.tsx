@@ -90,8 +90,8 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
 
   const buildTree = (cats: any[], parentId: string | null = null): any[] => {
     return cats
-      .filter(c => c.parentId === parentId)
-      .map(c => ({
+      .filter((c: any) => c.parentId === parentId)
+      .map((c: any) => ({
         ...c,
         children: buildTree(cats, c.id)
       }));

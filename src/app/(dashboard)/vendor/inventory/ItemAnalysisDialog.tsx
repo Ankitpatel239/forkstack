@@ -73,10 +73,10 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
     const prev7Limit = new Date();
     prev7Limit.setDate(now.getDate() - 14);
     const prev7Total = history
-      .filter(h => (h.type === 'OUT' || h.type === 'WASTE') && 
+      .filter((h: any) => (h.type === 'OUT' || h.type === 'WASTE') && 
                   new Date(h.createdAt) >= prev7Limit && 
                   new Date(h.createdAt) < last7Days[0])
-      .reduce((sum, h) => sum + Math.abs(h.quantity), 0);
+      .reduce((sum: any, h: any) => sum + Math.abs(h.quantity), 0);
 
     const growth = prev7Total > 0 ? ((totalSales - prev7Total) / prev7Total) * 100 : (totalSales > 0 ? 100 : 0);
 

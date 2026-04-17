@@ -54,7 +54,7 @@ export default async function AdminAccessPage() {
          {[
            { label: 'Cloud Identity Node', val: 'Operational', icon: Activity, color: 'emerald' },
            { label: 'Global Registry', val: users.length, icon: User, color: 'blue' },
-           { label: 'Admin clearance', val: users.filter(u => u.role === 'ADMIN').length, icon: ShieldCheck, color: 'purple' },
+           { label: 'Admin clearance', val: users.filter((u: any) => u.role === 'ADMIN').length, icon: ShieldCheck, color: 'purple' },
            { label: 'Active Sessions', val: '24', icon: Lock, color: 'orange' }
          ].map((s: any, i: any) => (
            <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 group flex items-center justify-between relative overflow-hidden">

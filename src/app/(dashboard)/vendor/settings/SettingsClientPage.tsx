@@ -193,7 +193,7 @@ export function SettingsClientPage({ vendor, initialDrives = [] }: { vendor: any
     if (!confirm('Are you sure you want to decommission this storage node?')) return;
     try {
       await deleteConnectedDrive(id);
-      setDrives(drives.filter(d => d.id !== id));
+      setDrives(drives.filter((d: any) => d.id !== id));
       toast.success('Storage node decommissioned');
     } catch (e) {
       toast.error('Failed to sever connection');

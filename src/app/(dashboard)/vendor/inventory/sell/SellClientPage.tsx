@@ -103,11 +103,11 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
         return { ...i, cartQuantity: newQty };
       }
       return i;
-    }).filter(i => i.cartQuantity > 0));
+    }).filter((i: any) => i.cartQuantity > 0));
   };
 
-  const total = cart.reduce((acc, i) => acc + (i.price * i.cartQuantity), 0);
-  const totalItems = cart.reduce((acc, i) => acc + i.cartQuantity, 0);
+  const total = cart.reduce((acc: any, i: any) => acc + (i.price * i.cartQuantity), 0);
+  const totalItems = cart.reduce((acc: any, i: any) => acc + i.cartQuantity, 0);
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;
@@ -123,7 +123,7 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
     }
   };
 
-  const filteredItems = items.filter(i => 
+  const filteredItems = items.filter((i: any) => 
     i.name.toLowerCase().includes(search.toLowerCase()) || 
     i.barcode?.includes(search) || 
     i.sku?.toLowerCase().includes(search.toLowerCase())
