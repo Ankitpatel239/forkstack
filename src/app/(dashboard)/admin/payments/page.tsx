@@ -25,7 +25,7 @@ export default async function AdminPayoutsPage() {
   });
 
   const pendingCount = payouts.filter(p => p.status === 'PENDING').length;
-  const totalAmount = payouts.reduce((acc: number, p) => acc + p.amount, 0);
+  const totalAmount = payouts.reduce((acc: number, p: any) => acc + (p.amount || 0), 0);
 
   return (
     <div className="space-y-10 pb-20">
