@@ -196,8 +196,8 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-950 border-zinc-900 text-white sm:max-w-[850px] rounded-[3rem] p-0 overflow-hidden shadow-[0_0_50px_-12px_rgba(16,185,129,0.15)] outline-none">
-        <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 p-10 border-b border-zinc-900 relative">
+      <DialogContent className="bg-background border-border text-foreground sm:max-w-[850px] rounded-[3rem] p-0 overflow-hidden shadow-[0_0_50px_-12px_rgba(16,185,129,0.15)] outline-none">
+        <div className="bg-gradient-to-br from-card to-background p-10 border-b border-border relative">
            <div className="absolute top-0 right-0 p-10 opacity-5">
               <ImageIcon size={120} />
            </div>
@@ -211,12 +211,12 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                    )}
                 </div>
                 <div>
-                  <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter">
-                    {item ? 'Update Menu Item' : 'New Menu Item'}
-                  </DialogTitle>
-                  <DialogDescription className="text-zinc-500 font-bold text-[10px] uppercase tracking-widest mt-1">
-                    Manage the details and photos for your menu item.
-                  </DialogDescription>
+                   <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-foreground">
+                     {item ? 'Update Menu Item' : 'New Menu Item'}
+                   </DialogTitle>
+                   <DialogDescription className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest mt-1">
+                     Manage the details and photos for your menu item.
+                   </DialogDescription>
                 </div>
              </div>
            </DialogHeader>
@@ -224,12 +224,12 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
         
         <form onSubmit={handleSubmit}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="px-10 py-4 bg-zinc-900/50 border-b border-zinc-900">
+            <div className="px-10 py-4 bg-muted/30 border-b border-border">
                <TabsList className="bg-transparent gap-8 h-auto p-0 border-none justify-start">
-                  <TabsTrigger value="general" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[10px] font-black uppercase tracking-widest transition-all">Basic Info</TabsTrigger>
-                  <TabsTrigger value="gallery" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[10px] font-black uppercase tracking-widest transition-all">Item Photos</TabsTrigger>
-                  <TabsTrigger value="nutrition" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[10px] font-black uppercase tracking-widest transition-all">Nutrition Info</TabsTrigger>
-                  <TabsTrigger value="dietary" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[10px] font-black uppercase tracking-widest transition-all">Dietary Details</TabsTrigger>
+                  <TabsTrigger value="general" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[10px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground">Basic Info</TabsTrigger>
+                  <TabsTrigger value="gallery" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[10px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground">Item Photos</TabsTrigger>
+                  <TabsTrigger value="nutrition" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[10px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground">Nutrition Info</TabsTrigger>
+                  <TabsTrigger value="dietary" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[10px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground">Dietary Details</TabsTrigger>
                </TabsList>
             </div>
 
@@ -238,27 +238,27 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                   <div className="grid gap-8 md:grid-cols-2">
                      <div className="space-y-4">
                         <div className="space-y-2">
-                           <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Item Name</Label>
+                           <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Item Name</Label>
                            <div className="relative">
-                              <Box className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700" size={18} />
+                              <Box className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40" size={18} />
                               <Input 
                                 value={formData.name}
                                 onChange={e => setFormData({...formData, name: e.target.value})}
                                 placeholder="e.g., Cheese Pizza" 
-                                className="bg-zinc-900 border-zinc-800 h-14 pl-12 font-black italic text-sm rounded-2xl focus:border-emerald-500/50" 
+                                className="bg-muted border-border h-14 pl-12 font-black italic text-sm rounded-2xl focus:border-emerald-500/50 text-foreground" 
                                 required 
                               />
                            </div>
                         </div>
                         <div className="space-y-2">
-                           <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Price (₹)</Label>
+                           <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Price (₹)</Label>
                            <div className="relative">
-                              <span className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-700 font-black text-xs">₹</span>
+                              <span className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/40 font-black text-xs">₹</span>
                               <Input 
                                 type="number" step="0.01" 
                                 value={formData.price}
                                 onChange={e => setFormData({...formData, price: e.target.value})}
-                                className="bg-zinc-900 border-zinc-800 h-14 pl-10 text-lg font-black italic rounded-2xl" 
+                                className="bg-muted border-border h-14 pl-10 text-lg font-black italic rounded-2xl text-foreground" 
                                 required 
                               />
                            </div>
@@ -266,12 +266,12 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                      </div>
 
                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Menu Category</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Menu Category</Label>
                         <Select value={formData.categoryId} onValueChange={v => setFormData({...formData, categoryId: v})}>
-                           <SelectTrigger className="bg-zinc-900 border-zinc-800 h-14 text-sm font-black italic rounded-2xl">
+                           <SelectTrigger className="bg-muted border-border h-14 text-sm font-black italic rounded-2xl text-foreground">
                               <SelectValue placeholder="Choose Category" />
                            </SelectTrigger>
-                           <SelectContent className="bg-zinc-900 border-zinc-800 text-white font-black italic">
+                           <SelectContent className="bg-card border-border text-foreground font-black italic">
                               {flattenedCategories.map((c: any) => (
                                 <SelectItem key={c.id} value={c.id}>
                                    {'\u00A0'.repeat(c.depth * 4)}{c.depth > 0 ? '↳ ' : ''}{c.name}
@@ -284,19 +284,19 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
 
                   <div className="grid gap-8 md:grid-cols-2">
                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Preparation Time (Mins)</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Preparation Time (Mins)</Label>
                         <div className="relative">
-                           <Clock className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-700" size={18} />
+                           <Clock className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/40" size={18} />
                            <Input 
                              type="number"
                              value={formData.preparationTime}
                              onChange={e => setFormData({...formData, preparationTime: e.target.value})}
-                             className="bg-zinc-900 border-zinc-800 h-14 pl-14 font-black italic rounded-2xl" 
+                             className="bg-muted border-border h-14 pl-14 font-black italic rounded-2xl text-foreground" 
                            />
                         </div>
                      </div>
                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Spiciness Level</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Spiciness Level</Label>
                         <div className="flex gap-2">
                            {[0, 1, 2, 3].map((lvl: number) => (
                               <button 
@@ -304,7 +304,7 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                                 type="button" 
                                 onClick={() => setFormData({...formData, spiciness: lvl.toString()})}
                                 className={`h-14 flex-1 rounded-2xl border transition-all text-[10px] font-black ${
-                                  formData.spiciness === lvl.toString() ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-zinc-900 border-zinc-800 text-zinc-600'
+                                  formData.spiciness === lvl.toString() ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-muted border-border text-muted-foreground'
                                 }`}
                               >
                                 {lvl === 0 ? 'MILD' : '🌶️'.repeat(lvl)}
@@ -315,12 +315,12 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                   </div>
 
                   <div className="space-y-2">
-                     <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Item Description</Label>
+                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Item Description</Label>
                      <textarea 
                        rows={4}
                        value={formData.description}
                        onChange={e => setFormData({...formData, description: e.target.value})}
-                       className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-sm font-bold resize-none focus:border-emerald-500/50 transition-colors text-white"
+                       className="w-full bg-muted border border-border rounded-2xl p-6 text-sm font-bold resize-none focus:border-emerald-500/50 transition-colors text-foreground"
                        placeholder="Describe the taste and ingredients of this item..."
                      />
                   </div>
@@ -329,8 +329,8 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                <TabsContent value="gallery" className="mt-0 space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="flex items-center justify-between gap-4">
                      <div>
-                        <h3 className="text-xl font-black italic uppercase tracking-tighter">Item Photos</h3>
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Add up to 8 images for this item.</p>
+                        <h3 className="text-xl font-black italic uppercase tracking-tighter text-foreground">Item Photos</h3>
+                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Add up to 8 images for this item.</p>
                      </div>
                      <Label className="h-12 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[9px] flex items-center justify-center cursor-pointer shadow-lg shadow-emerald-500/10 transition-all">
                         <Plus size={16} className="mr-2" /> Upload Photos
@@ -340,8 +340,8 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
 
                   <div className="grid gap-6">
                      {formData.media.filter((m: any) => !m.delete).map((med: any, idx: number) => ( med && (
-                       <div key={idx} className={`p-6 bg-zinc-900/40 border-2 rounded-[2rem] transition-all flex flex-col md:flex-row gap-8 relative overflow-hidden group ${med.isMain ? 'border-emerald-500/50' : 'border-zinc-900 hover:border-zinc-800'}`}>
-                          <div className="h-32 w-32 rounded-3xl overflow-hidden shrink-0 border-2 border-zinc-900 relative">
+                       <div key={idx} className={`p-6 bg-muted/40 border-2 rounded-[2rem] transition-all flex flex-col md:flex-row gap-8 relative overflow-hidden group ${med.isMain ? 'border-emerald-500/50' : 'border-border hover:border-border/80'}`}>
+                          <div className="h-32 w-32 rounded-3xl overflow-hidden shrink-0 border-2 border-border relative">
                              <img src={med.url} className="h-full w-full object-cover" />
                              {med.isMain && (
                                 <div className="absolute top-2 left-2 px-2 py-0.5 bg-emerald-500 text-zinc-950 font-black text-[7px] uppercase tracking-widest rounded-full shadow-lg">Main</div>
@@ -351,20 +351,20 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                           <div className="flex-1 space-y-4">
                              <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-1">
-                                   <Label className="text-[8px] font-black uppercase tracking-widest text-zinc-700 px-1">Display Caption</Label>
+                                   <Label className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">Display Caption</Label>
                                    <Input 
                                       value={med.caption || ''} 
                                       onChange={e => updateMediaInfo(idx, { caption: e.target.value })}
-                                      className="bg-zinc-950 border-zinc-900 h-10 px-4 text-xs font-bold rounded-xl" 
+                                      className="bg-background border-border h-10 px-4 text-xs font-bold rounded-xl text-foreground" 
                                       placeholder="e.g., Crispy golden crust detail"
                                    />
                                 </div>
                                 <div className="space-y-1">
-                                   <Label className="text-[8px] font-black uppercase tracking-widest text-zinc-700 px-1">Accessibility Alt Text</Label>
+                                   <Label className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">Accessibility Alt Text</Label>
                                    <Input 
                                       value={med.alt || ''} 
                                       onChange={e => updateMediaInfo(idx, { alt: e.target.value })}
-                                      className="bg-zinc-950 border-zinc-900 h-10 px-4 text-xs font-bold rounded-xl" 
+                                      className="bg-background border-border h-10 px-4 text-xs font-bold rounded-xl text-foreground" 
                                       placeholder="Alt description for screen readers"
                                    />
                                 </div>
@@ -375,7 +375,7 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                                   <Button 
                                     type="button" 
                                     onClick={() => setMainImage(idx)}
-                                    className="bg-zinc-950 hover:bg-emerald-500/10 text-zinc-600 hover:text-emerald-500 border border-zinc-800 h-10 px-4 text-[9px] font-black uppercase rounded-xl"
+                                    className="bg-background hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-500 border border-border h-10 px-4 text-[9px] font-black uppercase rounded-xl"
                                   >
                                     Use as Main
                                   </Button>
@@ -383,7 +383,7 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                                 <Button 
                                   type="button" 
                                   onClick={() => removeMedia(idx)}
-                                  className="bg-zinc-950 hover:bg-red-500/10 text-zinc-600 hover:text-red-500 border border-zinc-800 h-10 px-4 text-[9px] font-black uppercase rounded-xl"
+                                  className="bg-background hover:bg-red-500/10 text-muted-foreground hover:text-red-500 border border-border h-10 px-4 text-[9px] font-black uppercase rounded-xl"
                                 >
                                   Remove Photo
                                 </Button>
@@ -393,9 +393,9 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                      )))}
                      
                      {formData.media.filter((m: any) => !m.delete).length === 0 && (
-                        <div className="py-20 text-center border-2 border-dashed border-zinc-900 rounded-[3rem] opacity-20">
-                           <ImageIcon className="mx-auto mb-4" size={48} />
-                           <p className="text-[10px] font-black uppercase tracking-[0.3em]">No photos added yet</p>
+                        <div className="py-20 text-center border-2 border-dashed border-border rounded-[3rem] opacity-20">
+                           <ImageIcon className="mx-auto mb-4 text-muted-foreground" size={48} />
+                           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">No photos added yet</p>
                         </div>
                      )}
                   </div>
@@ -404,7 +404,7 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                <TabsContent value="nutrition" className="mt-0 space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="grid gap-6 md:grid-cols-2">
                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-2 flex items-center gap-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2 flex items-center gap-2">
                            <Flame size={12} className="text-orange-500" /> Calories (Kcal)
                         </Label>
                         <Input 
@@ -412,11 +412,11 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                           value={formData.calories}
                           onChange={e => setFormData({...formData, calories: e.target.value})}
                           placeholder="0.00" 
-                          className="bg-zinc-900 border-zinc-800 h-14 px-6 font-black italic text-lg rounded-2xl text-orange-500" 
+                          className="bg-muted border-border h-14 px-6 font-black italic text-lg rounded-2xl text-orange-500" 
                         />
                      </div>
                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-2 flex items-center gap-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2 flex items-center gap-2">
                            <Zap size={12} className="text-blue-500" /> Item Cost (₹)
                         </Label>
                         <Input 
@@ -424,38 +424,38 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                           value={formData.costPrice}
                           onChange={e => setFormData({...formData, costPrice: e.target.value})}
                           placeholder="Internal Cost" 
-                          className="bg-zinc-900 border-zinc-800 h-14 px-6 font-black italic text-lg rounded-2xl" 
+                          className="bg-muted border-border h-14 px-6 font-black italic text-lg rounded-2xl text-foreground" 
                         />
                      </div>
                   </div>
 
-                  <div className="p-8 border-2 border-dashed border-zinc-900 rounded-[2.5rem] bg-zinc-900/30">
-                     <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700 mb-8 text-center italic">Nutrition Details</h4>
+                  <div className="p-8 border-2 border-dashed border-border rounded-[2.5rem] bg-muted/20">
+                     <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 mb-8 text-center italic">Nutrition Details</h4>
                      <div className="grid grid-cols-3 gap-6">
                         <div className="space-y-2 text-center">
-                           <Label className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Protein</Label>
+                           <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Protein</Label>
                            <Input 
                              value={formData.protein}
                              onChange={e => setFormData({...formData, protein: e.target.value})}
-                             className="text-center font-black rounded-xl bg-zinc-900 border-zinc-800" 
+                             className="text-center font-black rounded-xl bg-muted border-border text-foreground" 
                              placeholder="0g"
                            />
                         </div>
                         <div className="space-y-2 text-center">
-                           <Label className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Carbs</Label>
+                           <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Carbs</Label>
                            <Input 
                              value={formData.carbs}
                              onChange={e => setFormData({...formData, carbs: e.target.value})}
-                             className="text-center font-black rounded-xl bg-zinc-900 border-zinc-800" 
+                             className="text-center font-black rounded-xl bg-muted border-border text-foreground" 
                              placeholder="0g"
                            />
                         </div>
                         <div className="space-y-2 text-center">
-                           <Label className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Fats</Label>
+                           <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Fats</Label>
                            <Input 
                              value={formData.fats}
                              onChange={e => setFormData({...formData, fats: e.target.value})}
-                             className="text-center font-black rounded-xl bg-zinc-900 border-zinc-800"
+                             className="text-center font-black rounded-xl bg-muted border-border text-foreground"
                              placeholder="0g"
                            />
                         </div>
@@ -463,12 +463,12 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                   </div>
 
                   <div className="space-y-2">
-                     <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Ingredients</Label>
+                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Ingredients</Label>
                      <Textarea 
                        value={formData.ingredients}
                        onChange={e => setFormData({...formData, ingredients: e.target.value})}
                        placeholder="Flour, Yeast, Water, Olive Oil..."
-                       className="bg-zinc-900 border-zinc-800 rounded-2xl min-h-[100px] font-bold"
+                       className="bg-muted border-border rounded-2xl min-h-[100px] font-bold text-foreground"
                      />
                   </div>
                </TabsContent>
@@ -481,10 +481,10 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                         { label: 'Gluten-Free', state: 'isGlutenFree', icon: Scale, color: 'text-amber-500' },
                         { label: 'Halal', state: 'isHalal', icon: Globe, color: 'text-blue-500' },
                      ].map((diet: any) => (
-                        <div key={diet.state} className="flex items-center justify-between bg-zinc-900/40 p-5 rounded-2xl border border-zinc-900 hover:border-zinc-800 transition-all">
+                        <div key={diet.state} className="flex items-center justify-between bg-muted/40 p-5 rounded-2xl border border-border hover:border-border/80 transition-all">
                            <div className="flex items-center gap-3">
                               <diet.icon size={16} className={diet.color} />
-                              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-300">{diet.label}</span>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-foreground">{diet.label}</span>
                            </div>
                            <Switch 
                              checked={(formData as any)[diet.state]} 
@@ -495,10 +495,10 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                      ))}
                   </div>
 
-                  <div className="space-y-4 pt-4 border-t border-zinc-900">
+                  <div className="space-y-4 pt-4 border-t border-border">
                      <div className="flex items-center gap-2 mb-2">
                         <Flame size={14} className="text-red-500" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Spiciness Level</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Spiciness Level</span>
                      </div>
                      <div className="flex gap-4">
                         {[0, 1, 2, 3].map((level: number) => (
@@ -509,7 +509,7 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                             className={`flex-1 h-14 rounded-2xl border transition-all flex items-center justify-center gap-2 ${
                               formData.spiciness === level.toString()
                               ? 'bg-red-500/10 border-red-500/50 text-red-500 shadow-lg shadow-red-500/5'
-                              : 'bg-zinc-900 border-zinc-800 text-zinc-600 hover:border-zinc-700'
+                              : 'bg-muted border-border text-muted-foreground hover:border-border/80'
                             }`}
                           >
                              <Flame size={16} />
@@ -520,22 +520,22 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                   </div>
 
                   <div className="space-y-2 pt-4">
-                     <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 flex items-center gap-2">
+                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                         <ShieldAlert size={14} className="text-amber-500" /> Allergens
                      </Label>
                      <Input 
                        value={formData.allergens}
                        onChange={e => setFormData({...formData, allergens: e.target.value})}
                        placeholder="Peanuts, Shellfish, Soy..." 
-                       className="bg-zinc-900 border-zinc-800 h-14 font-bold rounded-2xl border-amber-500/20"
+                       className="bg-muted border-border h-14 font-bold rounded-2xl border-amber-500/20 text-foreground"
                      />
                   </div>
                </TabsContent>
             </div>
           </Tabs>
 
-          <DialogFooter className="p-10 bg-zinc-950/50 border-t border-zinc-900 gap-4 flex-row items-center sm:justify-between">
-            <div className="hidden md:flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-800">
+          <DialogFooter className="p-10 bg-background/50 border-t border-border gap-4 flex-row items-center sm:justify-between">
+            <div className="hidden md:flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">
                <Info size={14} /> Menu Management
             </div>
             <Button 

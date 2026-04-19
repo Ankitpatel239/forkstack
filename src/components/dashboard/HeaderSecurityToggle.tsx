@@ -46,7 +46,7 @@ export function HeaderSecurityToggle({ initialLocked }: { initialLocked?: boolea
       className={`relative p-2.5 rounded-full border transition-all group flex items-center gap-2 ${
         isLocked 
         ? 'bg-red-500/10 border-red-500/30 text-red-500 shadow-lg shadow-red-500/10' 
-        : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/30'
+        : 'bg-muted border-border text-muted-foreground hover:text-emerald-500 hover:border-emerald-500/30'
       }`}
       title={isLocked ? 'Unlock Website' : 'Lock Website'}
     >

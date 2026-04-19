@@ -86,11 +86,11 @@ export async function toggleUserStatus(userId: string, isActive: boolean) {
 export async function upsertPlan(data: {
   name: string;
   displayName: string;
+  description?: string;
   price: number;
   features: string[];
 }) {
   try {
-    // Note: This requires the PlatformPlan model we added to schema
     const plan = await (prisma as any).platformPlan.upsert({
       where: { name: data.name },
       update: data,

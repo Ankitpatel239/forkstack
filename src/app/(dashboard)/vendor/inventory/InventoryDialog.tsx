@@ -197,21 +197,21 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-950 border-zinc-900 text-white sm:max-w-[600px] p-0 overflow-hidden rounded-2xl shadow-2xl">
-        <DialogHeader className="p-6 pb-4 bg-zinc-900/40">
+      <DialogContent className="bg-background border-border text-foreground sm:max-w-[600px] p-0 overflow-hidden rounded-2xl shadow-2xl">
+        <DialogHeader className="p-6 pb-4 bg-muted/30">
           <div className="flex items-center justify-between gap-4">
              <div>
                 <DialogTitle className="text-base font-bold tracking-tight">
                   {item ? (mode === 'REPLENISH' ? 'Stock Update' : 'Asset Profile') : 'New Catalog Entry'}
                 </DialogTitle>
-                <DialogDescription className="text-zinc-500 text-[9px] font-bold uppercase tracking-widest mt-0.5">
+                <DialogDescription className="text-muted-foreground/60 text-[9px] font-bold uppercase tracking-widest mt-0.5">
                   {item ? `${item.name} • ${item.sku}` : 'Setup new SKU'}
                 </DialogDescription>
              </div>
              {item && (
-                <div className="flex bg-zinc-900 p-0.5 rounded-lg">
-                   <button type="button" onClick={() => setMode('REPLENISH')} className={`px-4 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-wider transition-all ${mode === 'REPLENISH' ? 'bg-emerald-500 text-zinc-950 shadow' : 'text-zinc-500'}`}>Inventory</button>
-                   <button type="button" onClick={() => setMode('DETAILS')} className={`px-4 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-wider transition-all ${mode === 'DETAILS' ? 'bg-emerald-500 text-zinc-950 shadow' : 'text-zinc-500'}`}>Profile</button>
+                <div className="flex bg-muted p-0.5 rounded-lg border border-border/50">
+                   <button type="button" onClick={() => setMode('REPLENISH')} className={`px-4 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-wider transition-all ${mode === 'REPLENISH' ? 'bg-emerald-500 text-foreground shadow-lg' : 'text-muted-foreground/60'}`}>Inventory</button>
+                   <button type="button" onClick={() => setMode('DETAILS')} className={`px-4 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-wider transition-all ${mode === 'DETAILS' ? 'bg-emerald-500 text-foreground shadow-lg' : 'text-muted-foreground/60'}`}>Profile</button>
                 </div>
              )}
           </div>
@@ -220,15 +220,15 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
         <form onSubmit={handleSubmit} className="p-6 pt-2 space-y-4 overflow-y-auto max-h-[70vh] custom-scrollbar">
           {item && mode === 'REPLENISH' ? (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-               <div className="grid grid-cols-2 gap-2 p-1 bg-zinc-900/50 rounded-xl border border-zinc-900">
-                  <button type="button" onClick={() => setAdjustmentType('IN')} className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all ${adjustmentType === 'IN' ? 'bg-emerald-500 text-zinc-950' : 'text-zinc-500'}`}><PlusCircle size={14} /> Intake</button>
-                  <button type="button" onClick={() => setAdjustmentType('WASTE')} className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all ${adjustmentType === 'WASTE' ? 'bg-red-500 text-white' : 'text-zinc-500'}`}><MinusCircle size={14} /> Waste</button>
+               <div className="grid grid-cols-2 gap-2 p-1 bg-muted/50 rounded-xl border border-border">
+                  <button type="button" onClick={() => setAdjustmentType('IN')} className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all ${adjustmentType === 'IN' ? 'bg-emerald-500 text-foreground' : 'text-muted-foreground/60'}`}><PlusCircle size={14} /> Intake</button>
+                  <button type="button" onClick={() => setAdjustmentType('WASTE')} className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all ${adjustmentType === 'WASTE' ? 'bg-red-500 text-white' : 'text-muted-foreground/60'}`}><MinusCircle size={14} /> Waste</button>
                </div>
 
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-[9px] font-bold uppercase text-zinc-500">Amount ({item.unit})</Label>
-                    <Input type="number" step="0.01" value={formData.adjustmentValue} onChange={e => setFormData({...formData, adjustmentValue: e.target.value})} className="bg-zinc-900 h-10 px-4 rounded-lg text-sm font-bold" required />
+                    <Label className="text-[9px] font-bold uppercase text-muted-foreground/60">Amount ({item.unit})</Label>
+                    <Input type="number" step="0.01" value={formData.adjustmentValue} onChange={e => setFormData({...formData, adjustmentValue: e.target.value})} className="bg-muted h-10 px-4 rounded-lg text-sm font-bold border-border" required />
                   </div>
                   {adjustmentType === 'IN' && (
                     <div className="space-y-1.5">
@@ -240,17 +240,17 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
 
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                     <Label className="text-[9px] font-bold uppercase text-zinc-500">Log Entry Description</Label>
-                     <Input value={formData.changeReason} onChange={e => setFormData({...formData, changeReason: e.target.value})} placeholder="Reason..." className="bg-zinc-900 h-10 px-4 rounded-lg text-[10px]" />
+                     <Label className="text-[9px] font-bold uppercase text-muted-foreground/60">Log Entry Description</Label>
+                     <Input value={formData.changeReason} onChange={e => setFormData({...formData, changeReason: e.target.value})} placeholder="Reason..." className="bg-muted h-10 px-4 rounded-lg text-[10px] border-border" />
                   </div>
                   <div className="space-y-1.5">
-                     <Label className="text-[9px] font-bold uppercase text-zinc-500">Item Location</Label>
-                     <Input value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="Shelf / Aisle" className="bg-zinc-900 h-10 px-4 rounded-lg text-xs" />
+                     <Label className="text-[9px] font-bold uppercase text-muted-foreground/60">Item Location</Label>
+                     <Input value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="Shelf / Aisle" className="bg-muted h-10 px-4 rounded-lg text-xs border-border" />
                   </div>
                </div>
 
-               <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-900 space-y-3">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700 flex items-center gap-2">Audit History Control</p>
+               <div className="p-4 rounded-xl bg-card border border-border/50 space-y-3">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/30 flex items-center gap-2">Audit History Control</p>
                   <div className="space-y-2">
                      {item.batches?.filter((b: any) => b.quantity > 0).sort((a: any,b: any) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime()).map((batch: any, idx: any) => (
                         <div key={batch.id}>
@@ -261,12 +261,12 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
                                  <Button type="button" onClick={() => handleBatchUpdate(batch.id)} className="bg-emerald-500 text-zinc-950 h-8 px-3 rounded-md font-bold text-[8px]">SAVE</Button>
                               </div>
                            ) : (
-                              <div className="group/batch flex items-center justify-between p-3 rounded-lg bg-zinc-900/30 border border-zinc-900/30 hover:bg-zinc-900/50">
+                              <div className="group/batch flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border/20 hover:bg-muted/80 transition-all">
                                  <div className="flex items-center gap-3">
-                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-black ${idx === 0 ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-800 text-zinc-500'}`}>{idx === 0 ? 'OLD' : `#${idx + 1}`}</div>
-                                    <p className="text-[10px] font-bold text-zinc-400">{batch.quantity} {item.unit} <span className="text-[8px] text-zinc-700 font-medium ml-1">@{batch.costPrice}</span></p>
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-black ${idx === 0 ? 'bg-emerald-500 text-foreground' : 'bg-muted text-muted-foreground'}`}>{idx === 0 ? 'OLD' : `#${idx + 1}`}</div>
+                                    <p className="text-[10px] font-bold text-muted-foreground/80">{batch.quantity} {item.unit} <span className="text-[8px] text-muted-foreground/40 font-medium ml-1">@{batch.costPrice}</span></p>
                                  </div>
-                                 <button type="button" onClick={() => { setEditingBatchId(batch.id); setEditQty(batch.quantity.toString()); }} className="p-1.5 text-zinc-700 hover:text-emerald-500 transition-all opacity-0 group-hover/batch:opacity-100"><RotateCcw size={12} /></button>
+                                 <button type="button" onClick={() => { setEditingBatchId(batch.id); setEditQty(batch.quantity.toString()); }} className="p-1.5 text-muted-foreground/40 hover:text-emerald-500 transition-all opacity-0 group-hover/batch:opacity-100"><RotateCcw size={12} /></button>
                               </div>
                            )}
                         </div>
@@ -281,19 +281,19 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
                   <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-zinc-500">Barcode</Label><Input value={formData.barcode} onChange={e => setFormData({...formData, barcode: e.target.value})} className="bg-zinc-900 h-10 px-4 rounded-lg tracking-widest text-xs" /></div>
                </div>
                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-zinc-500">Category</Label>
+                  <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-muted-foreground/60">Category</Label>
                     <Select value={formData.category} onValueChange={v => setFormData({...formData, category: v})}>
-                      <SelectTrigger className="bg-zinc-900 h-10 rounded-lg text-xs font-bold"><SelectValue /></SelectTrigger>
-                      <SelectContent className="bg-zinc-950 border-zinc-800 text-white">
+                      <SelectTrigger className="bg-muted h-10 rounded-lg text-xs font-bold border-border"><SelectValue /></SelectTrigger>
+                      <SelectContent className="bg-card border-border text-foreground">
                         {categories.map((cat: any) => <SelectItem key={cat} value={cat} className="text-xs py-2">{cat}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-zinc-500">UOM</Label><Input value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} className="bg-zinc-900 h-10 rounded-lg text-xs font-bold" /></div>
+                  <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-muted-foreground/60">UOM</Label><Input value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} className="bg-muted h-10 rounded-lg text-xs font-bold border-border" /></div>
                </div>
-               <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-zinc-900/50 border border-zinc-900">
-                  <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-emerald-500">Price (POS)</Label><Input type="number" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="bg-black h-10 px-4 rounded-lg text-sm font-bold text-emerald-400" /></div>
-                  <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-red-500">Alert Lvl</Label><Input type="number" value={formData.lowStockThreshold} onChange={e => setFormData({...formData, lowStockThreshold: e.target.value})} className="bg-black h-10 px-4 rounded-lg text-sm font-bold" /></div>
+               <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-muted/30 border border-border/50">
+                  <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-emerald-500">Price (POS)</Label><Input type="number" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="bg-background h-10 px-4 rounded-lg text-sm font-bold text-emerald-500 border-border" /></div>
+                  <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-red-500">Alert Lvl</Label><Input type="number" value={formData.lowStockThreshold} onChange={e => setFormData({...formData, lowStockThreshold: e.target.value})} className="bg-background h-10 px-4 rounded-lg text-sm font-bold border-border" /></div>
                </div>
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-zinc-500">Brand</Label><Input value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} className="bg-zinc-900 h-10 rounded-lg text-xs" /></div>
@@ -302,7 +302,7 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
             </div>
           )}
           <DialogFooter className="pt-2">
-            <Button type="submit" disabled={loading || !!editingBatchId} className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-11 rounded-xl shadow-lg transition-all active:scale-[0.98]">
+            <Button type="submit" disabled={loading || !!editingBatchId} className="w-full bg-emerald-500 hover:bg-emerald-400 text-foreground font-black uppercase tracking-widest text-[10px] h-11 rounded-xl shadow-lg transition-all active:scale-[0.98]">
               {loading ? "..." : item ? (mode === 'REPLENISH' ? 'Update Inventory' : 'Sync Profile') : 'Create SKU'}
             </Button>
           </DialogFooter>

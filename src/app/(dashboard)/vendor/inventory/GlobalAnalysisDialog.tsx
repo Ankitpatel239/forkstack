@@ -109,14 +109,14 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
                      </div>
                    )}
                 </div>
-                <span className="text-[7px] font-black text-zinc-700 uppercase tracking-tighter group-hover:text-emerald-500 transition-colors">{d.day.split(' ')[1]}</span>
+                <span className="text-[7px] font-black text-muted-foreground/40 uppercase tracking-tighter group-hover:text-emerald-500 transition-colors">{d.day.split(' ')[1]}</span>
               </div>
             </TooltipTrigger>
-            <TooltipContent className="bg-black border-zinc-800 text-[10px] p-3 rounded-xl shadow-2xl">
+            <TooltipContent className="bg-card border-border text-[10px] p-3 rounded-xl shadow-2xl">
                <p className="font-black italic uppercase tracking-tighter text-emerald-500 mb-1">{d.day}</p>
                <div className="flex items-center justify-between gap-8">
-                  <span className="text-zinc-500 font-bold uppercase text-[8px]">Total Outflow</span>
-                  <span className="font-black text-white">{d.sales} Units</span>
+                  <span className="text-muted-foreground/40 font-bold uppercase text-[8px]">Total Outflow</span>
+                  <span className="font-black text-foreground">{d.sales} Units</span>
                </div>
                {d.waste > 0 && (
                   <div className="flex items-center justify-between gap-8 mt-1">
@@ -134,35 +134,35 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-950 border-zinc-900 text-white sm:max-w-[700px] p-0 overflow-hidden rounded-[2.5rem] shadow-2xl outline-none">
+      <DialogContent className="bg-background border-border text-foreground sm:max-w-[700px] p-0 overflow-hidden rounded-[2.5rem] shadow-2xl outline-none">
         <div className="grid md:grid-cols-5 h-full">
            {/* Sidebar Info */}
-           <div className="md:col-span-2 bg-zinc-900/50 border-r border-zinc-900 p-8 space-y-8">
+           <div className="md:col-span-2 bg-muted/30 border-r border-border p-8 space-y-8">
               <div>
                  <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 mb-4">
                     <BarChart3 size={24} />
                  </div>
-                 <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Portfolio<br />Intel Node</h2>
-                 <p className="text-[9px] text-zinc-500 font-black uppercase tracking-widest mt-2 px-1">Global audit & velocity tracking</p>
+                 <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none text-foreground">Portfolio<br />Intel Node</h2>
+                 <p className="text-[9px] text-muted-foreground/40 font-black uppercase tracking-widest mt-2 px-1">Global audit & velocity tracking</p>
               </div>
 
               <div className="space-y-4">
-                 <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-1">
-                    <p className="text-[8px] font-black uppercase text-zinc-600">Period Sales</p>
+                 <div className="p-4 rounded-2xl bg-card/50 border border-border/50 space-y-1">
+                    <p className="text-[8px] font-black uppercase text-muted-foreground/60">Period Sales</p>
                     <div className="flex items-baseline gap-2">
-                       <h3 className="text-2xl font-black italic text-white leading-none">{metrics.sales}</h3>
+                       <h3 className="text-2xl font-black italic text-foreground leading-none">{metrics.sales}</h3>
                        <span className="text-[10px] text-emerald-500 font-bold uppercase">Units</span>
                     </div>
                  </div>
-                 <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-1">
-                    <p className="text-[8px] font-black uppercase text-zinc-600">Material Intake</p>
+                 <div className="p-4 rounded-2xl bg-card/50 border border-border/50 space-y-1">
+                    <p className="text-[8px] font-black uppercase text-muted-foreground/60">Material Intake</p>
                     <div className="flex items-baseline gap-2">
                        <h3 className="text-2xl font-black italic text-blue-500 leading-none">{metrics.intake}</h3>
                        <span className="text-[10px] text-blue-500/50 font-bold uppercase font-black tracking-widest leading-none block">{((metrics.intake / (metrics.intake + metrics.sales || 1)) * 100).toFixed(0)}% Fill</span>
                     </div>
                  </div>
-                 <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-1 group">
-                    <p className="text-[8px] font-black uppercase text-zinc-600">Loss / Waste Vector</p>
+                 <div className="p-4 rounded-2xl bg-card/50 border border-border/50 space-y-1 group">
+                    <p className="text-[8px] font-black uppercase text-muted-foreground/60">Loss / Waste Vector</p>
                     <div className="flex items-baseline gap-2">
                        <h3 className="text-2xl font-black italic text-red-500 leading-none">{metrics.waste}</h3>
                        {metrics.waste > 0 && <span className="text-[8px] py-0.5 px-1.5 bg-red-500/10 text-red-500 rounded font-black animate-pulse uppercase">Leakage Detected</span>}
@@ -170,8 +170,8 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
                  </div>
               </div>
 
-              <div className="pt-4 border-t border-zinc-800/50">
-                 <div className="flex items-center gap-2 text-zinc-600 hover:text-white transition-colors cursor-help">
+              <div className="pt-4 border-t border-border/50">
+                 <div className="flex items-center gap-2 text-muted-foreground/40 hover:text-foreground transition-colors cursor-help">
                     <Flame size={14} className="text-emerald-500" />
                     <span className="text-[9px] font-black uppercase tracking-widest italic">Efficiency Index: 92.4%</span>
                  </div>
@@ -180,25 +180,25 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
 
            {/* Main Content */}
            <div className="md:col-span-3 flex flex-col h-[600px]">
-              <div className="p-8 border-b border-zinc-900 bg-zinc-950 flex flex-col gap-4">
+              <div className="p-8 border-b border-border bg-card flex flex-col gap-4">
                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 flex items-center gap-2">
                        <CalendarIcon size={12} /> Temporal Range
                     </span>
-                    <Badge variant="outline" className="text-[8px] font-black uppercase border-zinc-800 text-zinc-600">Nodes Synchronized</Badge>
+                    <Badge variant="outline" className="text-[8px] font-black uppercase border-border text-muted-foreground/40">Nodes Synchronized</Badge>
                  </div>
                  <div className="flex gap-2">
                     <Button 
                       variant="outline" 
                       onClick={() => setDateRange({ from: subDays(new Date(), 7), to: new Date() })}
-                      className="flex-1 h-10 border-zinc-800 bg-zinc-900 p-0 text-[10px] font-black uppercase rounded-xl hover:bg-emerald-500 hover:text-zinc-950 transition-all active:scale-95"
+                      className="flex-1 h-10 border-border bg-muted p-0 text-[10px] font-black uppercase rounded-xl hover:bg-emerald-500 hover:text-foreground transition-all active:scale-95"
                     >
                       7 Nodes
                     </Button>
                     <Button 
                       variant="outline"
                       onClick={() => setDateRange({ from: subDays(new Date(), 30), to: new Date() })}
-                      className="flex-1 h-10 border-zinc-800 bg-zinc-900 p-0 text-[10px] font-black uppercase rounded-xl hover:bg-emerald-500 hover:text-zinc-950 transition-all active:scale-95"
+                      className="flex-1 h-10 border-border bg-muted p-0 text-[10px] font-black uppercase rounded-xl hover:bg-emerald-500 hover:text-foreground transition-all active:scale-95"
                     >
                       30 Nodes
                     </Button>
@@ -206,21 +206,21 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
 
                  <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
-                       <label className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-600 px-1">Source Node Date</label>
+                       <label className="text-[7px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 px-1">Source Node Date</label>
                        <input 
                          type="date"
                          value={format(dateRange.from, 'yyyy-MM-dd')}
                          onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value ? new Date(e.target.value) : prev.from }))}
-                         className="w-full bg-zinc-900 border border-zinc-800 rounded-xl h-10 px-3 text-[10px] font-bold text-zinc-300 focus:border-emerald-500/50 outline-none transition-all [color-scheme:dark]"
+                         className="w-full bg-muted border border-border rounded-xl h-10 px-3 text-[10px] font-bold text-foreground focus:border-emerald-500/50 outline-none transition-all"
                        />
                     </div>
                     <div className="space-y-1">
-                       <label className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-600 px-1">Terminal Node Date</label>
+                       <label className="text-[7px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 px-1">Terminal Node Date</label>
                        <input 
                          type="date"
                          value={format(dateRange.to, 'yyyy-MM-dd')}
                          onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value ? new Date(e.target.value) : prev.to }))}
-                         className="w-full bg-zinc-900 border border-zinc-800 rounded-xl h-10 px-3 text-[10px] font-bold text-zinc-300 focus:border-emerald-500/50 outline-none transition-all [color-scheme:dark]"
+                         className="w-full bg-muted border border-border rounded-xl h-10 px-3 text-[10px] font-bold text-foreground focus:border-emerald-500/50 outline-none transition-all"
                        />
                     </div>
                  </div>
@@ -228,61 +228,61 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
 
               <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
                  <div className="space-y-4">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 flex items-center gap-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 flex items-center gap-2">
                        <Activity size={12} /> Velocity Distribution
                     </p>
-                    <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-[2rem]">
+                    <div className="bg-muted/40 border border-border/50 p-6 rounded-[2rem]">
                        <SimpleBarChart data={metrics.dailyData} />
                     </div>
                  </div>
 
                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                       <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 flex items-center gap-2">
+                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 flex items-center gap-2">
                           <History size={12} /> Temporal Feed
                        </p>
-                       <span className="text-[8px] font-bold text-zinc-700">{history.length} operations</span>
+                       <span className="text-[8px] font-bold text-muted-foreground/40">{history.length} operations</span>
                     </div>
 
                     <div className="space-y-3">
                        {loading ? (
                           <div className="flex items-center justify-center py-10 opacity-20"><Zap size={24} className="animate-pulse" /></div>
                        ) : history.length === 0 ? (
-                          <p className="text-center py-10 text-[10px] font-black text-zinc-800 uppercase tracking-widest border border-dashed border-zinc-900 rounded-2xl leading-none block">Null feed in range.</p>
+                          <p className="text-center py-10 text-[10px] font-black text-muted-foreground/20 uppercase tracking-widest border border-dashed border-border rounded-2xl leading-none block">Null feed in range.</p>
                        ) : (
-                          history.slice(0, 10).map((log: any, idx: any) => (
-                             <div key={idx} className="flex items-center justify-between p-4 bg-zinc-900/30 border border-zinc-900/50 rounded-2xl group hover:border-emerald-500/20 transition-all">
+                           history.slice(0, 10).map((log: any, idx: any) => (
+                             <div key={idx} className="flex items-center justify-between p-4 bg-muted/20 border border-border/30 rounded-2xl group hover:border-emerald-500/20 transition-all">
                                 <div className="flex items-center gap-3">
                                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${log.type === 'IN' ? 'bg-blue-500/10 text-blue-500' : log.type === 'WASTE' ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
                                       {log.type === 'IN' ? <ArrowDownCircle size={14} /> : log.type === 'WASTE' ? <AlertTriangle size={14} /> : <ArrowUpCircle size={14} />}
                                    </div>
                                    <div>
-                                      <p className="text-[11px] font-black uppercase tracking-tight text-zinc-300">{log.inventoryItem.name}</p>
-                                      <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">{format(new Date(log.createdAt), 'HH:mm • MMM dd')}</p>
+                                      <p className="text-[11px] font-black uppercase tracking-tight text-foreground">{log.inventoryItem.name}</p>
+                                      <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-widest">{format(new Date(log.createdAt), 'HH:mm • MMM dd')}</p>
                                    </div>
                                 </div>
                                 <div className="text-right">
                                    <p className={`text-sm font-black italic ${log.type === 'IN' ? 'text-blue-500' : log.type === 'WASTE' ? 'text-red-500' : 'text-emerald-500'}`}>
                                       {log.type === 'IN' ? '+' : '-'}{Math.abs(log.quantity)}
                                    </p>
-                                   <p className="text-[8px] font-bold text-zinc-700 uppercase tracking-widest">{log.type}</p>
+                                   <p className="text-[8px] font-bold text-muted-foreground/20 uppercase tracking-widest">{log.type}</p>
                                 </div>
                              </div>
                           ))
                        )}
                        {history.length > 10 && (
                          <div className="text-center">
-                            <span className="text-[8px] font-black text-zinc-800 uppercase tracking-widest">+{history.length - 10} more operations</span>
+                            <span className="text-[8px] font-black text-muted-foreground/20 uppercase tracking-widest">+{history.length - 10} more operations</span>
                          </div>
                        )}
                     </div>
                  </div>
               </div>
 
-              <div className="p-8 bg-zinc-950 border-t border-zinc-900">
+              <div className="p-8 bg-card border-t border-border">
                  <Button 
                    onClick={() => onOpenChange(false)}
-                   className="w-full bg-white hover:bg-zinc-200 text-zinc-950 font-black uppercase tracking-[0.2em] text-[10px] h-14 rounded-2xl shadow-xl active:scale-95 transition-all"
+                   className="w-full bg-foreground text-background hover:bg-foreground/90 font-black uppercase tracking-[0.2em] text-[10px] h-14 rounded-2xl shadow-xl active:scale-95 transition-all"
                  >
                     Terminate Session
                  </Button>

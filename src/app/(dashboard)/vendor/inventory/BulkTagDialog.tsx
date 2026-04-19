@@ -55,32 +55,32 @@ export function BulkTagDialog({ items, open, onOpenChange }: BulkTagDialogProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-950 border-zinc-900 text-white sm:max-w-[1000px] max-h-[90vh] p-0 overflow-hidden flex flex-col rounded-[2rem] shadow-2xl outline-none">
+      <DialogContent className="bg-background border-border text-foreground sm:max-w-[1000px] max-h-[90vh] p-0 overflow-hidden flex flex-col rounded-[2rem] shadow-2xl outline-none">
 
 
-        <DialogHeader className="p-8 pb-4 bg-zinc-950 border-b border-zinc-900 no-print">
+        <DialogHeader className="p-8 pb-4 bg-muted/30 border-b border-border no-print">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
                <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
                   <Printer size={24} />
                </div>
                <div>
-                 <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">Bulk Tag Factory</DialogTitle>
-                 <DialogDescription className="text-zinc-500 text-[9px] font-bold uppercase tracking-widest mt-0.5">
+                 <DialogTitle className="text-xl font-black italic uppercase tracking-tighter text-foreground">Bulk Tag Factory</DialogTitle>
+                 <DialogDescription className="text-muted-foreground/60 text-[9px] font-bold uppercase tracking-widest mt-0.5">
                    Preparing {items.length} assets for physical cataloging
                  </DialogDescription>
                </div>
             </div>
-            <div className="flex bg-zinc-900/50 p-1 rounded-xl gap-1">
+            <div className="flex bg-muted p-1 rounded-xl gap-1 border border-border/50">
                <button 
                  onClick={() => setTagType('BARCODE')}
-                 className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${tagType === 'BARCODE' ? 'bg-emerald-500 text-zinc-950' : 'text-zinc-500 hover:text-white'}`}
+                 className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${tagType === 'BARCODE' ? 'bg-emerald-500 text-foreground shadow-lg' : 'text-muted-foreground/40 hover:text-foreground'}`}
                >
                  Barcode
                </button>
                <button 
                  onClick={() => setTagType('QR')}
-                 className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${tagType === 'QR' ? 'bg-emerald-500 text-zinc-950' : 'text-zinc-500 hover:text-white'}`}
+                 className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${tagType === 'QR' ? 'bg-emerald-500 text-foreground shadow-lg' : 'text-muted-foreground/40 hover:text-foreground'}`}
                >
                  QR Code
                </button>
@@ -88,7 +88,7 @@ export function BulkTagDialog({ items, open, onOpenChange }: BulkTagDialogProps)
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-8 bg-zinc-950/20 custom-scrollbar no-print">
+        <div className="flex-1 overflow-y-auto p-8 bg-background custom-scrollbar no-print">
           <div id="printable-area-container">
             {/* Style for printing only - moved here to ensure it's cloned */}
             <style dangerouslySetInnerHTML={{ __html: `
@@ -144,11 +144,11 @@ export function BulkTagDialog({ items, open, onOpenChange }: BulkTagDialogProps)
 
             <div id="printable-area" className="grid grid-cols-2 gap-4">
                {items.map((item: any) => (
-                 <div key={item.id} className="print-tag bg-white text-black p-4 rounded-2xl border border-zinc-200 shadow-sm flex flex-col items-center gap-3 relative overflow-hidden min-h-[250px] justify-between text-center">
+                 <div key={item.id} className="print-tag bg-card text-foreground p-4 rounded-2xl border border-border/50 shadow-sm flex flex-col items-center gap-3 relative overflow-hidden min-h-[250px] justify-between text-center">
                     {/* Design Header */}
                     <div className="w-full">
-                       <h3 className="text-[12px] font-black uppercase tracking-tighter line-clamp-1">{item.name}</h3>
-                       <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">SKU: {item.sku || 'N/A'}</p>
+                       <h3 className="text-[12px] font-black uppercase tracking-tighter line-clamp-1 text-foreground">{item.name}</h3>
+                       <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest mt-0.5">SKU: {item.sku || 'N/A'}</p>
                     </div>
 
                     {/* Code Section */}
@@ -161,8 +161,8 @@ export function BulkTagDialog({ items, open, onOpenChange }: BulkTagDialogProps)
                     </div>
 
                     {/* Location/Footer */}
-                    <div className="w-full border-t border-zinc-100 pt-2 mt-auto">
-                       <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest">LOC: {item.location || 'UNSPECIFIED'}</span>
+                    <div className="w-full border-t border-border/50 pt-2 mt-auto">
+                       <span className="text-[10px] font-black uppercase text-emerald-500 tracking-widest">LOC: {item.location || 'UNSPECIFIED'}</span>
                     </div>
 
                     {/* Corner Accents for screen aesthetics */}
@@ -174,18 +174,18 @@ export function BulkTagDialog({ items, open, onOpenChange }: BulkTagDialogProps)
           </div>
         </div>
 
-        <DialogFooter className="p-8 bg-zinc-950 border-t border-zinc-900 no-print">
+        <DialogFooter className="p-8 bg-muted/30 border-t border-border no-print">
            <Button 
              variant="ghost" 
              onClick={() => onOpenChange(false)}
-             className="text-[10px] font-black uppercase tracking-widest text-zinc-600 hover:text-white"
+             className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 hover:text-foreground"
            >
              Close
            </Button>
            <Button 
              onClick={handlePrint}
              disabled={isPreparing}
-             className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-14 px-10 rounded-2xl shadow-xl shadow-emerald-500/10 transition-all active:scale-95 ml-auto flex items-center gap-3"
+             className="bg-emerald-500 hover:bg-emerald-400 text-foreground font-black uppercase tracking-widest text-[10px] h-14 px-10 rounded-2xl shadow-xl shadow-emerald-500/10 transition-all active:scale-95 ml-auto flex items-center gap-3"
            >
              {isPreparing ? (
                <>Preparing Assets...</>

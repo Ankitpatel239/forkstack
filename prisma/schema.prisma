@@ -163,7 +163,7 @@ model VendorProfile {
   accountManagerId      String?
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
-
+ 
   // Relations
   owner                 User?              @relation("VendorOwner", fields: [ownerId], references: [id])
   accountManager        User?              @relation("AccountManager", fields: [accountManagerId], references: [id])
@@ -183,6 +183,7 @@ model VendorProfile {
   subscriptionPayments  SubscriptionPayment[]
   payouts               Payout[]
   drives                ConnectedDrive[]
+  featureRequests       FeatureRequest[]
 }
 
 model InventoryCategory {
@@ -696,4 +697,19 @@ model Payout {
   updatedAt     DateTime     @updatedAt
 
   vendor        VendorProfile @relation(fields: [vendorId], references: [id])
+}
+
+// ========== FEATURE REQUESTS ==========
+model FeatureRequest {
+  id          String   @id @default(cuid())
+  vendorId    String
+  title       String
+  description String   @db.Text
+  priority    String   @default("NORMAL")
+  status      String   @default("PENDING")
+  adminNotes  String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
 }

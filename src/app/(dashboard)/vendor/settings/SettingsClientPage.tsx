@@ -30,7 +30,8 @@ import {
   Server,
   Activity,
   Box,
-  Badge
+  Badge,
+  Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -63,7 +64,17 @@ import {
   deleteInventoryCategory 
 } from '@/app/actions/inventory';
 
-export function SettingsClientPage({ vendor, initialDrives = [] }: { vendor: any, initialDrives: any[] }) {
+import { subscribeToPlan } from '@/app/actions/billing';
+
+export function SettingsClientPage({ 
+  vendor, 
+  initialDrives = [], 
+  plans = [] 
+}: { 
+  vendor: any, 
+  initialDrives: any[], 
+  plans: any[] 
+}) {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('Business Identity');
 
@@ -79,6 +90,24 @@ export function SettingsClientPage({ vendor, initialDrives = [] }: { vendor: any
   const [drives, setDrives] = useState(initialDrives);
   const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
   const [driveLoading, setDriveLoading] = useState(false);
+  const [subLoading, setSubLoading] = useState<string | null>(null);
+
+  const handleSubscribe = async (planName: string) => {
+    setSubLoading(planName);
+    try {
+      const res = await subscribeToPlan(planName);
+      if (res.success) {
+        toast.success(`Successfully migrated to ${planName} tier`);
+        window.location.reload(); // Refresh to update all context
+      } else {
+        toast.error(res.error || 'Subscription failed');
+      }
+    } catch (e) {
+      toast.error('Critical payment node failure');
+    } finally {
+      setSubLoading(null);
+    }
+  };
 
   const [newDrive, setNewDrive] = useState({
     name: '',
@@ -581,7 +610,91 @@ export function SettingsClientPage({ vendor, initialDrives = [] }: { vendor: any
             </div>
           )}
 
-         {['Platform Config', 'Notifications', 'Billing & Tiers'].includes(activeTab) && (
+         {activeTab === 'Billing & Tiers' && (
+            <div className="space-y-10">
+               <div className="bg-zinc-900 shadow-2xl border border-zinc-800 rounded-3xl overflow-hidden p-10">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
+                     <div className="space-y-2">
+                        <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[10px] font-black uppercase tracking-widest mb-2">Current Lifecycle</Badge>
+                        <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">{vendor.subscriptionPlan} Tier</h3>
+                        <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">
+                           Expires on {new Date(vendor.subscriptionEnd).toLocaleDateString()} • {vendor.subscriptionStatus}
+                        </p>
+                     </div>
+                     <div className="flex items-center gap-6">
+                        <div className="text-right">
+                           <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Renewal Node</p>
+                           <p className="text-xl font-black text-white italic">Automatic</p>
+                        </div>
+                        <div className="h-14 w-[1px] bg-zinc-800" />
+                        <div className="text-right">
+                           <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Member Since</p>
+                           <p className="text-xl font-black text-white italic">{new Date(vendor.subscriptionStart).getFullYear()}</p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               <div className="grid gap-8 md:grid-cols-3">
+                  {plans.map((plan: any) => {
+                    const isCurrent = vendor.subscriptionPlan === plan.name;
+                    return (
+                      <div key={plan.id} className={`bg-zinc-900 border rounded-3xl overflow-hidden shadow-2xl relative transition-all duration-500 ${isCurrent ? 'border-emerald-500 scale-[1.05] z-10 shadow-emerald-500/10' : 'border-zinc-800 opacity-80 hover:opacity-100 hover:border-zinc-700'}`}>
+                         {isCurrent && (
+                           <div className="absolute top-0 right-0 p-4">
+                              <ShieldCheck className="text-emerald-500" size={24} />
+                           </div>
+                         )}
+                         <div className="p-8 border-b border-zinc-800 bg-zinc-950/20">
+                            <Badge className={`border-none text-[9px] font-black uppercase tracking-widest mb-3 ${isCurrent ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-800 text-zinc-500'}`}>
+                               {plan.name} {isCurrent && '• Active Node'}
+                            </Badge>
+                            <h4 className="text-xl font-black text-white italic uppercase leading-none">{plan.displayName}</h4>
+                            <div className="flex items-baseline gap-1 mt-4">
+                               <span className="text-3xl font-black text-white">${plan.price}</span>
+                               <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">/ monthly</span>
+                            </div>
+                         </div>
+                         <div className="p-8 space-y-4">
+                            {plan.features.map((feature: string, i: number) => (
+                               <div key={i} className="flex items-center gap-3 text-[11px] font-bold text-zinc-400">
+                                  <Check size={14} className="text-emerald-500 shrink-0" />
+                                  {feature}
+                               </div>
+                            ))}
+                         </div>
+                         <div className="p-8 pt-0">
+                            <Button 
+                              disabled={isCurrent || !!subLoading}
+                              onClick={() => handleSubscribe(plan.name)}
+                              className={`w-full h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all ${isCurrent ? 'bg-zinc-800 text-zinc-500' : 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xl shadow-emerald-500/10'}`}
+                            >
+                               {subLoading === plan.name ? <Loader2 className="animate-spin" /> : (isCurrent ? 'Current Tier' : 'Upgrade Node')}
+                            </Button>
+                         </div>
+                      </div>
+                    );
+                  })}
+               </div>
+
+               <div className="bg-zinc-950/40 border border-zinc-800 p-10 rounded-[2.5rem] flex items-center justify-between gap-10">
+                  <div className="flex items-center gap-6">
+                     <div className="h-16 w-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-500">
+                        <CreditCard size={32} />
+                     </div>
+                     <div>
+                        <h4 className="text-xl font-black text-white italic uppercase leading-none">Global Ledger History</h4>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-2">Audit your platform subscription payments and fiscal cycles.</p>
+                     </div>
+                  </div>
+                  <Button variant="outline" className="h-14 px-10 border-zinc-800 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-900">
+                     Audit Billing Node
+                  </Button>
+               </div>
+            </div>
+         )}
+
+         {['Platform Config', 'Notifications'].includes(activeTab) && (
             <div className="bg-zinc-950/20 border-2 border-dashed border-zinc-900 rounded-[3rem] py-32 text-center">
                <div className="flex flex-col items-center gap-6">
                   <div className="h-20 w-20 rounded-full bg-zinc-900/50 flex items-center justify-center text-zinc-800">

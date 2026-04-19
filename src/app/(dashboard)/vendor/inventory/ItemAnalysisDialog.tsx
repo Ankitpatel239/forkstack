@@ -106,7 +106,7 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
   const AnalysisTab = ({ id, label, icon: Icon, active, onClick }: any) => (
     <button 
       onClick={onClick}
-      className={`flex-1 py-3 px-2 rounded-xl flex flex-col items-center gap-1.5 transition-all ${active ? 'bg-emerald-500 text-zinc-950 shadow-lg shadow-emerald-500/10' : 'bg-zinc-900/50 text-zinc-500 hover:bg-zinc-900 group'}`}
+      className={`flex-1 py-3 px-2 rounded-xl flex flex-col items-center gap-1.5 transition-all ${active ? 'bg-emerald-500 text-foreground shadow-lg shadow-emerald-500/10' : 'bg-muted/50 text-muted-foreground/60 hover:bg-muted group'}`}
     >
        <Icon size={16} className={active ? '' : 'group-hover:scale-110 transition-transform'} />
        <span className="text-[8px] font-black uppercase tracking-widest">{label}</span>
@@ -115,17 +115,17 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-950 border-zinc-900 text-white sm:max-w-[500px] p-0 overflow-hidden rounded-[2rem] shadow-2xl outline-none">
-        <DialogHeader className="p-6 pb-2 bg-gradient-to-br from-zinc-900 to-zinc-950 border-b border-zinc-900">
+      <DialogContent className="bg-background border-border text-foreground sm:max-w-[500px] p-0 overflow-hidden rounded-[2rem] shadow-2xl outline-none">
+        <DialogHeader className="p-6 pb-2 bg-gradient-to-br from-muted/50 to-background border-b border-border/50">
            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                  <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
                     <Activity size={20} />
                  </div>
-                 <div>
-                    <DialogTitle className="text-lg font-black italic uppercase tracking-tighter">Market Pulse</DialogTitle>
-                    <p className="text-zinc-500 text-[8px] font-black uppercase tracking-[0.2em]">{item?.name} • SKU Analysis</p>
-                 </div>
+                  <div>
+                    <DialogTitle className="text-lg font-black italic uppercase tracking-tighter text-foreground">Market Pulse</DialogTitle>
+                    <p className="text-muted-foreground/40 text-[8px] font-black uppercase tracking-[0.2em]">{item?.name} • SKU Analysis</p>
+                  </div>
               </div>
               <Badge className={`bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[8px] font-black uppercase ${parseFloat(stats.growth) < 0 ? 'text-red-500 bg-red-500/10 border-red-500/20' : ''}`}>
                  {parseFloat(stats.growth) > 0 ? <TrendingUp size={10} className="mr-1 inline" /> : <TrendingDown size={10} className="mr-1 inline" />}
@@ -134,7 +134,7 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
            </div>
         </DialogHeader>
 
-        <div className="p-4 bg-zinc-900/20 flex gap-2 border-b border-zinc-900">
+        <div className="p-4 bg-muted/20 flex gap-2 border-b border-border/50">
           <AnalysisTab id="SALES" label="Sell Flow" icon={ShoppingCart} active={view === 'SALES'} onClick={() => setView('SALES')} />
           <AnalysisTab id="STOCK" label="Stock Cycle" icon={Package} active={view === 'STOCK'} onClick={() => setView('STOCK')} />
           <AnalysisTab id="FULL" label="Full Intel" icon={Zap} active={view === 'FULL'} onClick={() => setView('FULL')} />
@@ -144,24 +144,24 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
           {view === 'SALES' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-zinc-900/40 p-4 rounded-2xl border border-zinc-900">
-                     <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Avg Daily Burn</p>
-                     <h4 className="text-xl font-black italic text-white tracking-tighter">{stats.velocity} <span className="text-[10px] text-zinc-500">{item?.unit}</span></h4>
+                  <div className="bg-muted/40 p-4 rounded-2xl border border-border/50">
+                     <p className="text-[8px] font-black text-muted-foreground/60 uppercase mb-1">Avg Daily Burn</p>
+                     <h4 className="text-xl font-black italic text-foreground tracking-tighter">{stats.velocity} <span className="text-[10px] text-muted-foreground/40">{item?.unit}</span></h4>
                   </div>
-                  <div className="bg-zinc-900/40 p-4 rounded-2xl border border-zinc-900">
-                     <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Weekly Volume</p>
+                  <div className="bg-muted/40 p-4 rounded-2xl border border-border/50">
+                     <p className="text-[8px] font-black text-muted-foreground/60 uppercase mb-1">Weekly Volume</p>
                      <h4 className="text-xl font-black italic text-emerald-500 tracking-tighter">{stats.daily.reduce((a: any, b: any) => a + b, 0)} Units</h4>
                   </div>
                </div>
 
                <div className="space-y-3">
                   <div className="flex items-center justify-between px-1">
-                     <p className="text-[9px] font-black uppercase text-zinc-400">7-Day Sales Trajectory</p>
+                     <p className="text-[9px] font-black uppercase text-muted-foreground/40">7-Day Sales Trajectory</p>
                      <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Live Flow</p>
                   </div>
-                  <div className="p-6 rounded-[2rem] bg-zinc-900/50 border border-zinc-800">
+                  <div className="p-6 rounded-[2rem] bg-muted/50 border border-border/50">
                     <SimpleLineChart data={stats.daily} color="#10b981" />
-                    <div className="flex justify-between mt-4 text-[7px] font-black text-zinc-700 uppercase tracking-widest px-2">
+                    <div className="flex justify-between mt-4 text-[7px] font-black text-muted-foreground/40 uppercase tracking-widest px-2">
                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
                     </div>
                   </div>
@@ -172,29 +172,29 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
           {view === 'STOCK' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-zinc-900/40 p-4 rounded-2xl border border-zinc-900">
-                     <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Est. Exhaustion</p>
-                     <h4 className={`text-xl font-black italic tracking-tighter ${stats.stockDays < 5 ? 'text-red-500' : 'text-zinc-100'}`}>{stats.stockDays} Days</h4>
+                  <div className="bg-muted/40 p-4 rounded-2xl border border-border/50">
+                     <p className="text-[8px] font-black text-muted-foreground/60 uppercase mb-1">Est. Exhaustion</p>
+                     <h4 className={`text-xl font-black italic tracking-tighter ${stats.stockDays < 5 ? 'text-red-500' : 'text-foreground'}`}>{stats.stockDays} Days</h4>
                   </div>
-                  <div className="bg-zinc-900/40 p-4 rounded-2xl border border-zinc-900">
-                     <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Health Status</p>
+                  <div className="bg-muted/40 p-4 rounded-2xl border border-border/50">
+                     <p className="text-[8px] font-black text-muted-foreground/60 uppercase mb-1">Health Status</p>
                      <h4 className="text-xl font-black italic text-emerald-500 tracking-tighter uppercase">{stats.demand}</h4>
                   </div>
                </div>
 
-               <div className="p-6 rounded-[2rem] bg-zinc-900/80 border border-zinc-800 relative overflow-hidden">
+               <div className="p-6 rounded-[2rem] bg-card/50 border border-border/50 relative overflow-hidden">
                   <div className="flex flex-col gap-4">
                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                            <p className="text-[9px] font-black uppercase tracking-widest">Inventory Depth</p>
                         </div>
-                        <span className="text-[10px] font-black italic">{item?.quantity} / {item?.quantity + 50}</span>
+                        <span className="text-[10px] font-black italic text-foreground">{item?.quantity} / {item?.quantity + 50}</span>
                      </div>
-                     <div className="h-2 w-full bg-zinc-950 rounded-full overflow-hidden">
+                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                         <div className="h-full bg-emerald-500 rounded-full" style={{ width: '70%' }} />
                      </div>
-                     <p className="text-[8px] text-zinc-600 font-bold leading-relaxed uppercase">Current stock levels are sufficient for the next cycle based on avg velocity of {stats.velocity} {item?.unit}/day.</p>
+                     <p className="text-[8px] text-muted-foreground/60 font-bold leading-relaxed uppercase">Current stock levels are sufficient for the next cycle based on avg velocity of {stats.velocity} {item?.unit}/day.</p>
                   </div>
                </div>
             </div>
@@ -208,17 +208,17 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
                     { label: 'Stock Valuation', val: `₹${(item?.costPrice * item?.quantity || 0).toLocaleString()}`, icon: Package, color: 'text-blue-500' },
                     { label: 'Fulfillment Rate', val: '98.2%', icon: Activity, color: 'text-purple-500' }
                   ].map((s: any, i: any) => (
-                    <div key={i} className="flex items-center justify-between p-4 bg-zinc-900/40 border border-zinc-900 rounded-2xl hover:bg-zinc-900/60 transition-all">
+                    <div key={i} className="flex items-center justify-between p-4 bg-muted/40 border border-border/50 rounded-2xl hover:bg-muted/80 transition-all group">
                        <div className="flex items-center gap-3">
                           <s.icon size={16} className={s.color} />
-                          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">{s.label}</span>
+                          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">{s.label}</span>
                        </div>
-                       <span className="text-xs font-black italic text-white">{s.val}</span>
+                       <span className="text-xs font-black italic text-foreground">{s.val}</span>
                     </div>
                   ))}
                </div>
 
-               <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-zinc-950 shadow-2xl">
+               <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-foreground shadow-2xl">
                   <div className="flex items-center justify-between mb-4">
                      <h5 className="text-[10px] font-black uppercase tracking-tighter flex items-center gap-2">
                         <Zap size={14} /> AI Forecast Warning
@@ -230,10 +230,10 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
           )}
         </div>
 
-        <div className="p-6 bg-zinc-950/50 border-t border-zinc-900 flex justify-center">
+        <div className="p-6 bg-muted/30 border-t border-border/50 flex justify-center">
            <button 
              onClick={() => onOpenChange(false)}
-             className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700 hover:text-white transition-all flex items-center gap-2"
+             className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 hover:text-foreground transition-all flex items-center gap-2"
            >
              Close Intel <ArrowRight size={14} />
            </button>

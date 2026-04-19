@@ -27,7 +27,9 @@ import {
   Brain,
   Handshake,
   Timer,
-  Banknote
+  Banknote,
+  Palette,
+  QrCode
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
@@ -37,6 +39,7 @@ import { HeaderSecurityToggle } from '@/components/dashboard/HeaderSecurityToggl
 import { DashboardLockScreen } from '@/components/dashboard/DashboardLockScreen';
 import { useEffect } from 'react';
 import { Lock as LockIcon } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -83,6 +86,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: 'Staff', href: '/vendor/staff', icon: Users },
     { name: 'Payments & Fiscal', href: '/vendor/payments', icon: Wallet },
     { name: 'Settings', href: '/vendor/settings', icon: Settings },
+    { name: 'Vector Studio', href: '/vendor/qr-designer', icon: Palette },
+    { name: 'Feature Requests', href: '/vendor/requests', icon: MessageSquare },
   ];
 
   const adminNavItems = [
@@ -101,12 +106,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: 'Revenue Reports', href: '/admin/reports', icon: BarChart3 },
     { name: 'Access Control', href: '/admin/team', icon: ShieldCheck },
     { name: 'Global Settings', href: '/admin/settings', icon: Settings },
+    { name: 'Feature Inbox', href: '/admin/requests', icon: MessageSquare },
   ];
 
   const navItems = session?.user?.role === 'ADMIN' ? adminNavItems : vendorNavItems;
 
   return (
-    <div className="flex h-screen bg-zinc-950 text-white overflow-hidden font-sans">
+    <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
@@ -117,7 +123,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-72 bg-zinc-900/50 backdrop-blur-2xl border-r border-zinc-800 flex flex-col transition-transform duration-300 ease-in-out md:static md:translate-x-0
+        fixed inset-y-0 left-0 z-50 w-72 bg-card backdrop-blur-2xl border-r border-border flex flex-col transition-transform duration-300 ease-in-out md:static md:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="h-20 flex items-center px-8 justify-between">
@@ -125,7 +131,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="w-10 h-10 rounded-xl bg-emerald-500 shadow-lg shadow-emerald-500/20 flex items-center justify-center transition-transform group-hover:scale-110">
               <ChefHat className="text-zinc-950" size={24} />
             </div>
-            <span className="font-bold text-xl tracking-tighter text-zinc-100">ForkStack</span>
+            <span className="font-bold text-xl tracking-tighter text-foreground">ForkStack</span>
           </Link>
           <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-zinc-400 hover:text-white">
             <X size={20} />
@@ -145,13 +151,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 onClick={() => setIsSidebarOpen(false)}
                 className={`group flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
                   isActive 
-                    ? 'bg-emerald-500/10 text-emerald-400 shadow-sm ring-1 ring-emerald-500/20' 
-                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/40'
+                    ? 'bg-emerald-500/10 text-emerald-500 shadow-sm ring-1 ring-emerald-500/20' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                 }`}
               >
                 <item.icon
                   className={`mr-3 h-5 w-5 flex-shrink-0 transition-colors ${
-                    isActive ? 'text-emerald-400' : 'text-zinc-500 group-hover:text-zinc-300'
+                    isActive ? 'text-emerald-500' : 'text-muted-foreground group-hover:text-foreground'
                   }`}
                 />
                 {item.name}
@@ -161,7 +167,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
         
         <div className="p-6">
-          <div className="rounded-2xl bg-zinc-800/30 border border-zinc-800 p-4 relative overflow-hidden group">
+          <div className="rounded-2xl bg-muted/30 border border-border p-4 relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:scale-150 transition-transform">
               <User size={64} />
             </div>
@@ -175,7 +181,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
               <button 
                 onClick={() => signOut({ callbackUrl: '/login' })}
-                className="text-zinc-500 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-400/10"
+                className="text-muted-foreground hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-500/10"
                 title="Logout"
               >
                 <LogOut size={18} />
@@ -186,25 +192,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto flex flex-col relative bg-zinc-950">
-        <header className="h-24 min-h-[96px] flex items-center justify-between px-6 md:px-12 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-30 shadow-2xl shadow-black/20">
+      <main className="flex-1 overflow-y-auto flex flex-col relative bg-background">
+        <header className="h-24 min-h-[96px] flex items-center justify-between px-6 md:px-12 border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-30 shadow-sm transition-colors">
            <div className="flex items-center gap-4">
              <button 
                onClick={() => setIsSidebarOpen(true)}
-               className="p-2 -ml-2 text-zinc-400 hover:text-white md:hidden"
+               className="p-2 -ml-2 text-muted-foreground hover:text-foreground md:hidden"
              >
                <Menu size={24} />
              </button>
-             <h2 className="text-xl font-bold tracking-tight text-zinc-100 hidden sm:block">
+             <h2 className="text-xl font-bold tracking-tight text-foreground hidden sm:block">
                {navItems.find(i => pathname?.startsWith(i.href))?.name || 'Dashboard'}
              </h2>
            </div>
 
            <div className="flex items-center gap-3 md:gap-6">
-              <div className="hidden lg:flex items-center bg-zinc-900 border border-zinc-800 rounded-full px-4 h-10 w-64 text-zinc-500 focus-within:border-emerald-500/50 transition-colors">
+              <div className="hidden lg:flex items-center bg-muted border border-border rounded-full px-4 h-10 w-64 text-muted-foreground focus-within:border-emerald-500/50 transition-colors">
                 <Search size={16} />
                 <input type="text" placeholder="Search data..." className="bg-transparent border-none focus:ring-0 text-xs flex-1 ml-2 outline-none" />
               </div>
+
+              <ThemeToggle />
 
                 {session?.user?.role === 'VENDOR_OWNER' && (
                   <button 

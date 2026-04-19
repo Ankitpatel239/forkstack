@@ -28,38 +28,38 @@ export default function VendorDashboard() {
     <div className="space-y-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">Morning, Chef!</h1>
-          <p className="text-zinc-500 font-medium flex items-center gap-2">
-            <Calendar size={14} /> Here's what's happening at your venue today.
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground mb-2">Morning, Chef!</h1>
+          <p className="text-muted-foreground font-medium flex items-center gap-2">
+            <Calendar size={14} className="text-emerald-500" /> Here's what's happening at your venue today.
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 p-1 rounded-xl">
-          <Button variant="ghost" size="sm" className="rounded-lg text-xs font-bold bg-zinc-800 text-white">Today</Button>
-          <Button variant="ghost" size="sm" className="rounded-lg text-xs font-bold text-zinc-500">7 Days</Button>
-          <Button variant="ghost" size="sm" className="rounded-lg text-xs font-bold text-zinc-500">30 Days</Button>
+        <div className="flex items-center gap-2 bg-muted border border-border p-1 rounded-xl">
+          <Button variant="ghost" size="sm" className="rounded-lg text-xs font-bold bg-background text-foreground shadow-sm">Today</Button>
+          <Button variant="ghost" size="sm" className="rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground">7 Days</Button>
+          <Button variant="ghost" size="sm" className="rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground">30 Days</Button>
         </div>
       </div>
 
       {/* Metric Cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat: any, i: any) => (
-          <Card key={i} className="bg-zinc-900/40 border-zinc-800 shadow-xl relative overflow-hidden group">
+          <Card key={i} className="bg-card border-border shadow-lg relative overflow-hidden group hover:border-emerald-500/20 transition-all">
             <div className={`absolute top-0 right-0 p-4 opacity-5 -mr-4 -mt-4 text-${stat.color}-500 group-hover:opacity-10 transition-opacity`}>
               <stat.icon size={80} />
             </div>
             <CardHeader className="pb-2">
-              <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center justify-between">
+              <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-between">
                 {stat.title}
                 <stat.icon size={14} className={`text-${stat.color}-500`} />
               </CardDescription>
-              <CardTitle className="text-3xl font-black text-white">{stat.value}</CardTitle>
+              <CardTitle className="text-3xl font-black text-foreground">{stat.value}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
                 <Badge className="bg-emerald-500/10 text-emerald-500 border-none h-5 text-[10px] px-1.5">
                   <ArrowUpRight size={10} className="mr-0.5" /> {stat.change}
                 </Badge>
-                <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-tight">vs yesterday</span>
+                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">vs yesterday</span>
               </div>
             </CardContent>
           </Card>
@@ -68,13 +68,13 @@ export default function VendorDashboard() {
 
       <div className="grid gap-8 lg:grid-cols-12">
         {/* Sales Performance */}
-        <Card className="lg:col-span-8 bg-zinc-900/40 border-zinc-800 shadow-2xl">
+        <Card className="lg:col-span-8 bg-card border-border shadow-xl">
           <CardHeader className="flex flex-row items-center justify-between pb-8">
             <div>
               <CardTitle className="text-lg font-bold">Sales Performance</CardTitle>
-              <CardDescription>Live hourly revenue tracking.</CardDescription>
+              <CardDescription className="text-muted-foreground">Live hourly revenue tracking.</CardDescription>
             </div>
-            <Button variant="outline" size="sm" className="rounded-lg border-zinc-800 h-8 text-[10px] font-black uppercase tracking-widest">
+            <Button variant="outline" size="sm" className="rounded-lg border-border h-8 text-[10px] font-black uppercase tracking-widest hover:bg-muted">
               Full Analytics
             </Button>
           </CardHeader>
@@ -83,10 +83,10 @@ export default function VendorDashboard() {
               {[30, 45, 25, 60, 85, 40, 55, 95, 70, 45, 30, 20, 15, 40, 60, 80, 55].map((h: any, i: any) => (
                 <div key={i} className="flex-1 group relative h-full flex flex-col justify-end">
                   <div 
-                    className={`w-full transition-all rounded-t-sm ${i === 7 ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-zinc-800 group-hover:bg-zinc-700'}`} 
+                    className={`w-full transition-all rounded-t-sm ${i === 7 ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-muted group-hover:bg-muted-foreground/20'}`} 
                     style={{ height: `${h}%` }}
                   />
-                  {i % 4 === 0 && <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[9px] font-bold text-zinc-600">{i+8}h</span>}
+                  {i % 4 === 0 && <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[9px] font-bold text-muted-foreground">{i+8}h</span>}
                 </div>
               ))}
             </div>
@@ -94,40 +94,40 @@ export default function VendorDashboard() {
         </Card>
 
         {/* Live Orders Mini-Feed */}
-        <Card className="lg:col-span-4 bg-zinc-900/40 border-zinc-800 shadow-2xl overflow-hidden flex flex-col">
-          <CardHeader className="border-b border-zinc-800/50 pb-6">
+        <Card className="lg:col-span-4 bg-card border-border shadow-xl overflow-hidden flex flex-col">
+          <CardHeader className="border-b border-border pb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                 <CardTitle className="text-lg font-bold">Live Orders</CardTitle>
               </div>
-              <Badge variant="outline" className="text-[10px] border-zinc-800 text-zinc-500">8 Active</Badge>
+              <Badge variant="outline" className="text-[10px] border-border text-muted-foreground px-2">8 Active</Badge>
             </div>
           </CardHeader>
           <CardContent className="p-0 flex-1 overflow-auto custom-scrollbar">
-            <div className="divide-y divide-zinc-800/50">
+            <div className="divide-y divide-border">
               {[
-                { table: '04', items: 3, time: '2m', status: 'preparing', price: '$42.10' },
-                { table: '12', items: 5, time: '5m', status: 'ready', price: '$89.00' },
-                { table: '08', items: 2, time: '8m', status: 'preparing', price: '$18.50' },
-                { table: '02', items: 1, time: '12m', status: 'preparing', price: '$9.20' },
-                { table: '15', items: 4, time: '15m', status: 'preparing', price: '$56.40' },
+                { table: '04', items: 3, time: '2m', status: 'preparing', price: '₹1,240' },
+                { table: '12', items: 5, time: '5m', status: 'ready', price: '₹4,890' },
+                { table: '08', items: 2, time: '8m', status: 'preparing', price: '₹850' },
+                { table: '02', items: 1, time: '12m', status: 'preparing', price: '₹420' },
+                { table: '15', items: 4, time: '15m', status: 'preparing', price: '₹2,640' },
               ].map((order, i) => (
-                <div key={i} className="px-6 py-4 hover:bg-zinc-800/30 transition-colors flex items-center justify-between group">
+                <div key={i} className="px-6 py-4 hover:bg-muted/50 transition-colors flex items-center justify-between group">
                   <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs">
+                    <div className="h-10 w-10 rounded-xl bg-muted border border-border flex items-center justify-center font-black text-xs text-foreground">
                       T{order.table}
                     </div>
                     <div>
-                      <h6 className="text-sm font-bold text-zinc-100">{order.items} Items</h6>
-                      <p className="text-[10px] text-zinc-500 font-medium flex items-center gap-1 uppercase tracking-tighter">
-                        <Clock size={10} /> {order.time} ago • <span className={order.status === 'ready' ? 'text-emerald-500' : 'text-orange-500'}>{order.status}</span>
+                      <h6 className="text-sm font-bold text-foreground">{order.items} Items</h6>
+                      <p className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1 uppercase tracking-tighter">
+                        <Clock size={10} className="text-zinc-400" /> {order.time} ago • <span className={order.status === 'ready' ? 'text-emerald-500' : 'text-orange-500 animate-pulse'}>{order.status}</span>
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-black text-white mb-1">{order.price}</p>
-                    <button className="opacity-0 group-hover:opacity-100 text-zinc-600 hover:text-white transition-all">
+                    <p className="text-sm font-black text-foreground mb-1">{order.price}</p>
+                    <button className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground transition-all">
                       <MoreVertical size={14} />
                     </button>
                   </div>
@@ -135,53 +135,87 @@ export default function VendorDashboard() {
               ))}
             </div>
           </CardContent>
-          <div className="p-4 border-t border-zinc-800/50 bg-zinc-950/30">
-            <Button variant="ghost" className="w-full text-xs font-bold text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/5 h-8">
-              Open Kitchen KDS
+          <div className="p-4 border-t border-border bg-muted/30">
+            <Button variant="ghost" className="w-full text-xs font-black uppercase tracking-widest text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/5 h-9">
+              Kitchen Command Hub
             </Button>
           </div>
         </Card>
       </div>
 
-      {/* Quick Actions / Integration */}
+      {/* Strategy & Alerts */}
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-700 border-none shadow-xl group cursor-pointer overflow-hidden">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-700 border-none shadow-xl group cursor-pointer overflow-hidden relative">
           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 transition-transform">
             <QrCode size={120} />
           </div>
-          <CardContent className="p-8 pt-12 relative z-10 text-zinc-950">
+          <CardContent className="p-8 pt-12 relative z-10 text-white">
             <div className="bg-white/20 w-10 h-10 rounded-lg flex items-center justify-center mb-4">
               <QrCode size={20} />
             </div>
-            <h4 className="text-xl font-black tracking-tight mb-2">Generate QR Menu</h4>
-            <p className="text-zinc-900/60 text-sm font-bold leading-snug">Instant link for customers to browse & order from their phone.</p>
+            <h4 className="text-xl font-black tracking-tight mb-2">QR Campaign Manager</h4>
+            <p className="text-white/70 text-sm font-bold leading-snug">Generate smart QR codes for tables or takeaway marketing.</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 shadow-xl transition-all cursor-pointer group">
+        <Card className="bg-card border-border hover:border-emerald-500/30 shadow-xl transition-all cursor-pointer group">
           <CardContent className="p-8">
             <div className="bg-emerald-500/10 w-10 h-10 rounded-lg flex items-center justify-center mb-4 text-emerald-500">
               <AlertCircle size={20} />
             </div>
-            <h4 className="text-xl font-black tracking-tight text-white mb-2">Inventory Alert</h4>
-            <p className="text-zinc-500 text-sm font-medium leading-snug">
-              <span className="text-emerald-500 font-bold">4 items</span> are running low on stock. Update your inventory now.
+            <h4 className="text-xl font-black tracking-tight text-foreground mb-2">Inventory Pulse</h4>
+            <p className="text-muted-foreground text-sm font-medium leading-snug">
+              <span className="text-emerald-500 font-bold">4 active alerts</span>. Some items are below critical buffer levels.
             </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 shadow-xl transition-all cursor-pointer group">
+        <Card className="bg-card border-border hover:border-blue-500/30 shadow-xl transition-all cursor-pointer group">
           <CardContent className="p-8">
             <div className="bg-blue-500/10 w-10 h-10 rounded-lg flex items-center justify-center mb-4 text-blue-500">
               <CheckCircle2 size={20} />
             </div>
-            <h4 className="text-xl font-black tracking-tight text-white mb-2">Staff Attendance</h4>
-            <p className="text-zinc-500 text-sm font-medium leading-snug">
-              <span className="text-blue-500 font-bold">12/12 members</span> are clocked in and active for this shift.
+            <h4 className="text-xl font-black tracking-tight text-foreground mb-2">Operation Sync</h4>
+            <p className="text-muted-foreground text-sm font-medium leading-snug">
+              <span className="text-blue-500 font-bold">12/12 staff members</span> are currently synced with the kitchen node.
             </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Trending Items Section */}
+      <Card className="bg-card border-border shadow-xl">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg font-bold">Trending This Week</CardTitle>
+              <CardDescription className="text-muted-foreground">Highest velocity items in your catalog.</CardDescription>
+            </div>
+            <TrendingUp size={20} className="text-emerald-500" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { name: 'Truffle Mushroom Risotto', orders: 142, revenue: '₹42,600', trend: '+12%' },
+              { name: 'Spiced Paneer Tikka', orders: 208, revenue: '₹31,200', trend: '+28%' },
+              { name: 'Classic Mojito', orders: 85, revenue: '₹12,750', trend: '-5%' },
+              { name: 'Belgian Chocolate Waffle', orders: 114, revenue: '₹17,100', trend: '+15%' },
+            ].map((item, i) => (
+              <div key={i} className="p-4 rounded-2xl bg-muted/30 border border-border group hover:bg-emerald-500/5 transition-all">
+                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Performance</p>
+                <h5 className="font-bold text-sm mb-3 truncate text-foreground">{item.name}</h5>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-black text-foreground">{item.orders} Sold</div>
+                  <Badge variant="ghost" className={`text-[10px] ${item.trend.startsWith('+') ? 'text-emerald-500' : 'text-red-500'}`}>
+                    {item.trend}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

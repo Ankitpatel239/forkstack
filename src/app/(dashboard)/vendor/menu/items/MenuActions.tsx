@@ -12,17 +12,17 @@ export default function MenuActions({ categories }: { categories: MenuCategory[]
 
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-      <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-4 h-11 w-full md:w-96 text-zinc-500 focus-within:border-emerald-500/50 transition-colors">
+      <div className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 h-11 w-full md:w-96 text-muted-foreground focus-within:border-emerald-500/50 transition-colors">
         <Search size={18} />
         <input 
           type="text" 
           placeholder="Search items, categories..." 
-          className="bg-transparent border-none focus:ring-0 text-sm flex-1 outline-none text-white font-medium" 
+          className="bg-transparent border-none focus:ring-0 text-sm flex-1 outline-none text-foreground font-medium" 
         />
       </div>
 
       <div className="flex items-center gap-3">
-        <Button variant="outline" className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-400 font-bold h-11">
+        <Button variant="outline" className="rounded-xl border-border bg-muted/50 hover:bg-muted text-muted-foreground font-bold h-11">
           <Filter className="w-4 h-4 mr-2" /> Filters
         </Button>
 

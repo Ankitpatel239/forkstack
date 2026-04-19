@@ -96,13 +96,13 @@ export default function CategoryClientPage({ initialCategories }: { initialCateg
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
       <div className="space-y-6">
-        <div className="bg-zinc-950 border border-zinc-900 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
+        <div className="bg-card border border-border rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
-            <GitBranch size={200} />
+            <GitBranch size={200} className="text-muted-foreground" />
           </div>
           
           <div className="flex items-center justify-between mb-10 relative z-10">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+            <h2 className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-3 text-foreground">
               <FolderTree className="text-emerald-500" /> All Categories
             </h2>
             <Button 
@@ -124,9 +124,9 @@ export default function CategoryClientPage({ initialCategories }: { initialCateg
               />
             ))}
             {categoryTree.length === 0 && (
-              <div className="py-20 text-center border-2 border-dashed border-zinc-900 rounded-[2rem] opacity-20">
-                <Layers className="mx-auto mb-4" size={48} />
-                <p className="text-[10px] font-black uppercase tracking-widest">No Categories Yet</p>
+              <div className="py-20 text-center border-2 border-dashed border-border rounded-[2rem] opacity-20">
+                <Layers className="mx-auto mb-4 text-muted-foreground" size={48} />
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">No Categories Yet</p>
               </div>
             )}
           </div>
@@ -134,10 +134,10 @@ export default function CategoryClientPage({ initialCategories }: { initialCateg
       </div>
 
       <div className="space-y-6">
-        <div className="bg-gradient-to-br from-emerald-500/10 to-zinc-900 border border-emerald-500/20 rounded-[3rem] p-10 shadow-xl">
+        <div className="bg-gradient-to-br from-emerald-500/10 to-background border border-border rounded-[3rem] p-10 shadow-xl">
           <GitBranch size={40} className="text-emerald-500 mb-6" />
           <h3 className="text-xl font-black italic uppercase tracking-tighter mb-4 text-emerald-500">How it works</h3>
-          <p className="text-zinc-400 text-xs font-bold leading-relaxed mb-6">
+          <p className="text-muted-foreground text-xs font-bold leading-relaxed mb-6">
             Categories help you organize your menu. You can create main categories like 'Pizza' and add sub-categories like 'Veg Pizza' inside them.
           </p>
           <div className="space-y-3">
@@ -146,41 +146,41 @@ export default function CategoryClientPage({ initialCategories }: { initialCateg
               { label: 'Sub-category Support', icon: Check },
               { label: 'Instant Updates', icon: Check },
             ].map((item: any) => (
-              <div key={item.label} className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+              <div key={item.label} className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                 <item.icon size={14} className="text-emerald-500" /> {item.label}
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-zinc-950 border border-zinc-900 rounded-[3rem] p-10">
-           <Layers size={32} className="text-zinc-700 mb-4" />
-           <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-2">Quick Stats</p>
-           <div className="text-3xl font-black italic uppercase tracking-tighter text-white">
+        <div className="bg-card border border-border rounded-[3rem] p-10">
+           <Layers size={32} className="text-muted-foreground/20 mb-4" />
+           <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">Quick Stats</p>
+           <div className="text-3xl font-black italic uppercase tracking-tighter text-foreground">
               {categories.length} Categories
            </div>
         </div>
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-zinc-950 border-zinc-900 text-white sm:max-w-[500px] rounded-[3rem] p-10 shadow-[0_0_50px_-12px_rgba(16,185,129,0.2)]">
+        <DialogContent className="bg-background border-border text-foreground sm:max-w-[500px] rounded-[3rem] p-10 shadow-[0_0_50px_-12px_rgba(16,185,129,0.2)]">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">
+            <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-foreground">
               {editingCategory ? 'Update Category' : parentCategory ? `Add Sub-category to: ${parentCategory.name}` : 'Add Main Category'}
             </DialogTitle>
-            <DialogDescription className="text-zinc-500 font-bold text-[10px] uppercase tracking-widest">
+            <DialogDescription className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest">
                Enter the name for your menu category.
             </DialogDescription>
           </DialogHeader>
           
           <div className="py-6 space-y-4">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Category Name</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Category Name</Label>
               <Input 
                 value={newName} 
                 onChange={e => setNewName(e.target.value)}
                 placeholder="e.g., Veg Pizza" 
-                className="bg-zinc-900 border-zinc-800 h-14 font-black italic rounded-2xl focus:border-emerald-500/50" 
+                className="bg-muted border-border h-14 font-black italic rounded-2xl focus:border-emerald-500/50 text-foreground" 
               />
             </div>
             {parentCategory && !editingCategory && (
@@ -212,19 +212,19 @@ function CategoryNode({ category, onEdit, onAddSub, onDelete, depth = 0 }: { cat
 
   return (
     <div className="space-y-2">
-      <div className="group flex items-center justify-between p-4 bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-2xl transition-all h-16">
+      <div className="group flex items-center justify-between p-4 bg-muted/30 hover:bg-muted border border-border hover:border-border/80 rounded-2xl transition-all h-16">
         <div className="flex items-center gap-4 flex-1">
           <button 
             onClick={() => setIsOpen(!isOpen)} 
-            className={`p-1 hover:bg-zinc-800 rounded-lg transition-colors ${hasChildren ? 'opacity-100' : 'opacity-0'}`}
+            className={`p-1 hover:bg-muted-foreground/10 rounded-lg transition-colors text-foreground ${hasChildren ? 'opacity-100' : 'opacity-0'}`}
           >
             {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
           </button>
           <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-black italic text-zinc-500">
+             <div className="w-8 h-8 rounded-xl bg-background border border-border flex items-center justify-center text-[10px] font-black italic text-muted-foreground">
                 {depth}
              </div>
-             <span className="text-sm font-black italic tracking-tight">{category.name}</span>
+             <span className="text-sm font-black italic tracking-tight text-foreground">{category.name}</span>
           </div>
         </div>
 
@@ -234,10 +234,10 @@ function CategoryNode({ category, onEdit, onAddSub, onDelete, depth = 0 }: { cat
            </Button>
            <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-zinc-800 rounded-lg"><MoreVertical size={16} /></Button>
+                 <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted rounded-lg text-foreground"><MoreVertical size={16} /></Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-zinc-900 border-zinc-800 text-white font-bold text-xs uppercase italic">
-                 <DropdownMenuItem onClick={() => onEdit(category)} className="focus:bg-zinc-800 cursor-pointer p-3">
+              <DropdownMenuContent className="bg-card border-border text-foreground font-bold text-xs uppercase italic">
+                 <DropdownMenuItem onClick={() => onEdit(category)} className="focus:bg-muted cursor-pointer p-3">
                     <Edit size={14} className="mr-2" /> Edit Category
                  </DropdownMenuItem>
                  <DropdownMenuItem onClick={() => onDelete(category.id)} className="focus:bg-red-500/10 text-red-500 cursor-pointer p-3">
@@ -249,7 +249,7 @@ function CategoryNode({ category, onEdit, onAddSub, onDelete, depth = 0 }: { cat
       </div>
 
       {isOpen && hasChildren && (
-        <div className="pl-12 border-l border-zinc-900 space-y-2 mt-2 ml-6">
+        <div className="pl-12 border-l border-border space-y-2 mt-2 ml-6">
           {category.children!.map((child: any) => (
             <CategoryNode 
               key={child.id} 

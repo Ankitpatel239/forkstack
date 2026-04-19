@@ -235,23 +235,23 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-black italic tracking-tighter uppercase text-white flex items-center gap-3">
+            <h1 className="text-2xl font-black italic tracking-tighter uppercase text-foreground flex items-center gap-3">
               Order {order.orderNumber}
               <Badge className={`${statusColors[order.status]} uppercase font-black tracking-widest text-[10px] px-3 py-1`}>
                 {order.status}
               </Badge>
             </h1>
-            <p className="text-sm font-bold text-zinc-500 uppercase tracking-widest mt-1">
+            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-1">
               Planted on {format(new Date(order.orderDate), 'MMM dd, yyyy • hh:mm a')}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={handleDownloadInvoice} className="rounded-xl border-zinc-800 bg-zinc-950 text-white font-bold uppercase tracking-widest text-[10px]">
+          <Button variant="outline" onClick={handleDownloadInvoice} className="rounded-xl border-border bg-muted text-foreground font-bold uppercase tracking-widest text-[10px]">
             <Printer className="mr-2 h-4 w-4" /> Print Ticket
           </Button>
-          <Button onClick={handleNotifyWhatsApp} className="rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-500/20">
+          <Button onClick={handleNotifyWhatsApp} className="rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-500/20">
             <MessageSquare className="mr-2 h-4 w-4" /> Notify WhatsApp
           </Button>
         </div>
@@ -262,29 +262,29 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
         
         {/* Left Column - Order Items */}
         <div className="lg:col-span-2 space-y-8">
-          <Card className="bg-zinc-900/50 border-zinc-800 rounded-[2rem] overflow-hidden shadow-2xl">
-            <CardHeader className="border-b border-zinc-800 bg-zinc-900/50 p-6 flex flex-row items-center justify-between">
-              <CardTitle className="text-base font-black italic uppercase tracking-widest text-white flex items-center gap-2">
+          <Card className="bg-card border-border rounded-[2rem] overflow-hidden shadow-2xl">
+            <CardHeader className="border-b border-border bg-muted/30 p-6 flex flex-row items-center justify-between">
+              <CardTitle className="text-base font-black italic uppercase tracking-widest text-foreground flex items-center gap-2">
                 <Hash className="h-4 w-4 text-emerald-500" /> Order Items
               </CardTitle>
               <Dialog open={isAddingItem} onOpenChange={setIsAddingItem}>
                 <DialogTrigger asChild>
-                  <Button size="sm" className="bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase tracking-widest text-[9px] h-8 rounded-full">
+                  <Button size="sm" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[9px] h-8 rounded-full">
                     <Plus className="mr-1 h-3 w-3" /> Add Item
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-black border-zinc-800 text-white rounded-[2rem]">
+                <DialogContent className="bg-background border-border text-foreground rounded-[2rem]">
                   <DialogHeader>
                     <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">Add Item to Order</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-6 py-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Select Item</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Item</label>
                       <Select value={selectedItem} onValueChange={setSelectedItem}>
-                        <SelectTrigger className="bg-zinc-950 border-zinc-800 h-14 rounded-2xl font-bold italic text-sm">
+                        <SelectTrigger className="bg-muted border-border h-14 rounded-2xl font-bold italic text-sm">
                           <SelectValue placeholder="Search menu..." />
                         </SelectTrigger>
-                        <SelectContent className="bg-zinc-950 border-zinc-900 text-white">
+                        <SelectContent className="bg-card border-border text-foreground">
                           {menuItems.map((item: any) => (
                             <SelectItem key={item.id} value={item.id} className="focus:bg-emerald-500 focus:text-black">
                               {item.name} — ₹{item.price}
@@ -294,13 +294,13 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Quantity</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
                       <Input 
                         type="number" 
                         min="1" 
                         value={quantity} 
                         onChange={(e) => setQuantity(parseInt(e.target.value))}
-                        className="bg-zinc-950 border-zinc-800 h-14 rounded-2xl font-black italic text-lg focus:border-emerald-500/50"
+                        className="bg-muted border-border h-14 rounded-2xl font-black italic text-lg focus:border-emerald-500/50"
                       />
                     </div>
                   </div>
@@ -318,33 +318,33 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
             </CardHeader>
             <CardContent className="p-0">
               <Table>
-                <TableHeader className="bg-zinc-950/50">
-                  <TableRow className="border-zinc-800 hover:bg-transparent">
-                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-zinc-500 h-12">Item Description</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">Qty</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-zinc-500 text-right">Price</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-zinc-500 text-right">Total</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-zinc-500 w-[50px]"></TableHead>
+                <TableHeader className="bg-muted/30">
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground h-12">Item Description</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Qty</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Price</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Total</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {order.items.map((item: any) => (
-                    <TableRow key={item.id} className="border-zinc-800/50 hover:bg-white/[0.02] group transition-colors">
-                      <TableCell className="py-4 font-bold text-white uppercase italic text-sm">
+                    <TableRow key={item.id} className="border-border hover:bg-muted/30 group transition-colors">
+                      <TableCell className="py-4 font-bold text-foreground uppercase italic text-sm">
                         {item.menuItem?.name || item.customName || 'Legacy Item'}
                         {item.menuItem?.category?.name && (
                           <span className="block text-[8px] font-black text-emerald-500/60 tracking-widest mt-0.5">{item.menuItem.category.name}</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-center font-black text-zinc-400">{item.quantity}x</TableCell>
-                      <TableCell className="text-right font-bold text-zinc-400">₹{item.unitPrice}</TableCell>
-                      <TableCell className="text-right font-black text-white italic">₹{item.totalPrice}</TableCell>
+                      <TableCell className="text-center font-black text-muted-foreground">{item.quantity}x</TableCell>
+                      <TableCell className="text-right font-bold text-muted-foreground">₹{item.unitPrice}</TableCell>
+                      <TableCell className="text-right font-black text-foreground italic">₹{item.totalPrice}</TableCell>
                       <TableCell className="text-right">
                         <Button 
                           variant="ghost" 
                           size="icon" 
                           onClick={() => handleDeleteItem(item.id)}
-                          className="h-8 w-8 text-zinc-700 hover:text-red-500 hover:bg-red-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                          className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -353,10 +353,9 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
                   ))}
                 </TableBody>
               </Table>
-
               {/* Summary Section */}
-              <div className="p-8 space-y-3 bg-zinc-950/30">
-                <div className="flex justify-between text-xs font-bold text-zinc-500 uppercase tracking-widest">
+              <div className="p-8 space-y-3 bg-muted/20">
+                <div className="flex justify-between text-xs font-bold text-muted-foreground uppercase tracking-widest">
                   <span>Subtotal</span>
                   <span>₹{order.totalAmount}</span>
                 </div>
@@ -364,35 +363,35 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
                   <span>Platform Discount</span>
                   <span>- ₹{order.discount || 0}</span>
                 </div>
-                <div className="flex justify-between text-xs font-bold text-zinc-500 uppercase tracking-widest">
+                <div className="flex justify-between text-xs font-bold text-muted-foreground uppercase tracking-widest">
                   <span>Taxes (Included)</span>
                   <span>₹{order.tax || 0}</span>
                 </div>
-                <div className="h-px bg-zinc-800/50 my-6" />
+                <div className="h-px bg-border my-6" />
                 <div className="flex justify-between items-end">
                    <div>
-                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] block mb-1">Final Amount Due</span>
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] block mb-1">Final Amount Due</span>
                       <span className="text-3xl font-black italic text-emerald-500 tracking-tighter uppercase">₹{order.finalAmount}</span>
                    </div>
                    <div className="text-right flex flex-col items-end">
-                      <Badge className={`mb-2 font-black tracking-widest text-[9px] ${order.payment?.status === 'COMPLETED' ? 'bg-emerald-500 text-black' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
+                      <Badge className={`mb-2 font-black tracking-widest text-[9px] ${order.payment?.status === 'COMPLETED' ? 'bg-emerald-500 text-foreground' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
                          {order.payment?.status || 'PENDING'}
                       </Badge>
-                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Payment via {order.payment?.method || 'N/A'}</p>
+                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Payment via {order.payment?.method || 'N/A'}</p>
                    </div>
-                </div>
+                </div> 
               </div>
             </CardContent>
           </Card>
 
           {/* Special Instructions card */}
           {order.specialInstructions && (
-            <Card className="bg-zinc-900/50 border-zinc-800 rounded-[2rem] shadow-xl">
+            <Card className="bg-card border-border rounded-[2rem] shadow-xl">
                <CardContent className="p-6 flex items-start gap-4">
                   <AlertCircle className="text-amber-500 mt-1 shrink-0" size={20} />
                   <div>
                     <h5 className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1 italic">Special Instructions</h5>
-                    <p className="text-zinc-400 font-bold text-sm italic">"{order.specialInstructions}"</p>
+                    <p className="text-muted-foreground font-bold text-sm italic">"{order.specialInstructions}"</p>
                   </div>
                </CardContent>
             </Card>
@@ -402,16 +401,15 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
         {/* Right Column - Sidebar */}
         <div className="space-y-8">
           
-          {/* Status Controls */}
-          <Card className="bg-zinc-900/50 border-zinc-800 rounded-[2rem] shadow-xl overflow-hidden">
-            <CardHeader className="p-6 border-b border-zinc-800 bg-zinc-900/20">
-              <CardTitle className="text-base font-black italic uppercase tracking-widest text-white flex items-center gap-2">
+               <Card className="bg-card border-border rounded-[2rem] shadow-lg overflow-hidden focus-within:ring-1 focus-within:ring-emerald-500/20 transition-all">
+            <CardHeader className="p-6 border-b border-border bg-muted/30">
+              <CardTitle className="text-base font-black italic uppercase tracking-widest text-foreground flex items-center gap-2">
                 <Clock className="h-4 w-4 text-emerald-500" /> Dispatch Center
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase text-zinc-500 tracking-widest ml-1">Current Progress</label>
+                <label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest ml-1">Current Progress</label>
                 <div className="grid grid-cols-2 gap-2">
                    {['PENDING', 'PROCESSING', 'DELIVERED', 'CANCELLED'].map((s: string) => (
                     <Button 
@@ -419,8 +417,8 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
                       variant="outline"
                       size="sm"
                       onClick={() => handleStatusUpdate(s)}
-                      className={`rounded-xl h-10 font-bold uppercase text-[9px] tracking-widest border-zinc-800 transition-all ${
-                        order.status === s ? 'bg-emerald-500 border-transparent text-black shadow-lg shadow-emerald-500/10' : 'bg-transparent text-zinc-500 hover:text-white hover:bg-zinc-800'
+                      className={`rounded-xl h-10 font-bold uppercase text-[9px] tracking-widest border-border transition-all ${
+                        order.status === s ? 'bg-emerald-500 border-transparent text-zinc-950 shadow-lg shadow-emerald-500/10' : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted'
                       }`}
                     >
                       {s}
@@ -429,13 +427,13 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-zinc-800/50 space-y-2">
-                 <label className="text-[9px] font-black uppercase text-zinc-500 tracking-widest ml-1">Payment Lifecycle</label>
+              <div className="pt-4 border-t border-border space-y-2">
+                 <label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest ml-1">Payment Lifecycle</label>
                  <Button 
                    disabled={order.payment?.status === 'COMPLETED'}
                    onClick={() => handlePaymentUpdate('COMPLETED')}
                    className={`w-full h-12 rounded-xl font-black uppercase tracking-widest text-[9px] ${
-                    order.payment?.status === 'COMPLETED' ? 'bg-zinc-800 text-zinc-500' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 border hover:bg-emerald-500 hover:text-black shadow-lg shadow-emerald-500/5'
+                    order.payment?.status === 'COMPLETED' ? 'bg-muted text-muted-foreground' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 border hover:bg-emerald-500 hover:text-foreground shadow-lg shadow-emerald-500/5'
                    }`}
                  >
                    {order.payment?.status === 'COMPLETED' ? <><CheckCircle2 size={14} className="mr-2" /> Fully Paid</> : 'Verify & Mark as Paid'}
@@ -444,29 +442,28 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
             </CardContent>
           </Card>
 
-          {/* Customer Info Card */}
-          <Card className="bg-zinc-900/50 border-zinc-800 rounded-[2rem] shadow-xl overflow-hidden">
-            <CardHeader className="p-6 border-b border-zinc-800 bg-zinc-900/20">
-              <CardTitle className="text-base font-black italic uppercase tracking-widest text-white flex items-center gap-2">
+                  <Card className="bg-card border-border rounded-[2rem] shadow-lg overflow-hidden transition-all">
+            <CardHeader className="p-6 border-b border-border bg-muted/30">
+              <CardTitle className="text-base font-black italic uppercase tracking-widest text-foreground flex items-center gap-2">
                 <User className="h-4 w-4 text-emerald-500" /> Customer Data
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="flex items-center gap-4">
-                 <div className="h-12 w-12 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-700 shadow-inner">
+                 <div className="h-12 w-12 rounded-2xl bg-muted border border-border flex items-center justify-center text-muted-foreground shadow-inner">
                     <User size={24} />
                  </div>
                  <div>
-                    <h4 className="font-black italic text-white uppercase truncate tracking-tight">{order.customerName || 'Walk-in Customer'}</h4>
-                    <p className="text-[10px] font-bold text-zinc-500 tracking-widest">{order.orderSource} Origin</p>
+                    <h4 className="font-black italic text-foreground uppercase truncate tracking-tight">{order.customerName || 'Walk-in Customer'}</h4>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-widest">{order.orderSource} Origin</p>
                  </div>
               </div>
               
               <div className="space-y-4">
-                 <div className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-900 rounded-2xl group/item transition-all hover:bg-zinc-900">
+                 <div className="flex items-center justify-between p-4 bg-muted border border-border rounded-2xl group/item transition-all hover:bg-background">
                     <div className="flex items-center gap-3">
-                       <Phone className="text-zinc-500 group-hover/item:text-emerald-500 transition-colors" size={16} />
-                       <span className="font-black italic text-zinc-300">+{order.customerPhone}</span>
+                       <Phone className="text-muted-foreground group-hover/item:text-emerald-500 transition-colors" size={16} />
+                       <span className="font-black italic text-foreground/80">+{order.customerPhone}</span>
                     </div>
                     <Button variant="ghost" size="icon" className="text-emerald-500 hover:bg-emerald-500/10 h-8 w-8" onClick={handleNotifyWhatsApp}>
                        <MessageSquare size={16} />
@@ -474,10 +471,10 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
                  </div>
                  
                  {order.table && (
-                   <div className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-900 rounded-2xl group/item transition-all hover:bg-zinc-900">
+                   <div className="flex items-center justify-between p-4 bg-muted border border-border rounded-2xl group/item transition-all hover:bg-background">
                       <div className="flex items-center gap-3">
-                         <Hash className="text-zinc-500 group-hover/item:text-emerald-500 transition-colors" size={16} />
-                         <span className="font-black italic text-zinc-300">Dining at Table {order.table.tableNumber}</span>
+                         <Hash className="text-muted-foreground group-hover/item:text-emerald-500 transition-colors" size={16} />
+                         <span className="font-black italic text-foreground/80">Dining at Table {order.table.tableNumber}</span>
                       </div>
                       <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 uppercase text-[8px] font-black">{order.table.location || 'FLOOR'}</Badge>
                    </div>
@@ -487,14 +484,14 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
           </Card>
 
           {/* Print Ready Hint */}
-          <div className="p-8 bg-gradient-to-br from-emerald-500/5 to-transparent border border-emerald-500/10 rounded-[2.5rem] text-center space-y-4 shadow-2xl relative overflow-hidden group">
+          <div className="p-8 bg-gradient-to-br from-emerald-500/5 to-transparent border border-emerald-500/10 rounded-[2.5rem] text-center space-y-4 shadow-xl relative overflow-hidden group">
              <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500 shadow-[0_4px_30px_rgba(16,185,129,0.5)]" />
-             <div className="h-12 w-12 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-center mx-auto text-emerald-500 group-hover:scale-110 transition-transform">
+             <div className="h-12 w-12 bg-muted border border-border rounded-2xl flex items-center justify-center mx-auto text-emerald-500 group-hover:scale-110 transition-transform">
                 <Printer size={24} />
              </div>
              <div>
-                <h6 className="text-[10px] font-black italic uppercase tracking-widest text-white mb-1">Detailed Invoice Ready</h6>
-                <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-relaxed">Full cafe letterhead & GST details included in print view</p>
+                <h6 className="text-[10px] font-black italic uppercase tracking-widest text-foreground mb-1">Detailed Invoice Ready</h6>
+                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">Full cafe letterhead & GST details included in print view</p>
              </div>
           </div>
 

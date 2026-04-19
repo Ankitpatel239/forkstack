@@ -141,8 +141,8 @@ export function CodeGeneratorDialog({ item, open, onOpenChange }: CodeGeneratorD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-950 border-zinc-900 text-white sm:max-w-[480px] p-0 overflow-hidden rounded-[2rem] shadow-2xl outline-none">
-        <DialogHeader className="p-6 pb-3 bg-gradient-to-br from-zinc-900 to-zinc-950 border-b border-zinc-900 relative">
+      <DialogContent className="bg-background border-border text-foreground sm:max-w-[480px] p-0 overflow-hidden rounded-[2rem] shadow-2xl outline-none">
+        <DialogHeader className="p-6 pb-3 bg-gradient-to-br from-muted/30 to-background border-b border-border relative">
           <div className="absolute top-0 right-0 p-6 opacity-5">
              <BarcodeIcon size={60} />
           </div>
@@ -150,9 +150,9 @@ export function CodeGeneratorDialog({ item, open, onOpenChange }: CodeGeneratorD
             <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
                <QrCode size={20} />
             </div>
-            <div>
-              <DialogTitle className="text-lg font-black italic uppercase tracking-tighter">Physical Tag Sync</DialogTitle>
-              <p className="text-zinc-500 text-[8px] font-bold uppercase tracking-widest mt-0.5">
+             <div>
+              <DialogTitle className="text-lg font-black italic uppercase tracking-tighter text-foreground">Physical Tag Sync</DialogTitle>
+              <p className="text-muted-foreground/60 text-[8px] font-bold uppercase tracking-widest mt-0.5">
                 Generate trackable identity cataloging
               </p>
             </div>
@@ -163,24 +163,24 @@ export function CodeGeneratorDialog({ item, open, onOpenChange }: CodeGeneratorD
            <div className="grid grid-cols-2 gap-3">
               <button 
                 onClick={() => setType('BARCODE')}
-                className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all hover:bg-zinc-900 group ${type === 'BARCODE' ? 'border-emerald-500 bg-emerald-500/5' : 'border-zinc-900 bg-black opacity-40'}`}
+                className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all hover:bg-muted group ${type === 'BARCODE' ? 'border-emerald-500 bg-emerald-500/5' : 'border-border bg-muted opacity-40'}`}
               >
-                 <BarcodeIcon size={24} className={type === 'BARCODE' ? 'text-emerald-500' : 'text-zinc-600'} />
-                 <span className="text-[9px] font-black uppercase tracking-[0.2em]">Barcode</span>
+                 <BarcodeIcon size={24} className={type === 'BARCODE' ? 'text-emerald-500' : 'text-muted-foreground/60'} />
+                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground">Barcode</span>
                  {type === 'BARCODE' && <div className="h-1 w-1 rounded-full bg-emerald-500" />}
               </button>
 
               <button 
                 onClick={() => setType('QR')}
-                className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all hover:bg-zinc-900 group ${type === 'QR' ? 'border-emerald-500 bg-emerald-500/5' : 'border-zinc-900 bg-black opacity-40'}`}
+                className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all hover:bg-muted group ${type === 'QR' ? 'border-emerald-500 bg-emerald-500/5' : 'border-border bg-muted opacity-40'}`}
               >
-                 <QrCode size={24} className={type === 'QR' ? 'text-emerald-500' : 'text-zinc-600'} />
-                 <span className="text-[9px] font-black uppercase tracking-[0.2em]">Matrix QR</span>
+                 <QrCode size={24} className={type === 'QR' ? 'text-emerald-500' : 'text-muted-foreground/60'} />
+                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground">Matrix QR</span>
                  {type === 'QR' && <div className="h-1 w-1 rounded-full bg-emerald-500" />}
               </button>
            </div>
 
-           <div className="bg-zinc-900/40 rounded-[2rem] border border-zinc-900 p-6 flex items-center justify-center min-h-[220px] relative group text-center">
+           <div className="bg-muted/40 rounded-[2rem] border border-border/50 p-6 flex items-center justify-center min-h-[220px] relative group text-center">
               <canvas 
                 ref={canvasRef} 
                 className={`max-w-full h-auto rounded-lg shadow-2xl transition-all duration-500 ${isGenerating ? 'opacity-20 scale-95' : 'opacity-100 scale-100'}`}
@@ -195,13 +195,13 @@ export function CodeGeneratorDialog({ item, open, onOpenChange }: CodeGeneratorD
 
            <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3 flex gap-3 items-start">
               <Info className="text-emerald-500 shrink-0" size={14} />
-              <p className="text-[8px] text-zinc-500 font-bold leading-relaxed">
+              <p className="text-[8px] text-muted-foreground/60 font-bold leading-relaxed">
                 Includes Name, SKU, and Location for physical identification. Optimized for 3:2 thermal printers.
               </p>
            </div>
         </div>
 
-        <DialogFooter className="p-6 bg-zinc-950/50 border-t border-zinc-900 gap-2 flex-col sm:flex-row">
+        <DialogFooter className="p-6 bg-card/50 border-t border-border gap-2 flex-col sm:flex-row">
            <Button 
              variant="outline"
              onClick={handleDownloadBoth}
@@ -213,7 +213,7 @@ export function CodeGeneratorDialog({ item, open, onOpenChange }: CodeGeneratorD
            <Button 
              onClick={() => { handleDownload(); toast.success('Download initiated'); }}
              disabled={isGenerating}
-             className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[9px] h-10 px-6 rounded-xl shadow-xl shadow-emerald-500/10 transition-all active:scale-95 w-full sm:w-auto flex items-center justify-center gap-2"
+             className="bg-emerald-500 hover:bg-emerald-400 text-foreground font-black uppercase tracking-widest text-[9px] h-10 px-6 rounded-xl shadow-xl shadow-emerald-500/10 transition-all active:scale-95 w-full sm:w-auto flex items-center justify-center gap-2"
            >
              <Download size={14} /> Download Tag
            </Button>

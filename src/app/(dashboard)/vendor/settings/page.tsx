@@ -32,6 +32,11 @@ export default async function SettingsPage() {
     orderBy: { createdAt: 'desc' }
   });
 
+  const plans = await (prisma as any).platformPlan.findMany({
+    where: { isActive: true },
+    orderBy: { price: 'asc' }
+  });
+
   return (
     <div className="space-y-12 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -46,7 +51,7 @@ export default async function SettingsPage() {
         </div>
       </div>
 
-      <SettingsClientPage vendor={vendor} initialDrives={drives} />
+      <SettingsClientPage vendor={vendor} initialDrives={drives} plans={plans} />
     </div>
   );
 }

@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LockOverlay } from '@/components/public/LockOverlay';
 
-export default async function VendorPublicMenu({ params }: { params: { vendorSlug: string } }) {
+export default async function VendorPublicMenu({ params }: { params: Promise<{ vendorSlug: string }> }) {
+  const { vendorSlug } = await params;
   const vendor = await prisma.vendorProfile.findUnique({
-    where: { tenantSlug: params.vendorSlug },
+    where: { tenantSlug: vendorSlug },
     include: { 
       menuItems: {
         where: { isAvailable: true },

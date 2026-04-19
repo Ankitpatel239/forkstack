@@ -134,7 +134,7 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
       {/* Selection Column */}
       <div className="flex-1 flex flex-col gap-4">
         <div className="flex items-center justify-between">
-           <Link href="/vendor/inventory" className="flex items-center gap-2 text-zinc-600 hover:text-white transition-colors text-[9px] font-black uppercase tracking-[0.2em]">
+           <Link href="/vendor/inventory" className="flex items-center gap-2 text-muted-foreground/40 hover:text-foreground transition-colors text-[9px] font-black uppercase tracking-[0.2em]">
               <ChevronLeft size={14} /> Back to Catalog
            </Link>
            <div className="flex items-center gap-2 text-emerald-500 bg-emerald-500/5 px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border border-emerald-500/10">
@@ -143,13 +143,13 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
         </div>
 
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-800" size={16} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/20" size={16} />
           <input 
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search catalog or scan barcode..."
-            className="w-full bg-zinc-950/50 border border-zinc-900 h-12 pl-12 pr-4 rounded-xl text-xs font-bold text-white focus:border-emerald-500/30 outline-none transition-all"
+            className="w-full bg-card/40 border border-border h-12 pl-12 pr-4 rounded-xl text-xs font-bold text-foreground focus:border-emerald-500/30 outline-none transition-all"
           />
         </div>
 
@@ -159,14 +159,14 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
                 <button 
                   key={item.id}
                   onClick={() => addToCart(item)}
-                  className="bg-zinc-900/40 border border-zinc-900 p-4 rounded-2xl text-left hover:border-emerald-500/30 hover:bg-zinc-900 transition-all group active:scale-[0.97]"
+                  className="bg-card border border-border/50 p-4 rounded-2xl text-left hover:border-emerald-500/30 hover:bg-muted/40 transition-all group active:scale-[0.97]"
                 >
                    <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[8px] font-black uppercase text-zinc-700 tracking-tighter">Lot: {item.sku}</span>
-                        <span className={`text-[8px] font-black ${item.quantity <= 5 ? 'text-red-500' : 'text-zinc-600'}`}>{item.quantity} In</span>
+                        <span className="text-[8px] font-black uppercase text-muted-foreground/20 tracking-tighter">Lot: {item.sku}</span>
+                        <span className={`text-[8px] font-black ${item.quantity <= 5 ? 'text-red-500' : 'text-muted-foreground/40'}`}>{item.quantity} In</span>
                       </div>
-                      <h3 className="text-xs font-bold text-zinc-300 truncate tracking-tight">{item.name}</h3>
+                      <h3 className="text-xs font-bold text-foreground truncate tracking-tight">{item.name}</h3>
                       <div className="flex items-baseline justify-between">
                          <p className="text-sm font-black text-emerald-500 tracking-tighter">₹{item.price}</p>
                          <div className="h-5 w-5 rounded-md bg-emerald-500/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -178,61 +178,61 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
               ))}
            </div>
            {filteredItems.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-full opacity-20 py-20 gap-3">
-                 <Barcode size={40} className="text-zinc-800" />
-                 <p className="text-[10px] uppercase font-black tracking-widest text-zinc-800">No Item Found</p>
+              <div className="flex flex-col items-center justify-center h-full opacity-10 py-20 gap-3">
+                 <Barcode size={40} className="text-muted-foreground/60" />
+                 <p className="text-[10px] uppercase font-black tracking-widest">No Item Found</p>
               </div>
            )}
         </div>
       </div>
 
       {/* Basket Column */}
-      <div className="w-[380px] bg-black border border-zinc-900 rounded-[1.5rem] flex flex-col overflow-hidden shadow-2xl">
-         <div className="p-5 border-b border-zinc-900 bg-zinc-950/50">
+      <div className="w-[380px] bg-card border border-border/50 rounded-[1.5rem] flex flex-col overflow-hidden shadow-2xl">
+         <div className="p-5 border-b border-border bg-muted/30">
             <div className="flex items-center justify-between">
                <h2 className="text-sm font-black italic tracking-tighter flex items-center gap-2">
                   <ShoppingCart size={16} className="text-emerald-500" /> POS Basket
                </h2>
-               <Badge className="bg-emerald-500 text-zinc-950 font-black px-2 py-0.5 rounded text-[10px]">
+               <Badge className="bg-emerald-500 text-foreground font-black px-2 py-0.5 rounded text-[10px]">
                   {totalItems}
                </Badge>
             </div>
          </div>
 
-         <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar bg-zinc-950/20">
+         <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar bg-card/20">
             {cart.length === 0 ? (
-               <div className="h-full flex flex-col items-center justify-center text-center gap-2 opacity-10">
+               <div className="h-full flex flex-col items-center justify-center text-center gap-2 opacity-5">
                   <Package size={32} />
                   <p className="text-[10px] font-bold uppercase tracking-widest">Basket Empty</p>
                </div>
             ) : (
                cart.map((item: any) => (
-                  <div key={item.id} className="flex items-center justify-between gap-3 bg-zinc-900/40 p-3 rounded-xl border border-zinc-900/50 group animate-in slide-in-from-right-2 duration-300">
+                  <div key={item.id} className="flex items-center justify-between gap-3 bg-muted/40 p-3 rounded-xl border border-border/50 group animate-in slide-in-from-right-2 duration-300">
                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-[11px] text-zinc-200 truncate tracking-tight">{item.name}</p>
-                        <p className="text-[8px] text-zinc-600 font-black uppercase tracking-widest">₹{item.price}/{item.unit}</p>
+                        <p className="font-bold text-[11px] text-foreground truncate tracking-tight">{item.name}</p>
+                        <p className="text-[8px] text-muted-foreground/60 font-black uppercase tracking-widest">₹{item.price}/{item.unit}</p>
                      </div>
                      <div className="flex items-center gap-2">
-                        <button onClick={() => updateCartQuantity(item.id, -1)} className="w-6 h-6 rounded-md border border-zinc-800 flex items-center justify-center hover:bg-zinc-800 transition-all"><Minus size={10} /></button>
+                        <button onClick={() => updateCartQuantity(item.id, -1)} className="w-6 h-6 rounded-md border border-border flex items-center justify-center hover:bg-muted transition-all"><Minus size={10} /></button>
                         <span className="w-4 text-center text-[11px] font-black italic">{item.cartQuantity}</span>
-                        <button onClick={() => addToCart(item)} className="w-6 h-6 rounded-md border border-zinc-800 flex items-center justify-center hover:bg-zinc-800 transition-all"><Plus size={10} /></button>
+                        <button onClick={() => addToCart(item)} className="w-6 h-6 rounded-md border border-border flex items-center justify-center hover:bg-muted transition-all"><Plus size={10} /></button>
                      </div>
                      <div className="text-right min-w-[50px]">
-                        <p className="font-black text-[11px] text-zinc-100 italic">₹{item.price * item.cartQuantity}</p>
+                        <p className="font-black text-[11px] text-foreground italic">₹{item.price * item.cartQuantity}</p>
                      </div>
                   </div>
                ))
             )}
          </div>
 
-         <div className="p-6 bg-black border-t border-zinc-900 space-y-4 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+         <div className="p-6 bg-card border-t border-border space-y-4 shadow-[0_-20px_40px_rgba(0,0,0,0.05)]">
             <div className="space-y-2 px-1">
-               <div className="flex items-center justify-between text-zinc-600 text-[9px] font-black uppercase tracking-widest">
+               <div className="flex items-center justify-between text-muted-foreground/60 text-[9px] font-black uppercase tracking-widest">
                   <span>Net Total</span>
                   <span>₹{total}</span>
                </div>
-               <div className="pt-2 border-t border-zinc-900 border-dashed flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Grand Total</span>
+               <div className="pt-2 border-t border-border border-dashed flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Grand Total</span>
                   <span className="text-2xl font-black italic text-emerald-500 tracking-tighter">₹{total}</span>
                </div>
             </div>
@@ -241,13 +241,13 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
                <Button 
                  onClick={handleCheckout}
                  disabled={isProcessing || cart.length === 0}
-                 className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 h-12 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-500/10 active:scale-[0.98] transition-all"
+                 className="w-full bg-emerald-500 hover:bg-emerald-400 text-foreground h-12 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-500/10 active:scale-[0.98] transition-all"
                >
                   {isProcessing ? "..." : "Confirm Checkout"}
                </Button>
                <div className="grid grid-cols-2 gap-2">
-                  <Button variant="ghost" onClick={() => setCart([])} className="h-9 text-zinc-600 hover:text-red-500 text-[8px] font-black uppercase tracking-widest"><Trash2 className="mr-2 w-3 h-3" /> Reset Basket</Button>
-                  <Button variant="ghost" className="h-9 text-zinc-700 text-[8px] font-black uppercase tracking-widest"><Banknote className="mr-2 w-3 h-3" /> Cash</Button>
+                  <Button variant="ghost" onClick={() => setCart([])} className="h-9 text-muted-foreground/40 hover:text-red-500 text-[8px] font-black uppercase tracking-widest"><Trash2 className="mr-2 w-3 h-3" /> Reset Basket</Button>
+                  <Button variant="ghost" className="h-9 text-muted-foreground/60 text-[8px] font-black uppercase tracking-widest"><Banknote className="mr-2 w-3 h-3" /> Cash</Button>
                </div>
             </div>
          </div>

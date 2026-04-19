@@ -74,18 +74,18 @@ export function TableDialog({ table, open, onOpenChange }: TableDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-950 border-zinc-900 text-white sm:max-w-[500px] rounded-[3rem] p-0 overflow-hidden shadow-2xl outline-none">
-        <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 p-10 border-b border-zinc-900 relative">
+      <DialogContent className="bg-background border-border text-foreground sm:max-w-[500px] rounded-[3rem] p-0 overflow-hidden shadow-2xl outline-none">
+        <div className="bg-gradient-to-br from-card to-background p-10 border-b border-border relative">
            <DialogHeader>
              <div className="flex items-center gap-4 mb-2">
                 <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
                    <TableIcon size={28} />
                 </div>
                 <div>
-                   <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">
+                   <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-foreground">
                      {table ? 'Edit Table' : 'New Table'}
                    </DialogTitle>
-                   <DialogDescription className="text-zinc-500 font-bold text-[10px] uppercase tracking-widest mt-1">
+                   <DialogDescription className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest mt-1">
                      Configure your physical dining points.
                    </DialogDescription>
                 </div>
@@ -96,14 +96,14 @@ export function TableDialog({ table, open, onOpenChange }: TableDialogProps) {
         <form onSubmit={handleSubmit} className="p-10 space-y-8">
            <div className="space-y-6">
               <div className="space-y-2">
-                 <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Table Reference</Label>
+                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Table Reference</Label>
                  <div className="relative">
-                    <TableIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700" />
+                    <TableIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/30" />
                     <Input 
                       value={formData.tableNumber}
                       onChange={e => setFormData({...formData, tableNumber: e.target.value})}
                       placeholder="e.g., T-05 or Window Seat"
-                      className="bg-zinc-900 border-zinc-800 h-14 pl-12 font-black italic text-sm rounded-2xl focus:border-emerald-500/50" 
+                      className="bg-muted border-border h-14 pl-12 font-black italic text-sm rounded-2xl focus:border-emerald-500/50 text-foreground" 
                       required 
                     />
                  </div>
@@ -111,52 +111,52 @@ export function TableDialog({ table, open, onOpenChange }: TableDialogProps) {
 
               <div className="grid grid-cols-2 gap-6">
                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Max Capacity</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Max Capacity</Label>
                     <div className="relative">
-                       <Users size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700" />
+                       <Users size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/30" />
                        <Input 
                          type="number"
                          value={formData.capacity}
                          onChange={e => setFormData({...formData, capacity: e.target.value})}
-                         className="bg-zinc-900 border-zinc-800 h-14 pl-12 font-black italic rounded-2xl" 
+                         className="bg-muted border-border h-14 pl-12 font-black italic rounded-2xl text-foreground" 
                        />
                     </div>
                  </div>
                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Actual Chairs</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Actual Chairs</Label>
                     <div className="relative">
-                       <Users size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700" />
+                       <Users size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/30" />
                        <Input 
                          type="number"
                          value={formData.chairCount}
                          onChange={e => setFormData({...formData, chairCount: e.target.value})}
-                         className="bg-zinc-900 border-zinc-800 h-14 pl-12 font-black italic rounded-2xl" 
+                         className="bg-muted border-border h-14 pl-12 font-black italic rounded-2xl text-foreground" 
                        />
                     </div>
                  </div>
               </div>
 
               <div className="space-y-2">
-                 <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Physical Location</Label>
+                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Physical Location</Label>
                  <div className="relative">
-                    <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700" />
+                    <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/30" />
                     <Input 
                       value={formData.location}
                       onChange={e => setFormData({...formData, location: e.target.value})}
                       placeholder="e.g., Rooftop Terrace, Near Window"
-                      className="bg-zinc-900 border-zinc-800 h-14 pl-12 font-black italic text-sm rounded-2xl" 
+                      className="bg-muted border-border h-14 pl-12 font-black italic text-sm rounded-2xl text-foreground" 
                     />
                  </div>
               </div>
 
               {table && (
                 <div className="space-y-2">
-                   <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Availability Status</Label>
+                   <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Availability Status</Label>
                    <Select value={formData.status} onValueChange={v => setFormData({...formData, status: v})}>
-                      <SelectTrigger className="bg-zinc-900 border-zinc-800 h-14 font-black italic rounded-2xl">
+                      <SelectTrigger className="bg-muted border-border h-14 font-black italic rounded-2xl text-foreground">
                          <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-zinc-950 border-zinc-900 text-white font-black italic">
+                      <SelectContent className="bg-card border-border text-foreground font-black italic">
                          <SelectItem value="AVAILABLE">AVAILABLE</SelectItem>
                          <SelectItem value="OCCUPIED">OCCUPIED</SelectItem>
                          <SelectItem value="RESERVED">RESERVED</SelectItem>
@@ -168,7 +168,7 @@ export function TableDialog({ table, open, onOpenChange }: TableDialogProps) {
            </div>
 
            <DialogFooter className="pt-4 gap-4 sm:justify-between items-center">
-              <div className="hidden sm:flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-zinc-700">
+              <div className="hidden sm:flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground/30">
                  <Info size={12} /> Live QR Sync
               </div>
               <Button 
