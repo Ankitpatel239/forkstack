@@ -29,7 +29,8 @@ import {
   Timer,
   Banknote,
   Palette,
-  QrCode
+  QrCode,
+  ChevronDown
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
@@ -77,20 +78,54 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setIsWorkstationLocked(false);
   };
 
-  const vendorNavItems = [
+  interface NavItem {
+    name: string;
+    href: string;
+    icon: any;
+    children?: { name: string; href: string }[];
+  }
+
+  const vendorNavItems: NavItem[] = [
     { name: 'Overview', href: '/vendor/dashboard', icon: LayoutDashboard },
     { name: 'Orders', href: '/vendor/orders', icon: ShoppingBag },
-    { name: 'Menu Items', href: '/vendor/menu/items', icon: ChefHat },
-    { name: 'Dining Tables', href: '/vendor/tables', icon: LayoutDashboard },
+    { 
+      name: 'Menu Management', 
+      href: '/vendor/menu/items', 
+      icon: ChefHat,
+      children: [
+        { name: 'All Menu Items', href: '/vendor/menu/items' },
+        { name: 'Add New Item', href: '/vendor/menu/items' },
+        { name: 'Edit Categories', href: '/vendor/menu/categories' },
+      ]
+    },
+    { 
+      name: 'Tiffin Service', 
+      href: '/vendor/tiffin/plans', 
+      icon: Timer,
+      children: [
+        { name: 'Service Plans', href: '/vendor/tiffin/plans' },
+        { name: 'All Clients', href: '/vendor/tiffin/subscriptions' },
+        { name: 'Menu Calendar', href: '/vendor/tiffin/menu' },
+      ]
+    },
+    { 
+      name: 'Dining Tables', 
+      href: '/vendor/tables', 
+      icon: LayoutDashboard,
+      children: [
+        { name: 'Table Layout', href: '/vendor/tables' },
+        { name: 'Add New Table', href: '/vendor/tables' },
+        { name: 'QR Designer', href: '/vendor/qr-designer' },
+      ]
+    },
     { name: 'Inventory', href: '/vendor/inventory', icon: Store },
     { name: 'Staff', href: '/vendor/staff', icon: Users },
     { name: 'Payments & Fiscal', href: '/vendor/payments', icon: Wallet },
     { name: 'Settings', href: '/vendor/settings', icon: Settings },
-    { name: 'Vector Studio', href: '/vendor/qr-designer', icon: Palette },
     { name: 'Feature Requests', href: '/vendor/requests', icon: MessageSquare },
   ];
 
-  const adminNavItems = [
+  const adminNavItems: NavItem[] = [
     { name: 'Platform Command', href: '/admin/dashboard', icon: Zap },
     { name: 'Automation Core', href: '/admin/automation', icon: Brain },
     { name: 'Platform Cron Jobs', href: '/admin/jobs', icon: Timer },
@@ -110,6 +145,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   const navItems = session?.user?.role === 'ADMIN' ? adminNavItems : vendorNavItems;
+
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
+
+  // Auto-expand active menus on load/navigation
+  useEffect(() => {
+    navItems.forEach(item => {
+      if (item.children && item.children.some((child: any) => pathname === child.href)) {
+        if (!expandedMenus.includes(item.name)) {
+          setExpandedMenus(prev => [...prev, item.name]);
+        }
+      }
+    });
+  }, [pathname, navItems]);
+
+  const toggleMenu = (name: string) => {
+    setExpandedMenus(prev => 
+      prev.includes(name) 
+        ? prev.filter(i => i !== name) 
+        : [...prev, name]
+    );
+  };
 
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
@@ -144,6 +200,59 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           {navItems.map((item: any) => {
             const isActive = pathname?.startsWith(item.href);
+            const hasChildren = item.children && item.children.length > 0;
+            const isExpanded = expandedMenus.includes(item.name);
+
+            if (hasChildren) {
+              return (
+                <div key={item.name} className="space-y-1">
+                  <button
+                    onClick={() => toggleMenu(item.name)}
+                    className={`group w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+                      isActive || isExpanded
+                        ? 'bg-emerald-500/10 text-emerald-500' 
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <item.icon
+                        className={`mr-3 h-5 w-5 flex-shrink-0 transition-colors ${
+                          isActive || isExpanded ? 'text-emerald-500' : 'text-muted-foreground group-hover:text-foreground'
+                        }`}
+                      />
+                      {item.name}
+                    </div>
+                    <ChevronDown 
+                      size={16} 
+                      className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                  
+                  {isExpanded && (
+                    <div className="pl-12 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                      {item.children.map((child: any) => {
+                        const isChildActive = pathname === child.href;
+                        return (
+                          <Link
+                            key={child.name}
+                            href={child.href}
+                            onClick={() => setIsSidebarOpen(false)}
+                            className={`flex items-center py-2 text-xs font-medium rounded-lg transition-colors ${
+                              isChildActive 
+                                ? 'text-emerald-500' 
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            {child.name}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             return (
               <Link
                 key={item.name}

@@ -12,6 +12,7 @@ enum Role {
   VENDOR_OWNER
   TEAM
   SUPPORT
+  CUSTOMER
 }
 
 model PlatformPlan {
@@ -122,6 +123,7 @@ model User {
   salary            Float?
   attendance        Attendance[]
   salaryRecords     SalaryRecord[]
+  tiffinSubscriptions TiffinSubscription[]
 }
 
 // ========== VENDOR & TENANT ==========
@@ -184,6 +186,9 @@ model VendorProfile {
   payouts               Payout[]
   drives                ConnectedDrive[]
   featureRequests       FeatureRequest[]
+  tiffinPlans           TiffinPlan[]
+  tiffinSubscriptions   TiffinSubscription[]
+  tiffinMenus           TiffinMenu[]
 }
 
 model InventoryCategory {
@@ -697,6 +702,91 @@ model Payout {
   updatedAt     DateTime     @updatedAt
 
   vendor        VendorProfile @relation(fields: [vendorId], references: [id])
+}
+
+// ========== TIFFIN SERVICE ==========
+
+enum TiffinMealType {
+  LUNCH
+  DINNER
+  BOTH
+}
+
+enum TiffinSubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  PAUSED
+  CANCELLED
+}
+
+enum TiffinDeliveryStatus {
+  PENDING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  SKIPPED
+  CANCELLED
+}
+
+model TiffinPlan {
+  id          String           @id @default(cuid())
+  vendorId    String
+  name        String
+  description String?
+  price       Float
+  mealCount   Int              // Total meals in the plan (e.g., 20, 30)
+  mealType    TiffinMealType   @default(LUNCH)
+  validityDays Int             // Days the plan is valid for (e.g., 30)
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  vendor      VendorProfile    @relation(fields: [vendorId], references: [id])
+  subscriptions TiffinSubscription[]
+}
+
+model TiffinSubscription {
+  id            String                 @id @default(cuid())
+  vendorId      String
+  customerId    String                 
+  planId        String
+  status        TiffinSubscriptionStatus @default(ACTIVE)
+  startDate     DateTime               @default(now())
+  endDate       DateTime?
+  remainingMeals Int
+  address       String?                // Delivery address for this subscription
+  
+  vendor        VendorProfile          @relation(fields: [vendorId], references: [id])
+  customer      User                   @relation(fields: [customerId], references: [id])
+  plan          TiffinPlan             @relation(fields: [planId], references: [id])
+  deliveries    TiffinDelivery[]
+  
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+}
+
+model TiffinMenu {
+  id          String   @id @default(cuid())
+  vendorId    String
+  date        DateTime
+  mealType    TiffinMealType
+  items       String[] // e.g., ["Dal", "Paneer", "Roti", "Rice"]
+  description String?
+  
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  
+  @@unique([vendorId, date, mealType])
+}
+
+model TiffinDelivery {
+  id              String         @id @default(cuid())
+  subscriptionId  String
+  date            DateTime       @default(now())
+  status          TiffinDeliveryStatus @default(PENDING)
+  notes           String?
+  
+  subscription    TiffinSubscription @relation(fields: [subscriptionId], references: [id])
+  
+  @@unique([subscriptionId, date])
 }
 
 // ========== FEATURE REQUESTS ==========
