@@ -1,18 +1,7 @@
 // Temporary type definitions until 'npx prisma generate' is run
-import { User } from "@prisma/client";
+import { User, TiffinMealType, TiffinSubscriptionStatus } from "@prisma/client";
 
-export enum TiffinMealType {
-  LUNCH = "LUNCH",
-  DINNER = "DINNER",
-  BOTH = "BOTH",
-}
-
-export enum TiffinSubscriptionStatus {
-  ACTIVE = "ACTIVE",
-  EXPIRED = "EXPIRED",
-  PAUSED = "PAUSED",
-  CANCELLED = "CANCELLED",
-}
+export { TiffinMealType, TiffinSubscriptionStatus };
 
 export interface TiffinPlan {
   id: string;

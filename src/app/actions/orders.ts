@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function placeOrder(data: {
   vendorId: string;
-  tableId: string;
+  tableId?: string | null;
   customerPhone: string;
   customerName?: string;
   items: { menuItemId: string; quantity: number; unitPrice: number }[];
@@ -21,10 +21,10 @@ export async function placeOrder(data: {
     data: {
       orderNumber,
       vendorId: data.vendorId,
-      tableId: data.tableId,
+      tableId: data.tableId || null,
       customerPhone: data.customerPhone,
       customerName: data.customerName,
-      orderSource: 'QR_TABLE',
+      orderSource: data.tableId ? 'QR_TABLE' : 'VENDOR_DASHBOARD',
       totalAmount: data.totalAmount,
       finalAmount: data.totalAmount,
       status: 'PENDING',
@@ -48,10 +48,12 @@ export async function placeOrder(data: {
   });
 
   // 2. Update table status to OCCUPIED if it's not already
-  await prisma.table.update({
-    where: { id: data.tableId },
-    data: { status: 'OCCUPIED' }
-  });
+  if (data.tableId) {
+    await prisma.table.update({
+      where: { id: data.tableId },
+      data: { status: 'OCCUPIED' }
+    });
+  }
 
   revalidatePath('/vendor/orders');
   revalidatePath('/vendor/tables');

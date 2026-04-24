@@ -73,6 +73,15 @@ export async function getTiffinMenu(vendorId: string, date: Date, mealType: Tiff
   });
 }
 
+import { format, startOfDay, endOfDay } from "date-fns";
+import { TiffinDeliveryStatus } from "@prisma/client";
+
+export async function getVendorByUserId(userId: string) {
+  return await prisma.vendorProfile.findUnique({
+    where: { ownerId: userId },
+  });
+}
+
 export async function updateTiffinMenu(data: {
   vendorId: string;
   date: Date;
@@ -97,3 +106,83 @@ export async function updateTiffinMenu(data: {
   revalidatePath("/vendor/tiffin/menu");
   return menu;
 }
+
+export async function updateSubscriptionStatus(id: string, status: TiffinSubscriptionStatus) {
+  const sub = await prisma.tiffinSubscription.update({
+    where: { id },
+    data: { status },
+  });
+  revalidatePath("/vendor/tiffin/orders");
+  revalidatePath("/vendor/tiffin/subscriptions");
+  revalidatePath("/vendor/tiffin/deliveries");
+  return sub;
+}
+
+
+export async function getDailyDeliveries(vendorId: string, date: Date) {
+  const dayStart = startOfDay(date);
+  const dayEnd = endOfDay(date);
+
+  return await prisma.tiffinSubscription.findMany({
+    where: {
+      vendorId,
+      status: "ACTIVE",
+      startDate: { lte: dayEnd },
+      OR: [
+        { endDate: null },
+        { endDate: { gte: dayStart } }
+      ]
+    },
+    include: {
+      customer: true,
+      plan: true,
+      deliveries: {
+        where: {
+          date: {
+            gte: dayStart,
+            lte: dayEnd
+          }
+        }
+      }
+    }
+  });
+}
+
+export async function markAsDelivered(subscriptionId: string, date: Date) {
+  const dayStart = startOfDay(date);
+  const dayEnd = endOfDay(date);
+
+  // Use a transaction to ensure both updates happen together
+  return await prisma.$transaction(async (tx) => {
+    // 1. Create or update delivery record
+    const delivery = await tx.tiffinDelivery.upsert({
+      where: {
+        subscriptionId_date: {
+          subscriptionId,
+          date: dayStart // Normalize to start of day for the unique constraint
+        }
+      },
+      update: {
+        status: TiffinDeliveryStatus.DELIVERED
+      },
+      create: {
+        subscriptionId,
+        date: dayStart,
+        status: TiffinDeliveryStatus.DELIVERED
+      }
+    });
+
+    // 2. Decrement remaining meals in subscription
+    await tx.tiffinSubscription.update({
+      where: { id: subscriptionId },
+      data: {
+        remainingMeals: {
+          decrement: 1
+        }
+      }
+    });
+
+    return delivery;
+  });
+}
+

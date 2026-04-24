@@ -33,12 +33,11 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { HeaderSecurityToggle } from '@/components/dashboard/HeaderSecurityToggle';
 import { DashboardLockScreen } from '@/components/dashboard/DashboardLockScreen';
-import { useEffect } from 'react';
 import { Lock as LockIcon } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
@@ -85,7 +84,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     children?: { name: string; href: string }[];
   }
 
-  const vendorNavItems: NavItem[] = [
+  const vendorNavItems: NavItem[] = useMemo(() => [
     { name: 'Overview', href: '/vendor/dashboard', icon: LayoutDashboard },
     { name: 'Orders', href: '/vendor/orders', icon: ShoppingBag },
     { 
@@ -94,18 +93,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       icon: ChefHat,
       children: [
         { name: 'All Menu Items', href: '/vendor/menu/items' },
-        { name: 'Add New Item', href: '/vendor/menu/items' },
+        { name: 'Add New Item', href: '/vendor/menu/items?action=add' },
         { name: 'Edit Categories', href: '/vendor/menu/categories' },
       ]
     },
     { 
       name: 'Tiffin Service', 
-      href: '/vendor/tiffin/plans', 
+      href: '/vendor/tiffin', 
       icon: Timer,
       children: [
+        { name: 'Subscription Orders', href: '/vendor/tiffin/orders' },
         { name: 'Service Plans', href: '/vendor/tiffin/plans' },
         { name: 'All Clients', href: '/vendor/tiffin/subscriptions' },
-        { name: 'Menu Calendar', href: '/vendor/tiffin/menu' },
+        { name: 'Daily Deliveries', href: '/vendor/tiffin/deliveries' },
+        { name: 'Menu Planner', href: '/vendor/tiffin/menu' },
       ]
     },
     { 
@@ -114,7 +115,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       icon: LayoutDashboard,
       children: [
         { name: 'Table Layout', href: '/vendor/tables' },
-        { name: 'Add New Table', href: '/vendor/tables' },
+        { name: 'Reservations', href: '/vendor/reservations' },
+        { name: 'Add New Table', href: '/vendor/tables?action=new' },
         { name: 'QR Designer', href: '/vendor/qr-designer' },
       ]
     },
@@ -123,9 +125,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: 'Payments & Fiscal', href: '/vendor/payments', icon: Wallet },
     { name: 'Settings', href: '/vendor/settings', icon: Settings },
     { name: 'Feature Requests', href: '/vendor/requests', icon: MessageSquare },
-  ];
+  ], []);
 
-  const adminNavItems: NavItem[] = [
+  const adminNavItems: NavItem[] = useMemo(() => [
     { name: 'Platform Command', href: '/admin/dashboard', icon: Zap },
     { name: 'Automation Core', href: '/admin/automation', icon: Brain },
     { name: 'Platform Cron Jobs', href: '/admin/jobs', icon: Timer },
@@ -142,7 +144,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: 'Access Control', href: '/admin/team', icon: ShieldCheck },
     { name: 'Global Settings', href: '/admin/settings', icon: Settings },
     { name: 'Feature Inbox', href: '/admin/requests', icon: MessageSquare },
-  ];
+  ], []);
 
   const navItems = session?.user?.role === 'ADMIN' ? adminNavItems : vendorNavItems;
 
@@ -151,7 +153,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Auto-expand active menus on load/navigation
   useEffect(() => {
     navItems.forEach(item => {
-      if (item.children && item.children.some((child: any) => pathname === child.href)) {
+      const isChildActive = item.children?.some((child: any) => pathname === child.href || pathname?.startsWith(child.href));
+      if (isChildActive || (item.href !== '#' && pathname?.startsWith(item.href))) {
         if (!expandedMenus.includes(item.name)) {
           setExpandedMenus(prev => [...prev, item.name]);
         }
@@ -199,7 +202,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             Management
           </div>
           {navItems.map((item: any) => {
-            const isActive = pathname?.startsWith(item.href);
+            const isChildActive = item.children?.some((child: any) => pathname === child.href || pathname?.startsWith(child.href));
+            const isActive = (item.href !== '#' && pathname?.startsWith(item.href)) || isChildActive;
             const hasChildren = item.children && item.children.length > 0;
             const isExpanded = expandedMenus.includes(item.name);
 

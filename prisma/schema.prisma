@@ -99,6 +99,13 @@ enum TableStatus {
   MAINTENANCE
 }
 
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
 // ========== USER & AUTH ==========
 model User {
   id                String    @id @default(cuid())
@@ -189,6 +196,7 @@ model VendorProfile {
   tiffinPlans           TiffinPlan[]
   tiffinSubscriptions   TiffinSubscription[]
   tiffinMenus           TiffinMenu[]
+  reservations          Reservation[]
 }
 
 model InventoryCategory {
@@ -262,9 +270,48 @@ model Table {
 
   vendor      VendorProfile @relation(fields: [vendorId], references: [id])
   orders      Order[]
+  reservations Reservation[]
 
   @@index([vendorId])
   @@index([status])
+}
+
+model Reservation {
+  id              String       @id @default(cuid())
+  vendorId        String
+  tableId         String?
+  customerName    String
+  customerPhone   String
+  customerEmail   String?
+  reservationDate DateTime
+  startTime       DateTime
+  endTime         DateTime?
+  guestCount      Int
+  status          ReservationStatus @default(PENDING)
+  notes           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  vendor          VendorProfile @relation(fields: [vendorId], references: [id])
+  table           Table?        @relation(fields: [tableId], references: [id])
+  logs            ReservationLog[]
+
+  @@index([vendorId])
+  @@index([tableId])
+  @@index([reservationDate])
+}
+
+model ReservationLog {
+  id              String       @id @default(cuid())
+  reservationId   String
+  changedBy       String       // Staff name or "System"
+  action          String       // "CREATED", "STATUS_UPDATED", "EDITED"
+  details         String?      // Description of changes
+  createdAt       DateTime     @default(now())
+
+  reservation     Reservation  @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId])
 }
 
 model MenuCategory {
@@ -713,6 +760,7 @@ enum TiffinMealType {
 }
 
 enum TiffinSubscriptionStatus {
+  PENDING
   ACTIVE
   EXPIRED
   PAUSED
