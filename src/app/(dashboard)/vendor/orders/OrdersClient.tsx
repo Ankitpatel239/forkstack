@@ -35,24 +35,87 @@ import {
 import Link from 'next/link';
 import { updateOrderStatus } from '@/app/actions/orders';
 import { toast } from 'sonner';
+import { ManualOrderDialog } from './ManualOrderDialog';
+import { useSocket } from '@/hooks/useSocket';
+import { useEffect } from 'react';
 
-export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
+export function OrdersClient({ 
+  initialOrders,
+  vendorId 
+}: { 
+  initialOrders: any[],
+  vendorId: string 
+}) {
+  const socket = useSocket(vendorId);
+
   const [filter, setFilter] = useState('ALL');
+  const [timeFilter, setTimeFilter] = useState('Today');
   const [search, setSearch] = useState('');
   const [orders, setOrders] = useState(initialOrders);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('new-order', (newOrder: any) => {
+      let isUpdate = false;
+      setOrders(prev => {
+        const exists = prev.some(o => o.id === newOrder.id);
+        if (exists) {
+          isUpdate = true;
+          return prev.map(o => o.id === newOrder.id ? { ...newOrder, _justUpdated: true } : o);
+        }
+        return [newOrder, ...prev];
+      });
+
+      if (isUpdate) {
+        toast.success(`Bill Updated #${newOrder.orderNumber.slice(-6)}`, {
+          description: `${newOrder.customerName || 'Guest'} added new items to their bill.`,
+          className: "bg-blue-600 text-white border-none"
+        });
+      } else {
+        toast.info(`New Order #${newOrder.orderNumber.slice(-6)} received!`, {
+          description: `${newOrder.customerName || 'Guest'} just placed an order.`,
+          className: "bg-emerald-600 text-white border-none"
+        });
+      }
+    });
+
+    return () => {
+      socket.off('new-order');
+    };
+  }, [socket]);
 
   const filteredOrders = useMemo(() => {
     return orders.filter((order: any) => {
       const matchesSearch = 
-        order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
+        (order.orderNumber || '').toLowerCase().includes(search.toLowerCase()) ||
         (order.customerName || '').toLowerCase().includes(search.toLowerCase()) ||
-        order.customerPhone.includes(search);
+        (order.customerPhone || '').toLowerCase().includes(search.toLowerCase());
       
-      const matchesFilter = filter === 'ALL' || order.status === filter;
+      const matchesStatus = filter === 'ALL' || order.status === filter;
       
-      return matchesSearch && matchesFilter;
-    });
-  }, [orders, search, filter]);
+      const orderDate = new Date(order.orderDate);
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      
+      let matchesTime = true;
+      if (timeFilter === 'Today') {
+        matchesTime = orderDate >= today;
+      } else if (timeFilter === 'Yesterday') {
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        matchesTime = orderDate >= yesterday && orderDate < today;
+      } else if (timeFilter === 'Last 7 Days') {
+        const last7 = new Date(today);
+        last7.setDate(today.getDate() - 7);
+        matchesTime = orderDate >= last7;
+      } else if (timeFilter === 'All Time') {
+        matchesTime = true;
+      }
+      
+      return matchesSearch && matchesStatus && matchesTime;
+    }).sort((a: any, b: any) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+  }, [orders, search, filter, timeFilter]);
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     try {
@@ -125,15 +188,38 @@ export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by ID, Name or Phone..." 
-              className="w-full h-16 bg-muted border border-border rounded-[1.5rem] pl-16 pr-8 text-sm font-black italic text-foreground placeholder:text-muted-foreground/50 focus:border-emerald-500/50 outline-none transition-all"
+              className="w-full h-10 bg-muted border border-border rounded-[1.5rem] pl-16 pr-8 text-sm font-black italic text-foreground placeholder:text-muted-foreground/50 focus:border-emerald-500/50 outline-none transition-all"
             />
          </div>
          <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto no-scrollbar pb-2 md:pb-0">
-            {['Today', 'Yesterday', 'Last 7 Days'].map((t: string) => (
-              <Button key={t} variant="outline" className="rounded-2xl h-16 px-8 border-border bg-muted/40 text-[10px] uppercase font-black tracking-widest text-muted-foreground hover:text-foreground hover:border-emerald-500/20">
+            {['Today', 'Yesterday', 'Last 7 Days', 'All Time'].map((t: string) => (
+              <Button 
+                key={t} 
+                onClick={() => setTimeFilter(t)}
+                variant="outline" 
+                className={`rounded-2xl h-8 px-4 border-border transition-all text-[10px] uppercase font-black tracking-widest ${
+                  timeFilter === t 
+                  ? 'bg-emerald-500 text-foreground border-emerald-500 shadow-lg shadow-emerald-500/10' 
+                  : 'bg-muted/40 text-muted-foreground hover:text-foreground hover:border-emerald-500/20'
+                }`}
+              >
                 {t}
               </Button>
             ))}
+            <ManualOrderDialog 
+              vendorId={vendorId} 
+              onSuccess={(updatedOrder) => {
+                if (updatedOrder) {
+                  setOrders(prev => {
+                    const exists = prev.some(o => o.id === updatedOrder.id);
+                    if (exists) {
+                      return prev.map(o => o.id === updatedOrder.id ? updatedOrder : o);
+                    }
+                    return [updatedOrder, ...prev];
+                  });
+                }
+              }}
+            />
          </div>
       </div>
 
@@ -167,6 +253,11 @@ export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
                            <Badge className={`rounded-lg uppercase font-black text-[8px] tracking-widest border-none px-2 h-6 ${getStatusStyle(order.status)}`}>
                               {order.status}
                            </Badge>
+                           {order._justUpdated && (
+                             <Badge className="bg-blue-600 text-white rounded-lg uppercase font-black text-[8px] tracking-widest border-none px-2 h-6 animate-pulse">
+                               Bill Updated
+                             </Badge>
+                           )}
                         </div>
                         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest italic">

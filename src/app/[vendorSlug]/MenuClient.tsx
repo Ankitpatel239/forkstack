@@ -23,7 +23,17 @@ import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { placeOrder } from '@/app/actions/orders';
+import { placeOrder, getExistingPendingOrder, addOrderItems } from '@/app/actions/orders';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from 'sonner';
 import Link from 'next/link';
 
@@ -33,6 +43,18 @@ export function MenuClient({ vendor, tableId }: { vendor: any, tableId?: string 
   const [isOrdering, setIsOrdering] = useState(false);
   const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '' });
   const [activeCategory, setActiveCategory] = useState('All');
+  const [existingOrder, setExistingOrder] = useState<any>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [clientToken, setClientToken] = useState<string>('');
+
+  useEffect(() => {
+    let token = localStorage.getItem('orderClientToken');
+    if (!token) {
+      token = Math.random().toString(36).substring(2) + Date.now().toString(36);
+      localStorage.setItem('orderClientToken', token);
+    }
+    setClientToken(token);
+  }, []);
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(vendor.menuItems.map((item: any) => item.category?.name || 'Uncategorized')));
@@ -78,26 +100,56 @@ export function MenuClient({ vendor, tableId }: { vendor: any, tableId?: string 
 
     setIsOrdering(true);
     try {
-      await placeOrder({
-        vendorId: vendor.id,
-        tableId: tableId || null, // No fallback to invalid string
-        customerPhone: customerInfo.phone,
-        customerName: customerInfo.name,
-        items: cart.map(i => ({
+      const existing = await getExistingPendingOrder(vendor.id, customerInfo.phone, tableId);
+      if (existing) {
+        setExistingOrder(existing);
+        setIsConfirmOpen(true);
+        setIsOrdering(false);
+        return;
+      }
+      
+      await executeOrder(true);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to check existing orders');
+      setIsOrdering(false);
+    }
+  };
+
+  const executeOrder = async (isNew: boolean) => {
+    setIsOrdering(true);
+    try {
+      if (!isNew && existingOrder) {
+        await addOrderItems(existingOrder.id, cart.map(i => ({
           menuItemId: i.item.id,
           quantity: i.quantity,
           unitPrice: i.item.price
-        })),
-        totalAmount: cartTotal,
-        paymentMethod: 'COD' // Default for now
-      });
+        })));
+        toast.success('Items added to your existing order!');
+      } else {
+        await placeOrder({
+          vendorId: vendor.id,
+          tableId: tableId || null,
+          customerPhone: customerInfo.phone,
+          customerName: customerInfo.name,
+          items: cart.map(i => ({
+            menuItemId: i.item.id,
+            quantity: i.quantity,
+            unitPrice: i.item.price
+          })),
+          totalAmount: cartTotal,
+          paymentMethod: 'COD',
+          clientToken: clientToken
+        });
+        toast.success('New order placed successfully!');
+      }
 
-      toast.success('Order placed successfully!');
       setCart([]);
       setIsCartOpen(false);
+      setIsConfirmOpen(false);
     } catch (error) {
       console.error(error);
-      toast.error('Failed to place order. Please try again.');
+      toast.error('Failed to process order. Please try again.');
     } finally {
       setIsOrdering(false);
     }
@@ -308,6 +360,29 @@ export function MenuClient({ vendor, tableId }: { vendor: any, tableId?: string 
            </Sheet>
         </footer>
       )}
+
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent className="bg-zinc-950 border-zinc-900 text-white rounded-[2rem]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Existing Order Found</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400 font-medium">
+              You already have a pending order (<span className="text-emerald-500 font-bold">{existingOrder?.orderNumber}</span>) at this table. 
+              Would you like to add these items to your current order or start a completely new one?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-3">
+            <AlertDialogCancel className="rounded-xl border-zinc-800 bg-zinc-900 text-white hover:bg-zinc-800 hover:text-white">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => executeOrder(false)}
+              className="rounded-xl bg-emerald-500 text-zinc-950 hover:bg-emerald-400 font-bold px-8"
+            >
+              Add to Bill
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

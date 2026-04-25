@@ -295,6 +295,7 @@ model Reservation {
   vendor          VendorProfile @relation(fields: [vendorId], references: [id])
   table           Table?        @relation(fields: [tableId], references: [id])
   logs            ReservationLog[]
+  order           Order?
 
   @@index([vendorId])
   @@index([tableId])
@@ -573,9 +574,12 @@ model Order {
   orderDate        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
   notes            String?
+  clientToken      String?      // To prevent unauthorized appending (scam prevention)
 
   vendor           VendorProfile @relation(fields: [vendorId], references: [id])
   table            Table?        @relation(fields: [tableId], references: [id])
+  reservationId    String?       @unique
+  reservation      Reservation?  @relation(fields: [reservationId], references: [id])
   items            OrderItem[]
   combos           OrderCombo[]
   parcels          Parcel[]

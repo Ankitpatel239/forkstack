@@ -112,6 +112,14 @@ export async function createMenuItem(data: {
   return item;
 }
 
+export async function getMenuItems() {
+  const vendor = await requireVendor();
+  return prisma.menuItem.findMany({
+    where: { vendorId: vendor.id, isAvailable: true },
+    orderBy: { category: { sortOrder: 'asc' } }
+  });
+}
+
 export async function updateMenuItem(id: string, data: {
   name?: string;
   price?: number;

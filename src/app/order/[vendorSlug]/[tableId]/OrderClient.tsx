@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useTransition } from 'react';
 import { 
   ShoppingBag, 
   Plus, 
@@ -17,8 +17,18 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { placeOrder, updateTableStatus, getExistingPendingOrder, addOrderItems } from '@/app/actions/orders';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from 'sonner';
-import { placeOrder, updateTableStatus } from '@/app/actions/orders';
 
 export function OrderClient({ vendor, table, categories }: { 
   vendor: any, 
@@ -32,7 +42,19 @@ export function OrderClient({ vendor, table, categories }: {
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('COD');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [existingOrder, setExistingOrder] = useState<any>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [clientToken, setClientToken] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let token = localStorage.getItem('orderClientToken');
+    if (!token) {
+      token = Math.random().toString(36).substring(2) + Date.now().toString(36);
+      localStorage.setItem('orderClientToken', token);
+    }
+    setClientToken(token);
+  }, []);
 
   // Auto-book table on scan
   useEffect(() => {
@@ -73,62 +95,117 @@ export function OrderClient({ vendor, table, categories }: {
     });
   };
 
-  const handleCheckout = async () => {
-    if (!customerPhone) return toast.error('Please enter your WhatsApp number');
-    if (customerPhone.length < 10) return toast.error('Invalid phone number');
-
-    setIsSubmitting(true);
+  const executeOrder = async () => {
+    setIsLoading(true);
     try {
-      const items = Object.entries(cart).map(([id, qty]: [string, number]) => {
-        const item = allItems.find((i: any) => i.id === id);
-        return { menuItemId: id, quantity: qty, unitPrice: item!.price };
-      });
-
-      await placeOrder({
-        vendorId: vendor.id,
-        tableId: table.id,
-        customerPhone,
-        customerName,
-        items,
-        totalAmount: cartTotal,
-        paymentMethod
-      });
-
-      setStep(3);
-      setCart({});
+      const existing = await getExistingPendingOrder(vendor.id, customerPhone, table.id, clientToken);
+      if (existing) {
+        setExistingOrder(existing);
+        setIsConfirmOpen(true);
+        setIsLoading(false);
+        return;
+      }
+      await performOrderAction();
     } catch (error) {
-      toast.error('Failed to place order. Try again.');
-    } finally {
-      setIsSubmitting(false);
+      console.error('ExecuteOrder error:', error);
+      setIsLoading(false);
     }
   };
 
-  if (step === 3) {
-    return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-700">
-        <div className="h-24 w-24 rounded-[2rem] bg-emerald-500 flex items-center justify-center text-black mb-8 shadow-[0_0_50px_rgba(16,185,129,0.3)] border-4 border-emerald-400">
-          <CheckCircle2 size={48} />
-        </div>
-        <h1 className="text-4xl font-black italic uppercase tracking-tighter text-white mb-4">Order Placed!</h1>
-        <p className="text-zinc-500 font-bold text-sm max-w-xs mb-8">
-          Your order is being prepared for <span className="text-emerald-500">{table.tableNumber}</span>.
-          We'll notify you on WhatsApp shortly.
-        </p>
-        <button 
-          type="button"
-          onClick={() => { setStep(1); setIsCheckoutOpen(false); }}
-          className="h-14 w-full max-w-xs rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-black uppercase tracking-widest text-[10px] active:scale-95 touch-manipulation"
-        >
-          View Menu Again
-        </button>
-      </div>
-    );
-  }
+  const handleCheckout = () => {
+    if (!customerPhone || customerPhone.length < 10) {
+      toast.error('Please enter a valid phone number');
+      return;
+    }
+    executeOrder();
+  };
+
+  const performOrderAction = async (existingOrder?: any) => {
+    console.log('DEBUG: performOrderAction started', { hasExisting: !!existingOrder });
+    toast.info('Processing order...');
+    
+    try {
+      // 1. Prepare items
+      console.log('DEBUG: Preparing items from cart', cart);
+      const items = Object.entries(cart).map(([id, qty]: [string, number]) => {
+        const item = allItems.find((i: any) => i.id === id);
+        if (!item) {
+          console.error('DEBUG: Item not found', id);
+          throw new Error(`Menu item not found for ID: ${id}`);
+        }
+        return { menuItemId: id, quantity: qty, unitPrice: item.price };
+      });
+      console.log('DEBUG: Items prepared', items);
+
+      if (existingOrder) {
+        console.log('DEBUG: Calling addOrderItems', existingOrder.id);
+        toast.info('Updating your bill...');
+        const result = await addOrderItems(existingOrder.id, items);
+        console.log('DEBUG: addOrderItems result', result);
+      } else {
+        console.log('DEBUG: Calling placeOrder');
+        toast.info('Sending order to kitchen...');
+        const result = await placeOrder({
+          vendorId: vendor.id,
+          tableId: table.id,
+          customerPhone,
+          customerName,
+          items,
+          totalAmount: cartTotal,
+          paymentMethod,
+          clientToken
+        });
+        console.log('DEBUG: placeOrder result', result);
+      }
+
+      console.log('DEBUG: Switching to success screen');
+      setStep(3);
+      setCart({});
+      setIsConfirmOpen(false);
+      toast.success('Order placed successfully!');
+    } catch (error: any) {
+      console.error('DEBUG: performOrderAction Error', error);
+      toast.error(error.message || 'Failed to place order. Please check your connection.');
+    } finally {
+      console.log('DEBUG: performOrderAction finished');
+      setIsLoading(false);
+    }
+  };
 
   const hasItems = cartItemsCount > 0;
 
   return (
-    <div className="max-w-md mx-auto min-h-screen pb-32 relative">
+    <div className="max-w-md mx-auto min-h-screen pb-32 relative bg-black">
+      {/* Success Screen Overlay */}
+      {step === 3 && (
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center text-center px-6 animate-in fade-in zoom-in duration-500">
+          <div className="h-24 w-24 rounded-[2rem] bg-emerald-500 flex items-center justify-center text-black mb-8 shadow-[0_0_50px_rgba(16,185,129,0.3)] border-4 border-emerald-400">
+            <CheckCircle2 size={48} />
+          </div>
+          <h1 className="text-4xl font-black italic uppercase tracking-tighter text-white mb-4">Order Placed!</h1>
+          <p className="text-zinc-500 font-bold text-sm max-w-xs mb-8">
+            Your order is being prepared for <span className="text-emerald-500">{table.tableNumber}</span>.
+            We'll notify you on WhatsApp shortly.
+          </p>
+          <div className="flex flex-col gap-4 w-full max-w-xs">
+            <button 
+              type="button"
+              onClick={() => { setStep(1); setIsCheckoutOpen(false); }}
+              className="h-14 w-full rounded-2xl bg-emerald-500 text-black font-black uppercase tracking-widest text-[10px] active:scale-95 touch-manipulation"
+            >
+              Order More Items
+            </button>
+            <button 
+              type="button"
+              onClick={() => window.location.reload()}
+              className="h-14 w-full rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-black uppercase tracking-widest text-[10px] active:scale-95 touch-manipulation"
+            >
+              Refresh Menu
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="sticky top-0 z-40 bg-black/95 border-b border-zinc-900 px-6 py-6">
         <div className="flex items-center justify-between">
@@ -417,19 +494,42 @@ export function OrderClient({ vendor, table, categories }: {
                       </div>
                    </div>
 
-                   <button 
-                     type="button"
-                     disabled={isSubmitting}
-                     onClick={handleCheckout}
-                     className="h-20 w-full rounded-[2.5rem] bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 active:scale-95 transition-all shadow-[0_20px_40px_rgba(16,185,129,0.3)] shadow-emerald-500/20 disabled:opacity-50 touch-manipulation"
-                   >
-                     {isSubmitting ? "Placing Order..." : <>Finalize & Order <CheckCircle2 size={24} className="pointer-events-none" /></>}
-                   </button>
+                    <button 
+                      type="button"
+                      disabled={isLoading}
+                      onClick={handleCheckout}
+                      className="h-20 w-full rounded-[2.5rem] bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 active:scale-95 transition-all shadow-[0_20px_40px_rgba(16,185,129,0.3)] shadow-emerald-500/20 disabled:opacity-50 touch-manipulation"
+                    >
+                      {isLoading ? "Placing Order..." : <>Finalize & Order <CheckCircle2 size={24} className="pointer-events-none" /></>}
+                    </button>
                 </div>
               )}
            </div>
         </div>
       )}
+
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent className="bg-black border-2 border-zinc-800 text-white rounded-[2rem] shadow-2xl z-[200]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-emerald-500">Existing Bill Found</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-100 font-bold text-sm leading-relaxed">
+              You already have an active bill (<span className="text-emerald-400 underline decoration-2 underline-offset-4">{existingOrder?.orderNumber}</span>) for this table. 
+              Would you like to add these items to your current bill?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-3">
+            <AlertDialogCancel className="rounded-xl border-zinc-800 bg-zinc-900 text-white hover:bg-zinc-800 hover:text-white">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => performOrderAction(existingOrder)}
+              className="rounded-xl bg-emerald-500 text-zinc-950 hover:bg-emerald-400 font-bold px-8"
+            >
+              Add to Bill
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Global styles for mobile touch */}
       <style jsx global>{`

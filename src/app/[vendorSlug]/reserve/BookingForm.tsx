@@ -19,14 +19,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { createReservation } from '@/app/actions/reservations';
+import { createReservation, checkReservationConflicts, publicCancelReservation } from '@/app/actions/reservations';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export function BookingForm({ vendorId, tables, vendorSlug }: { vendorId: string, tables: any[], vendorSlug: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const manageId = searchParams.get('manage');
+
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [conflict, setConflict] = useState<{ type: string; message: string } | null>(null);
+  
   const [formData, setFormData] = useState({
     customerName: '',
     customerPhone: '',
@@ -38,12 +43,59 @@ export function BookingForm({ vendorId, tables, vendorSlug }: { vendorId: string
     notes: ''
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  // Handle conflict checking
+  const handleCheckConflicts = async (tableId: string, date: string, time: string) => {
+    if (!tableId || !date || !time || tableId === 'any') {
+      setConflict(null);
+      return;
+    }
 
     try {
-      // Combine date and time
+      const resDate = new Date(date);
+      const [hours, minutes] = time.split(':');
+      const startDateTime = new Date(resDate);
+      startDateTime.setHours(parseInt(hours), parseInt(minutes));
+
+      const result = await checkReservationConflicts(tableId, startDateTime);
+      if (result.type !== 'NONE') {
+        setConflict(result);
+      } else {
+        setConflict(null);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!manageId || !formData.customerPhone) {
+      toast.error('Please enter your phone number to verify cancellation');
+      return;
+    }
+
+    if (!confirm('Are you sure you want to cancel this reservation?')) return;
+
+    setLoading(true);
+    try {
+      await publicCancelReservation(manageId, formData.customerPhone);
+      toast.success('Reservation cancelled successfully');
+      router.push(`/${vendorSlug}`);
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to cancel');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (conflict?.type === 'HARD') {
+      toast.error('This table is not available at this time.');
+      return;
+    }
+
+    setLoading(true);
+    try {
       const resDate = new Date(formData.reservationDate);
       const [hours, minutes] = formData.startTime.split(':');
       const startDateTime = new Date(resDate);
@@ -63,15 +115,10 @@ export function BookingForm({ vendorId, tables, vendorSlug }: { vendorId: string
 
       setSuccess(true);
       toast.success('Reservation request sent successfully');
-      
-      // Redirect after 3 seconds
-      setTimeout(() => {
-        router.push(`/${vendorSlug}`);
-      }, 3000);
-
+      setTimeout(() => router.push(`/${vendorSlug}`), 3000);
     } catch (error) {
       console.error(error);
-      toast.error('Failed to create reservation. Please try again.');
+      toast.error('Failed to create reservation.');
     } finally {
       setLoading(false);
     }
@@ -165,7 +212,10 @@ export function BookingForm({ vendorId, tables, vendorSlug }: { vendorId: string
                   type="date"
                   min={new Date().toISOString().split('T')[0]}
                   value={formData.reservationDate}
-                  onChange={e => setFormData({...formData, reservationDate: e.target.value})}
+                  onChange={e => {
+                    setFormData({...formData, reservationDate: e.target.value});
+                    handleCheckConflicts(formData.tableId, e.target.value, formData.startTime);
+                  }}
                   className="bg-zinc-900/50 border-zinc-800 h-14 pl-12 font-bold italic rounded-2xl focus:border-emerald-500/50 text-white transition-all [color-scheme:dark]"
                 />
               </div>
@@ -178,7 +228,10 @@ export function BookingForm({ vendorId, tables, vendorSlug }: { vendorId: string
                   required
                   type="time"
                   value={formData.startTime}
-                  onChange={e => setFormData({...formData, startTime: e.target.value})}
+                  onChange={e => {
+                    setFormData({...formData, startTime: e.target.value});
+                    handleCheckConflicts(formData.tableId, formData.reservationDate, e.target.value);
+                  }}
                   className="bg-zinc-900/50 border-zinc-800 h-14 pl-12 font-bold italic rounded-2xl focus:border-emerald-500/50 text-white transition-all [color-scheme:dark]"
                 />
               </div>
@@ -204,7 +257,13 @@ export function BookingForm({ vendorId, tables, vendorSlug }: { vendorId: string
           </div>
           <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 px-1">Prefer Specific Table?</Label>
-            <Select value={formData.tableId} onValueChange={v => setFormData({...formData, tableId: v})}>
+            <Select 
+              value={formData.tableId} 
+              onValueChange={v => {
+                setFormData({...formData, tableId: v});
+                handleCheckConflicts(v, formData.reservationDate, formData.startTime);
+              }}
+            >
               <SelectTrigger className="bg-zinc-900/50 border-zinc-800 h-14 font-bold italic rounded-2xl focus:ring-emerald-500/50 text-white transition-all">
                 <SelectValue placeholder="Any Available Table" />
               </SelectTrigger>
@@ -217,6 +276,17 @@ export function BookingForm({ vendorId, tables, vendorSlug }: { vendorId: string
             </Select>
           </div>
         </div>
+
+        {/* Conflict Warning Message */}
+        {conflict && (
+          <div className={`p-4 rounded-2xl border animate-in fade-in slide-in-from-top-2 ${
+            conflict.type === 'HARD' ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+          }`}>
+            <p className="text-xs font-bold leading-relaxed italic">
+              {conflict.message}
+            </p>
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 px-1">Special Requests</Label>
@@ -232,18 +302,32 @@ export function BookingForm({ vendorId, tables, vendorSlug }: { vendorId: string
         </div>
       </div>
 
-      <Button 
-        type="submit"
-        disabled={loading}
-        className="w-full h-16 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest rounded-2xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] transition-all active:scale-[0.98] group relative overflow-hidden"
-      >
-        {loading ? <Loader2 className="animate-spin" /> : (
-          <div className="flex items-center justify-center gap-3">
-            <span>Confirm Booking</span>
-            <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </div>
+      <div className="flex flex-col gap-4">
+        <Button 
+          type="submit"
+          disabled={loading || conflict?.type === 'HARD'}
+          className="w-full h-16 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest rounded-2xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] transition-all active:scale-[0.98] group relative overflow-hidden"
+        >
+          {loading ? <Loader2 className="animate-spin" /> : (
+            <div className="flex items-center justify-center gap-3">
+              <span>{manageId ? 'Update Booking' : 'Confirm Booking'}</span>
+              <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </div>
+          )}
+        </Button>
+
+        {manageId && (
+          <Button 
+            type="button"
+            onClick={handleCancel}
+            disabled={loading}
+            variant="ghost"
+            className="w-full h-14 text-red-500 hover:text-red-400 hover:bg-red-500/10 font-bold uppercase tracking-widest rounded-2xl transition-all"
+          >
+            Cancel My Reservation
+          </Button>
         )}
-      </Button>
+      </div>
     </form>
   );
 }

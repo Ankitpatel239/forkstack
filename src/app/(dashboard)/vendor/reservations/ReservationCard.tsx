@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ReservationStatusAction } from './ReservationStatusAction';
 import { ReservationDialog } from './ReservationDialog';
+import { ManualOrderDialog } from '../orders/ManualOrderDialog';
 import { 
   Dialog, 
   DialogContent, 
@@ -29,6 +30,7 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from '@/components/ui/dialog';
+import { ShoppingBag } from 'lucide-react';
 
 export function ReservationCard({ reservation, tables, vendorId }: { reservation: any, tables: any[], vendorId: string }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -106,6 +108,21 @@ export function ReservationCard({ reservation, tables, vendorId }: { reservation
         {/* Actions */}
         <div className="flex flex-col gap-3 justify-center min-w-[200px]">
           <div className="flex items-center gap-2">
+            <ManualOrderDialog 
+              vendorId={vendorId} 
+              reservation={reservation}
+              trigger={
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  className="h-10 w-10 rounded-xl border-border/50 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                  title="Create Order for this Booking"
+                >
+                  <ShoppingBag size={16} />
+                </Button>
+              }
+            />
+            
             <ReservationStatusAction id={reservation.id} currentStatus={reservation.status} />
             
             <Button 
@@ -128,17 +145,17 @@ export function ReservationCard({ reservation, tables, vendorId }: { reservation
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-[#0a0a0a] border-zinc-900 text-white p-0 overflow-hidden rounded-[2.5rem] sm:max-w-[450px] shadow-2xl">
-                <div className="relative h-32 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 flex items-center px-8 border-b border-white/5">
+                <DialogHeader className="relative h-32 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 flex flex-row items-center px-8 border-b border-white/5 space-y-0">
                    <div className="absolute top-0 right-0 p-8 opacity-10">
                       <History size={80} />
                    </div>
-                   <div>
+                   <div className="text-left">
                       <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter mb-1">Audit Trail</DialogTitle>
                       <DialogDescription className="text-zinc-400 font-bold text-[10px] uppercase tracking-[0.2em]">
-                        Reservation History • #{reservation.id.slice(-6)}
+                         Reservation History • #{reservation.id.slice(-6)}
                       </DialogDescription>
                    </div>
-                </div>
+                </DialogHeader>
 
                 <div className="p-8 max-h-[65vh] overflow-y-auto custom-scrollbar relative">
                    {reservation.logs?.length > 0 ? (

@@ -32,7 +32,7 @@ export function ReservationActions({ vendorSlug, vendorId, tables }: { vendorSlu
       <Button 
         onClick={copyToClipboard}
         variant="outline"
-        className="h-14 px-8 rounded-2xl border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white font-black uppercase tracking-widest text-[10px] transition-all shadow-lg hover:shadow-emerald-500/10"
+        className="h-14 px-4 rounded-2xl border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white font-black uppercase tracking-widest text-[10px] transition-all shadow-lg hover:shadow-emerald-500/10"
       >
         {copied ? <Check className="w-4 h-4 mr-2" /> : <Share2 className="w-4 h-4 mr-2" />}
         Share Booking Link

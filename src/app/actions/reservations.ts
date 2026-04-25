@@ -1,4 +1,3 @@
-
 'use server';
 
 import { prisma } from '@/lib/db';
@@ -6,26 +5,19 @@ import { requireVendor } from '@/lib/vendor';
 import { revalidatePath } from 'next/cache';
 import { ReservationStatus } from '@prisma/client';
 
-// Helper to save logs using raw SQL to bypass Prisma Client sync issues
+// Helper to save logs using standard Prisma Model
 async function saveHistoryLog(reservationId: string, action: string, details: string, changedBy: string = 'Staff') {
-  console.log(`[HISTORY LOG] Attempting to save: ${action} for ${reservationId}`);
   try {
-    const id = `cl${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`.substring(0, 25);
-    
-    // Auto-discover the real table name from the DB
-    const tables: any = await prisma.$queryRaw`SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'`;
-    const realTableName = tables.find((t: any) => t.tablename.toLowerCase() === 'reservationlog')?.tablename || 'ReservationLog';
-    
-    console.log(`[HISTORY LOG] Using table name: ${realTableName}`);
-
-    await (prisma as any).$executeRawUnsafe(
-      `INSERT INTO "${realTableName}" (id, "reservationId", action, details, "changedBy", "createdAt") VALUES ($1, $2, $3, $4, $5, $6)`,
-      id, reservationId, action, details, changedBy, new Date()
-    );
-    
-    console.log("[HISTORY LOG] Success!");
-  } catch (err: any) {
-    console.error("[HISTORY LOG] CRITICAL ERROR:", err.message);
+    await (prisma as any).reservationLog.create({
+      data: {
+        reservationId,
+        action,
+        details,
+        changedBy
+      }
+    });
+  } catch (err) {
+    console.error("HISTORY LOG ERROR:", err);
   }
 }
 
@@ -52,7 +44,7 @@ export async function createReservation(data: {
       guestCount: data.guestCount,
       notes: data.notes,
       status: 'PENDING',
-      table: data.tableId ? { connect: { id: data.tableId } } : undefined,
+      tableId: data.tableId || null,
     }
   });
 
@@ -84,7 +76,7 @@ export async function editReservation(id: string, data: {
       startTime: data.startTime,
       guestCount: data.guestCount,
       notes: data.notes || null,
-      table: data.tableId ? { connect: { id: data.tableId } } : { disconnect: true },
+      tableId: data.tableId || null,
     }
   });
 
@@ -111,40 +103,21 @@ export async function updateReservationStatus(id: string, status: ReservationSta
 export async function getReservations() {
   const vendor = await requireVendor();
   
-  const reservations = await prisma.reservation.findMany({
+  const reservations = await (prisma.reservation as any).findMany({
     where: { vendorId: vendor.id },
-    include: { table: true },
+    include: { 
+      table: true,
+      logs: {
+        orderBy: { createdAt: 'desc' }
+      },
+      order: {
+        include: { items: true }
+      }
+    },
     orderBy: { reservationDate: 'desc' }
   });
 
-  try {
-    // Discover real table name
-    const tables: any = await prisma.$queryRaw`SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'`;
-    const realTableName = tables.find((t: any) => t.tablename.toLowerCase() === 'reservationlog')?.tablename || 'ReservationLog';
-
-    // Fetch ALL logs and filter in memory to be 100% sure we don't miss anything due to SQL type/case issues
-    const allLogsRaw: any[] = await (prisma as any).$queryRawUnsafe(`SELECT * FROM "${realTableName}"`);
-    
-    const reservationsWithLogs = reservations.map(res => {
-      const matchedLogs = allLogsRaw
-        .filter(l => (l.reservationId === res.id || l.reservationid === res.id || l.RESERVATIONID === res.id))
-        .map(rl => ({
-          id: rl.id || rl.ID,
-          action: rl.action || rl.ACTION,
-          details: rl.details || rl.DETAILS,
-          changedBy: rl.changedBy || rl.changedby || rl.CHANGEDBY,
-          createdAt: rl.createdAt || rl.createdat || rl.CREATEDAT
-        }))
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-      return { ...res, logs: matchedLogs };
-    });
-
-    return JSON.parse(JSON.stringify(reservationsWithLogs));
-  } catch (err) {
-    console.error("HISTORY FETCH CRASHED, RETURNING RAW:", err);
-    return JSON.parse(JSON.stringify(reservations));
-  }
+  return JSON.parse(JSON.stringify(reservations));
 }
 
 export async function getAvailableTables(vendorId: string, date: Date) {
@@ -155,4 +128,70 @@ export async function getAvailableTables(vendorId: string, date: Date) {
     },
     orderBy: { tableNumber: 'asc' }
   });
+}
+
+// NEW: Public check for conflicts
+export async function checkReservationConflicts(tableId: string, startTime: Date) {
+  // We assume a standard reservation lasts 2 hours
+  const requestedStart = new Date(startTime);
+  const requestedEnd = new Date(requestedStart.getTime() + 2 * 60 * 60 * 1000);
+
+  const conflicts = await prisma.reservation.findMany({
+    where: {
+      tableId,
+      status: { notIn: ['CANCELLED', 'COMPLETED'] },
+      // Check if it's the same day
+      reservationDate: {
+        gte: new Date(requestedStart.setHours(0,0,0,0)),
+        lte: new Date(requestedStart.setHours(23,59,59,999))
+      }
+    }
+  });
+
+  for (const res of conflicts) {
+    const existingStart = new Date(res.startTime);
+    const existingEnd = new Date(existingStart.getTime() + 2 * 60 * 60 * 1000);
+
+    // 1. HARD CONFLICT: Overlapping times
+    const isOverlapping = (requestedStart < existingEnd && requestedEnd > existingStart);
+    if (isOverlapping) {
+      return { 
+        type: 'HARD', 
+        message: 'This table is already booked for this time slot. Please choose another table or time.' 
+      };
+    }
+
+    // 2. SOFT CONFLICT: Next reservation starts within 2 hours (the "1-hour rule" warning)
+    // If our requested start is before their start, but within 2 hours of it
+    if (requestedStart < existingStart && (existingStart.getTime() - requestedStart.getTime()) <= 2 * 60 * 60 * 1000) {
+      const timeStr = existingStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return {
+        type: 'SOFT',
+        message: `Sir, this table is reserved from ${timeStr}. If you are ready to change the table later, it will be helpful for us. You can book it now but please leave the table before that time.`
+      };
+    }
+  }
+
+  return { type: 'NONE' };
+}
+
+// NEW: Public cancel action for customers
+export async function publicCancelReservation(id: string, phone: string) {
+  const reservation = await prisma.reservation.findUnique({
+    where: { id }
+  });
+
+  if (!reservation || reservation.customerPhone !== phone) {
+    throw new Error('Reservation not found or phone mismatch');
+  }
+
+  const updated = await prisma.reservation.update({
+    where: { id },
+    data: { status: 'CANCELLED' }
+  });
+
+  await saveHistoryLog(id, 'CANCELLED', 'Reservation cancelled by customer', 'Customer');
+  
+  revalidatePath('/vendor/reservations');
+  return updated;
 }

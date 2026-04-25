@@ -40,15 +40,15 @@ export default async function ReservationsPage() {
 
   return (
     <div className="space-y-12">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pb-8 border-b border-border/50">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-2 border-b border-border/50">
         <div>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground mb-3 italic uppercase drop-shadow-sm">Reservations</h1>
           <p className="text-muted-foreground font-semibold flex items-center gap-2">
             <Calendar size={16} className="text-emerald-500" /> Manage your table bookings and guest requests.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-4">
-           <div className="flex items-center gap-8 px-8 py-4 bg-card/50 dark:bg-card/30 backdrop-blur-md border border-border/50 rounded-3xl shadow-lg">
+        <div className="flex flex-wrap items-center gap-2">
+           <div className="flex items-center gap-4 px-4 py-2 bg-card/50 dark:bg-card/30 backdrop-blur-md border border-border/50 rounded-3xl shadow-lg">
               <div className="space-y-1.5">
                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">Pending Requests</p>
                  <div className="flex items-center gap-3">

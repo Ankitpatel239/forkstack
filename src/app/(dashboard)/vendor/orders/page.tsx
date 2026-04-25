@@ -27,7 +27,10 @@ export default async function OrdersPage() {
 
   return (
     <div className="min-h-screen">
-      <OrdersClient initialOrders={orders as any[]} />
+      <OrdersClient 
+        initialOrders={orders as any[]} 
+        vendorId={vendor.id}
+      />
     </div>
   );
 }
