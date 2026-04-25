@@ -16,7 +16,18 @@ export default async function VendorPublicMenu({
     include: { 
       menuItems: {
         where: { isAvailable: true },
-        include: { category: true }
+        include: { category: true, media: true }
+      },
+      combos: {
+        where: { isActive: true },
+        include: { items: { include: { menuItem: true } } }
+      },
+      offers: {
+        where: { isActive: true, endDate: { gte: new Date() } },
+        include: { items: { include: { menuItem: true } } }
+      },
+      menuCategories: {
+        orderBy: { sortOrder: 'asc' }
       }
     }
   });

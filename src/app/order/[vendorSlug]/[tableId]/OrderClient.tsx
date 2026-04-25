@@ -14,7 +14,8 @@ import {
   ShieldCheck,
   CreditCard,
   Banknote,
-  Zap
+  Zap,
+  Gift
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -31,14 +32,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from 'sonner';
 
-export function OrderClient({ vendor, table, categories, combos }: { 
+export function OrderClient({ vendor, table, categories, combos, offers = [] }: { 
   vendor: any, 
   table: any, 
   categories: any[],
-  combos: any[]
+  combos: any[],
+  offers?: any[]
 }) {
   const [cart, setCart] = useState<{ [key: string]: number }>({});
-  const [activeCategory, setActiveCategory] = useState(categories[0]?.id || 'COMBOS');
+  const [activeCategory, setActiveCategory] = useState(offers.length > 0 ? 'OFFERS' : (combos.length > 0 ? 'COMBOS' : (categories[0]?.id || '')));
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [customerPhone, setCustomerPhone] = useState('');
@@ -272,6 +274,19 @@ export function OrderClient({ vendor, table, categories, combos }: {
 
       {/* Category Nav */}
       <div className="sticky top-[88px] z-30 bg-black/95 px-6 py-4 flex gap-3 overflow-x-auto no-scrollbar border-b border-zinc-900/50">
+         {offers.length > 0 && (
+           <button
+             type="button"
+             onClick={() => setActiveCategory('OFFERS')}
+             className={`px-6 h-11 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all flex-shrink-0 cursor-pointer touch-manipulation ${
+               activeCategory === 'OFFERS' 
+               ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' 
+               : 'bg-zinc-900 text-zinc-500 active:bg-zinc-800'
+             }`}
+           >
+             Flash Promos
+           </button>
+         )}
          {combos.length > 0 && (
            <button
              type="button"
@@ -303,6 +318,41 @@ export function OrderClient({ vendor, table, categories, combos }: {
 
       {/* Menu List */}
       <div className="px-6 space-y-12 py-8">
+        {offers.length > 0 && (
+          <div id="OFFERS" className="space-y-6">
+            <div className="flex items-center gap-3">
+               <h4 className="text-sm font-black italic uppercase tracking-widest text-amber-500">Active Promotions</h4>
+               <div className="h-px flex-1 bg-amber-500/20" />
+            </div>
+            <div className="grid grid-cols-1 gap-6">
+               {offers.map((offer: any) => (
+                <div key={offer.id} className="bg-amber-500/5 border border-amber-500/10 rounded-[2rem] p-5 flex gap-5 group relative z-10 overflow-hidden">
+                    <div className="absolute -top-4 -right-4 opacity-5 rotate-12 pointer-events-none">
+                       <Gift size={100} />
+                    </div>
+                    <div className="h-24 w-24 rounded-2xl bg-amber-500/10 border border-amber-500/20 shrink-0 overflow-hidden flex items-center justify-center text-amber-500">
+                        <Gift size={32} />
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                       <div className="space-y-1">
+                          <h5 className="font-black italic text-base text-white truncate uppercase">{offer.title}</h5>
+                          <p className="text-[10px] text-amber-600/60 font-bold line-clamp-2">
+                             {offer.description || 'Special limited time offer!'}
+                          </p>
+                       </div>
+                       <div className="flex items-center justify-between">
+                          <Badge className="bg-amber-500 text-black text-[8px] font-black uppercase tracking-widest">
+                             {offer.type === 'BOGO' ? 'Buy 1 Get 1' : (offer.type === 'PERCENTAGE' ? `${offer.value}% OFF` : `₹${offer.value} OFF`)}
+                          </Badge>
+                          <span className="text-[9px] font-black text-amber-500/50 italic uppercase">Applicable at Billing</span>
+                       </div>
+                    </div>
+                </div>
+               ))}
+            </div>
+          </div>
+        )}
+
         {combos.length > 0 && (
           <div id="COMBOS" className="space-y-6">
             <div className="flex items-center gap-3">

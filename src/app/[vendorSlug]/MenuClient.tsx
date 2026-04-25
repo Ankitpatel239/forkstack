@@ -16,7 +16,9 @@ import {
   CheckCircle2,
   Loader2,
   Trash2,
-  Calendar
+  Calendar,
+  Zap,
+  Gift
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +44,6 @@ export function MenuClient({ vendor, tableId }: { vendor: any, tableId?: string 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isOrdering, setIsOrdering] = useState(false);
   const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '' });
-  const [activeCategory, setActiveCategory] = useState('All');
   const [existingOrder, setExistingOrder] = useState<any>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [clientToken, setClientToken] = useState<string>('');
@@ -58,13 +59,22 @@ export function MenuClient({ vendor, tableId }: { vendor: any, tableId?: string 
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(vendor.menuItems.map((item: any) => item.category?.name || 'Uncategorized')));
-    return ['All', ...cats];
-  }, [vendor.menuItems]);
+    const base = [];
+    if (vendor.offers?.length > 0) base.push('Flash Promos');
+    if (vendor.combos?.length > 0) base.push('Combo Deals');
+    return [...base, 'All', ...cats];
+  }, [vendor]);
+
+  const [activeCategory, setActiveCategory] = useState(
+    vendor.offers?.length > 0 ? 'Flash Promos' : (vendor.combos?.length > 0 ? 'Combo Deals' : 'All')
+  );
 
   const filteredItems = useMemo(() => {
+    if (activeCategory === 'Flash Promos') return vendor.offers || [];
+    if (activeCategory === 'Combo Deals') return vendor.combos || [];
     if (activeCategory === 'All') return vendor.menuItems;
     return vendor.menuItems.filter((item: any) => (item.category?.name || 'Uncategorized') === activeCategory);
-  }, [vendor.menuItems, activeCategory]);
+  }, [vendor, activeCategory]);
 
   const addToCart = (item: any) => {
     setCart(prev => {
@@ -87,7 +97,7 @@ export function MenuClient({ vendor, tableId }: { vendor: any, tableId?: string 
     });
   };
 
-  const cartTotal = cart.reduce((acc, curr) => acc + (curr.item.price * curr.quantity), 0);
+  const cartTotal = cart.reduce((acc, curr) => acc + ((curr.item.totalPrice || curr.item.price || 0) * curr.quantity), 0);
   const cartCount = cart.reduce((acc, curr) => acc + curr.quantity, 0);
 
   const handlePlaceOrder = async () => {
@@ -119,29 +129,31 @@ export function MenuClient({ vendor, tableId }: { vendor: any, tableId?: string 
   const executeOrder = async (isNew: boolean) => {
     setIsOrdering(true);
     try {
-      if (!isNew && existingOrder) {
-        await addOrderItems(existingOrder.id, cart.map(i => ({
-          menuItemId: i.item.id,
+      const orderItems = cart.map(i => {
+        const isCombo = !!i.item.totalPrice && !!i.item.items;
+        return {
+          menuItemId: isCombo ? undefined : i.item.id,
+          comboId: isCombo ? i.item.id : undefined,
           quantity: i.quantity,
-          unitPrice: i.item.price
-        })));
+          unitPrice: isCombo ? i.item.totalPrice : i.item.price
+        };
+      });
+
+      if (!isNew && existingOrder) {
+        await addOrderItems(existingOrder.id, orderItems);
         toast.success('Items added to your existing order!');
       } else {
         await placeOrder({
           vendorId: vendor.id,
-          tableId: tableId || null,
+          tableId: tableId,
           customerPhone: customerInfo.phone,
           customerName: customerInfo.name,
-          items: cart.map(i => ({
-            menuItemId: i.item.id,
-            quantity: i.quantity,
-            unitPrice: i.item.price
-          })),
+          items: orderItems,
           totalAmount: cartTotal,
           paymentMethod: 'COD',
           clientToken: clientToken
         });
-        toast.success('New order placed successfully!');
+        toast.success('Order placed successfully!');
       }
 
       setCart([]);
@@ -221,40 +233,83 @@ export function MenuClient({ vendor, tableId }: { vendor: any, tableId?: string 
 
            <div className="grid gap-x-12 gap-y-10 md:grid-cols-2">
               {filteredItems.map((item: any) => {
+                const isPromo = activeCategory === 'Flash Promos';
+                const isCombo = activeCategory === 'Combo Deals';
                 const cartItem = cart.find(i => i.item.id === item.id);
+                const price = isCombo ? item.totalPrice : (item.price || 0);
+
+                if (isPromo) {
+                   return (
+                      <div key={item.id} className="bg-amber-500/5 border border-amber-500/10 rounded-[2rem] p-6 flex gap-6 relative overflow-hidden group">
+                         <div className="absolute -top-6 -right-6 opacity-5 rotate-12 group-hover:scale-110 transition-transform">
+                            <Gift size={120} />
+                         </div>
+                         <div className="h-20 w-20 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
+                            <Gift size={32} />
+                         </div>
+                         <div className="flex-1 space-y-2">
+                            <h4 className="text-lg font-black italic text-white uppercase tracking-tighter">{item.title}</h4>
+                            <p className="text-xs text-zinc-500 font-bold leading-relaxed line-clamp-2">{item.description}</p>
+                            <div className="flex items-center gap-2 pt-1">
+                               <Badge className="bg-amber-500 text-black text-[9px] font-black uppercase">
+                                  {item.type === 'BOGO' ? 'Buy 1 Get 1' : (item.type === 'PERCENTAGE' ? `${item.value}% OFF` : `₹${item.value} OFF`)}
+                               </Badge>
+                               <span className="text-[9px] font-bold text-amber-500/40 uppercase tracking-widest italic">Applied at Checkout</span>
+                            </div>
+                         </div>
+                      </div>
+                   );
+                }
+
                 return (
-                  <div key={item.id} className="flex gap-4 group">
+                  <div key={item.id} className={`flex gap-4 group p-4 rounded-[2rem] transition-all ${isCombo ? 'bg-emerald-500/5 border border-emerald-500/10' : ''}`}>
                     <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
-                           <h4 className="text-lg font-bold text-zinc-100 uppercase italic tracking-tight">{item.name}</h4>
+                           <h4 className={`text-lg font-bold uppercase italic tracking-tight ${isCombo ? 'text-emerald-500' : 'text-zinc-100'}`}>{item.name}</h4>
+                           {isCombo && <Zap size={14} className="text-emerald-500 animate-pulse" />}
                         </div>
-                        <p className="text-zinc-500 text-xs font-medium leading-relaxed italic line-clamp-2">{item.description}</p>
+                        <p className="text-zinc-500 text-xs font-medium leading-relaxed italic line-clamp-2">
+                           {isCombo 
+                             ? item.items?.map((it: any) => `${it.quantity}x ${it.menuItem?.name}`).join(' + ')
+                             : item.description}
+                        </p>
                         <div className="flex items-center justify-between pt-2">
-                           <span className="text-base font-black text-emerald-500 italic">₹{item.price.toLocaleString()}</span>
+                           <div className="flex flex-col">
+                              <span className={`text-base font-black italic ${isCombo ? 'text-emerald-500' : 'text-emerald-500'}`}>₹{price.toLocaleString()}</span>
+                              {isCombo && <span className="text-[10px] text-zinc-600 line-through font-bold">₹{(item.totalPrice + (item.discount || 0)).toLocaleString()}</span>}
+                           </div>
                            
                            {cartItem ? (
-                             <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-2 h-9">
-                               <button onClick={() => removeFromCart(item.id)} className="text-zinc-400 hover:text-emerald-500 transition-colors">
+                             <div className={`flex items-center gap-3 border rounded-xl px-2 h-9 ${isCombo ? 'bg-emerald-500 border-emerald-400 text-black' : 'bg-zinc-900 border-zinc-800'}`}>
+                               <button onClick={() => removeFromCart(item.id)} className={`${isCombo ? 'text-emerald-900' : 'text-zinc-400 hover:text-emerald-500'} transition-colors`}>
                                  <Minus size={14} />
                                </button>
                                <span className="text-xs font-black w-4 text-center">{cartItem.quantity}</span>
-                               <button onClick={() => addToCart(item)} className="text-zinc-400 hover:text-emerald-500 transition-colors">
+                               <button onClick={() => addToCart(item)} className={`${isCombo ? 'text-emerald-900' : 'text-zinc-400 hover:text-emerald-500'} transition-colors`}>
                                  <Plus size={14} />
                                </button>
                              </div>
                            ) : (
                              <button 
                                onClick={() => addToCart(item)}
-                               className="h-9 w-9 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:bg-emerald-500 hover:text-zinc-950 hover:border-emerald-500 transition-all shadow-lg"
+                               className={`h-9 w-9 rounded-xl border flex items-center justify-center transition-all shadow-lg ${
+                                 isCombo 
+                                 ? 'bg-emerald-500 border-emerald-400 text-zinc-950 hover:bg-emerald-400' 
+                                 : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-emerald-500 hover:text-zinc-950 hover:border-emerald-500'
+                               }`}
                              >
                                 <Plus size={16} />
                              </button>
                            )}
                         </div>
                     </div>
-                    {item.imageUrl && (
-                      <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden shrink-0 border border-zinc-900">
-                         <img src={item.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.name} />
+                    {(item.imageUrl || isCombo) && (
+                      <div className={`w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden shrink-0 border ${isCombo ? 'border-emerald-500/20 bg-emerald-500/10 flex items-center justify-center text-emerald-500' : 'border-zinc-900'}`}>
+                         {item.imageUrl ? (
+                           <img src={item.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.name} />
+                         ) : (
+                           isCombo ? <Zap size={40} /> : null
+                         )}
                       </div>
                     )}
                   </div>
@@ -300,7 +355,7 @@ export function MenuClient({ vendor, tableId }: { vendor: any, tableId?: string 
                          <div key={i.item.id} className="flex items-center justify-between gap-4">
                             <div className="flex-1">
                                <h4 className="font-bold text-white uppercase italic">{i.item.name}</h4>
-                               <p className="text-emerald-500 text-xs font-black">₹{i.item.price.toLocaleString()} × {i.quantity}</p>
+                               <p className="text-emerald-500 text-xs font-black">₹{(i.item.totalPrice || i.item.price || 0).toLocaleString()} × {i.quantity}</p>
                             </div>
                             <div className="flex items-center gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl px-3 py-2">
                                <button onClick={() => removeFromCart(i.item.id)} className="text-zinc-500 hover:text-white"><Minus size={16} /></button>

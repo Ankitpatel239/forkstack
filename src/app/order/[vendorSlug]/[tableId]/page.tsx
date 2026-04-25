@@ -35,7 +35,24 @@ export default async function PublicOrderingPage({
 
   // 4. Fetch Combos
   const combos = await prisma.combo.findMany({
-    where: { vendorId: vendor.id },
+    where: { vendorId: vendor.id, isActive: true },
+    include: {
+      items: {
+        include: {
+          menuItem: true
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  // 5. Fetch Active Offers (Flash Deals, etc.)
+  const offers = await prisma.offer.findMany({
+    where: { 
+      vendorId: vendor.id, 
+      isActive: true,
+      endDate: { gte: new Date() }
+    },
     include: {
       items: {
         include: {
@@ -53,6 +70,7 @@ export default async function PublicOrderingPage({
         table={table as any} 
         categories={categories as any} 
         combos={combos as any}
+        offers={offers as any}
       />
     </div>
   );
