@@ -35,7 +35,13 @@ export default async function MenuItemsPage() {
         </div>
         <div className="flex items-center gap-2">
            <Button variant="outline" className="h-10 border-border text-muted-foreground font-black uppercase tracking-widest text-[10px] px-6 bg-muted hover:bg-muted-foreground/10 rounded-xl" asChild>
-             <a href="/vendor/menu/categories">Edit Categories</a>
+             <a href="/vendor/menu/categories">Categories</a>
+           </Button>
+           <Button variant="outline" className="h-10 border-border text-emerald-500 font-black uppercase tracking-widest text-[10px] px-6 bg-emerald-500/5 hover:bg-emerald-500/10 border-emerald-500/20 rounded-xl" asChild>
+             <a href="/vendor/menu/combos">Combos</a>
+           </Button>
+           <Button variant="outline" className="h-10 border-border text-amber-500 font-black uppercase tracking-widest text-[10px] px-6 bg-amber-500/5 hover:bg-amber-500/10 border-amber-500/20 rounded-xl" asChild>
+             <a href="/vendor/menu/offers">Offers</a>
            </Button>
            <Badge variant="outline" className="h-10 border-border text-muted-foreground font-black uppercase tracking-widest text-[9px] px-4 bg-muted">
              {items.length} TOTAL ITEMS

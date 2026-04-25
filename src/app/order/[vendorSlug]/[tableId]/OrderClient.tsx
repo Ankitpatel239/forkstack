@@ -13,7 +13,8 @@ import {
   ArrowRight,
   ShieldCheck,
   CreditCard,
-  Banknote
+  Banknote,
+  Zap
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -30,13 +31,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from 'sonner';
 
-export function OrderClient({ vendor, table, categories }: { 
+export function OrderClient({ vendor, table, categories, combos }: { 
   vendor: any, 
   table: any, 
-  categories: any[] 
+  categories: any[],
+  combos: any[]
 }) {
   const [cart, setCart] = useState<{ [key: string]: number }>({});
-  const [activeCategory, setActiveCategory] = useState(categories[0]?.id);
+  const [activeCategory, setActiveCategory] = useState(categories[0]?.id || 'COMBOS');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [customerPhone, setCustomerPhone] = useState('');
@@ -75,22 +77,30 @@ export function OrderClient({ vendor, table, categories }: {
   }, [categories]);
 
   const cartTotal = useMemo(() => {
-    return Object.entries(cart).reduce((total: any, [itemId, qty]: [string, number]) => {
-      const item = allItems.find((i: any) => i.id === itemId);
-      return total + (item?.price || 0) * qty;
+    return Object.entries(cart).reduce((total: any, [id, qty]: [string, number]) => {
+      if (id.startsWith('combo-')) {
+        const comboId = id.replace('combo-', '');
+        const combo = combos.find(c => c.id === comboId);
+        return total + (combo?.totalPrice || 0) * qty;
+      } else {
+        const item = allItems.find((i: any) => i.id === id);
+        return total + (item?.price || 0) * qty;
+      }
     }, 0);
-  }, [cart, allItems]);
+  }, [cart, allItems, combos]);
 
-  const addToCart = (itemId: string) => {
-    setCart(prev => ({ ...prev, [itemId]: (prev[itemId] || 0) + 1 }));
+  const addToCart = (id: string, isCombo = false) => {
+    const key = isCombo ? `combo-${id}` : id;
+    setCart(prev => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
     toast.success('Added to bag', { duration: 1000 });
   };
 
-  const removeFromCart = (itemId: string) => {
+  const removeFromCart = (id: string, isCombo = false) => {
+    const key = isCombo ? `combo-${id}` : id;
     setCart(prev => {
       const newCart = { ...prev };
-      if (newCart[itemId] > 1) newCart[itemId] -= 1;
-      else delete newCart[itemId];
+      if (newCart[key] > 1) newCart[key] -= 1;
+      else delete newCart[key];
       return newCart;
     });
   };
@@ -126,16 +136,23 @@ export function OrderClient({ vendor, table, categories }: {
     
     try {
       // 1. Prepare items
-      console.log('DEBUG: Preparing items from cart', cart);
-      const items = Object.entries(cart).map(([id, qty]: [string, number]) => {
-        const item = allItems.find((i: any) => i.id === id);
-        if (!item) {
-          console.error('DEBUG: Item not found', id);
-          throw new Error(`Menu item not found for ID: ${id}`);
+      const items: any[] = [];
+      Object.entries(cart).forEach(([id, qty]) => {
+        if (id.startsWith('combo-')) {
+          const comboId = id.replace('combo-', '');
+          const combo = combos.find(c => c.id === comboId);
+          if (combo) {
+            items.push({ comboId: combo.id, quantity: qty, unitPrice: combo.totalPrice });
+          }
+        } else {
+          const item = allItems.find(i => i.id === id);
+          if (item) {
+            items.push({ menuItemId: id, quantity: qty, unitPrice: item.price });
+          }
         }
-        return { menuItemId: id, quantity: qty, unitPrice: item.price };
       });
-      console.log('DEBUG: Items prepared', items);
+
+      if (items.length === 0) throw new Error('Cart is empty');
 
       if (existingOrder) {
         console.log('DEBUG: Calling addOrderItems', existingOrder.id);
@@ -255,6 +272,19 @@ export function OrderClient({ vendor, table, categories }: {
 
       {/* Category Nav */}
       <div className="sticky top-[88px] z-30 bg-black/95 px-6 py-4 flex gap-3 overflow-x-auto no-scrollbar border-b border-zinc-900/50">
+         {combos.length > 0 && (
+           <button
+             type="button"
+             onClick={() => setActiveCategory('COMBOS')}
+             className={`px-6 h-11 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all flex-shrink-0 cursor-pointer touch-manipulation ${
+               activeCategory === 'COMBOS' 
+               ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' 
+               : 'bg-zinc-900 text-zinc-500 active:bg-zinc-800'
+             }`}
+           >
+             Combo Deals
+           </button>
+         )}
          {categories.map((cat: any) => (
            <button
              key={cat.id}
@@ -273,6 +303,52 @@ export function OrderClient({ vendor, table, categories }: {
 
       {/* Menu List */}
       <div className="px-6 space-y-12 py-8">
+        {combos.length > 0 && (
+          <div id="COMBOS" className="space-y-6">
+            <div className="flex items-center gap-3">
+               <h4 className="text-sm font-black italic uppercase tracking-widest text-emerald-500">Combo Deals</h4>
+               <div className="h-px flex-1 bg-emerald-500/20" />
+            </div>
+            <div className="grid grid-cols-1 gap-6">
+               {combos.map((combo: any) => (
+                <div key={combo.id} className="bg-emerald-500/5 border border-emerald-500/10 rounded-[2rem] p-5 flex gap-5 group relative z-10">
+                    <div className="h-24 w-24 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 shrink-0 overflow-hidden flex items-center justify-center text-emerald-500">
+                        <ShoppingBag size={32} />
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                       <div className="space-y-1">
+                          <h5 className="font-black italic text-base text-white truncate uppercase">{combo.name}</h5>
+                          <p className="text-[10px] text-emerald-600/60 font-bold truncate line-clamp-2">
+                             {combo.items?.map((it: any) => `${it.quantity}x ${it.menuItem?.name}`).join(' + ')}
+                          </p>
+                       </div>
+                       <div className="flex items-center justify-between">
+                          <div className="flex flex-col">
+                             <span className="text-lg font-black text-emerald-500 italic">₹{combo.totalPrice}</span>
+                             <span className="text-[8px] font-black text-zinc-600 line-through">₹{combo.totalPrice + (combo.discount || 0)}</span>
+                          </div>
+                          {cart[`combo-${combo.id}`] ? (
+                            <div className="flex items-center gap-3 bg-emerald-500 rounded-xl p-1 shadow-lg shadow-emerald-500/10 relative z-[100]">
+                               <button type="button" onClick={() => removeFromCart(combo.id, true)} className="h-10 w-10 flex items-center justify-center rounded-lg bg-emerald-600 text-black active:scale-90 cursor-pointer touch-manipulation">
+                                  <Minus size={18} />
+                               </button>
+                               <span className="text-xs font-black text-black min-w-[2ch] text-center">{cart[`combo-${combo.id}`]}</span>
+                               <button type="button" onClick={() => addToCart(combo.id, true)} className="h-10 w-10 flex items-center justify-center rounded-lg bg-emerald-300 text-black active:scale-90 cursor-pointer touch-manipulation">
+                                  <Plus size={18} />
+                               </button>
+                            </div>
+                          ) : (
+                            <button type="button" onClick={() => addToCart(combo.id, true)} className="h-11 px-5 bg-emerald-500 text-black rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 active:bg-emerald-400 transition-all shadow-xl cursor-pointer touch-manipulation relative z-[100]">
+                               <Plus size={14} /> Add Bundle
+                            </button>
+                          )}
+                       </div>
+                    </div>
+                </div>
+               ))}
+            </div>
+          </div>
+        )}
         {categories.map((cat: any) => (
           <div key={cat.id} id={cat.id} className="space-y-6">
             <div className="flex items-center gap-3">
@@ -391,14 +467,39 @@ export function OrderClient({ vendor, table, categories }: {
 
                    <div className="space-y-4">
                       {Object.entries(cart).map(([id, qty]: [string, number]) => {
-                        const item = allItems.find(i => i.id === id);
+                        let name = 'Item';
+                        let price = 0;
+                        let isCombo = false;
+
+                        if (id.startsWith('combo-')) {
+                          const comboId = id.replace('combo-', '');
+                          const combo = combos.find(c => c.id === comboId);
+                          name = combo?.name || 'Combo';
+                          price = combo?.totalPrice || 0;
+                          isCombo = true;
+                        } else {
+                          const item = allItems.find(i => i.id === id);
+                          name = item?.name || 'Item';
+                          price = item?.price || 0;
+                        }
+
                         return (
                           <div key={id} className="flex items-center justify-between p-4 bg-zinc-900/40 rounded-2xl border border-zinc-900">
                              <div className="flex items-center gap-4">
-                                <span className="h-8 w-8 flex items-center justify-center bg-emerald-500 text-black rounded-lg font-black text-xs">{qty}x</span>
-                                <span className="font-black italic text-sm text-white uppercase">{item?.name}</span>
+                                <span className={`h-8 w-8 flex items-center justify-center rounded-lg font-black text-xs ${isCombo ? 'bg-emerald-500 text-black' : 'bg-zinc-800 text-zinc-300'}`}>
+                                   {qty}x
+                                </span>
+                                <div className="flex flex-col">
+                                   <span className="font-black italic text-sm text-white uppercase flex items-center gap-2">
+                                      {isCombo && <Zap size={10} className="text-emerald-500" />}
+                                      {name}
+                                   </span>
+                                   {isCombo && (
+                                      <span className="text-[8px] font-bold text-emerald-600/60 uppercase tracking-widest">Synergized Bundle</span>
+                                   )}
+                                </div>
                              </div>
-                             <span className="font-black italic text-zinc-400">₹{(item?.price || 0) * qty}</span>
+                             <span className="font-black italic text-zinc-400">₹{price * qty}</span>
                           </div>
                         );
                       })}

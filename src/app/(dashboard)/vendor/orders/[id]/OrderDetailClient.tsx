@@ -17,7 +17,9 @@ import {
   Hash,
   ChevronRight,
   Loader2,
-  FileDown
+  FileDown,
+  Zap,
+  ChefHat
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -52,22 +54,27 @@ import {
   updatePaymentStatus, 
   addOrderItems, 
   deleteOrderItem,
+  deleteOrderCombo,
   updateOrderDetails 
 } from '@/app/actions/orders';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Edit2 } from 'lucide-react';
 
-export function OrderDetailClient({ order, vendor, menuItems, tables }: { 
+export function OrderDetailClient({ order, vendor, menuItems, availableCombos, tables }: { 
   order: any, 
   vendor: any,
   menuItems: any[],
+  availableCombos: any[],
   tables: any[] 
 }) {
   const router = useRouter();
   const [isAddingItem, setIsAddingItem] = useState(false);
+  const [isAddingCombo, setIsAddingCombo] = useState(false);
   const [selectedItem, setSelectedItem] = useState('');
+  const [selectedCombo, setSelectedCombo] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [comboQuantity, setComboQuantity] = useState(1);
   
   // Edit Details State
   const [isEditingDetails, setIsEditingDetails] = useState(false);
@@ -79,6 +86,19 @@ export function OrderDetailClient({ order, vendor, menuItems, tables }: {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+
+
+  const handleDeleteCombo = async (comboId: string) => {
+    if (!confirm('Are you sure you want to remove this combo bundle?')) return;
+    try {
+      await deleteOrderCombo(order.id, comboId);
+      toast.success('Combo bundle removed from bill');
+      router.refresh();
+    } catch (error) {
+      toast.error('Failed to remove combo');
+    }
+  };
 
   const handleUpdateDetails = async () => {
     setIsSubmitting(true);
@@ -141,6 +161,27 @@ export function OrderDetailClient({ order, vendor, menuItems, tables }: {
       setQuantity(1);
     } catch (error) {
       toast.error('Failed to add item');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAddCombo = async () => {
+    if (!selectedCombo) return;
+    setIsSubmitting(true);
+    try {
+      const combo = availableCombos.find(c => c.id === selectedCombo);
+      await addOrderItems(order.id, [{
+        comboId: combo.id,
+        quantity: comboQuantity,
+        unitPrice: combo.totalPrice
+      }]);
+      toast.success('Combo added to order');
+      setIsAddingCombo(false);
+      setSelectedCombo('');
+      setComboQuantity(1);
+    } catch (error) {
+      toast.error('Failed to add combo');
     } finally {
       setIsSubmitting(false);
     }
@@ -223,14 +264,27 @@ export function OrderDetailClient({ order, vendor, menuItems, tables }: {
               </tr>
            </thead>
            <tbody>
-              {order.items.map((item: any) => (
-                <tr key={item.id} className="border-b border-zinc-100 last:border-black">
-                   <td className="py-2 text-[10px] font-black uppercase leading-tight max-w-[150px]">{item.menuItem?.name || 'Item'}</td>
-                   <td className="py-2 text-center text-[10px] font-black">{item.quantity}</td>
-                   <td className="py-2 text-right text-[10px] font-black">₹{item.unitPrice}</td>
-                   <td className="py-2 text-right pr-2 text-[10px] font-black">₹{item.totalPrice}</td>
-                </tr>
-              ))}
+               {order.items.map((item: any) => (
+                 <tr key={item.id} className="border-b border-zinc-100">
+                    <td className="py-2 text-[10px] font-black uppercase leading-tight max-w-[150px]">{item.menuItem?.name || 'Item'}</td>
+                    <td className="py-2 text-center text-[10px] font-black">{item.quantity}</td>
+                    <td className="py-2 text-right text-[10px] font-black">₹{item.unitPrice}</td>
+                    <td className="py-2 text-right pr-2 text-[10px] font-black">₹{item.totalPrice}</td>
+                 </tr>
+               ))}
+               {(order.combos || []).map((combo: any) => (
+                 <tr key={combo.id} className="border-b border-zinc-100 last:border-black">
+                    <td className="py-2 text-[10px] font-black uppercase leading-tight max-w-[150px] text-emerald-600 italic">
+                       {combo.combo?.name || 'Combo Bundle'}
+                       <div className="text-[7px] text-zinc-400 normal-case not-italic">
+                          {combo.combo?.items?.map((it: any) => it.menuItem?.name).join(' + ')}
+                       </div>
+                    </td>
+                    <td className="py-2 text-center text-[10px] font-black">{combo.quantity}</td>
+                    <td className="py-2 text-right text-[10px] font-black">₹{combo.unitPrice}</td>
+                    <td className="py-2 text-right pr-2 text-[10px] font-black">₹{combo.totalPrice}</td>
+                 </tr>
+               ))}
            </tbody>
         </table>
 
@@ -299,54 +353,105 @@ export function OrderDetailClient({ order, vendor, menuItems, tables }: {
               <CardTitle className="text-base font-black italic uppercase tracking-widest text-foreground flex items-center gap-2">
                 <Hash className="h-4 w-4 text-emerald-500" /> Order Items
               </CardTitle>
-              <Dialog open={isAddingItem} onOpenChange={setIsAddingItem}>
-                <DialogTrigger asChild>
-                  <Button size="sm" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[9px] h-8 rounded-full">
-                    <Plus className="mr-1 h-3 w-3" /> Add Item
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-background border-border text-foreground rounded-[2rem]">
-                  <DialogHeader>
-                    <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">Add Item to Order</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-6 py-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Item</label>
-                      <Select value={selectedItem} onValueChange={setSelectedItem}>
-                        <SelectTrigger className="bg-muted border-border h-14 rounded-2xl font-bold italic text-sm">
-                          <SelectValue placeholder="Search menu..." />
-                        </SelectTrigger>
-                        <SelectContent className="bg-card border-border text-foreground">
-                          {menuItems.map((item: any) => (
-                            <SelectItem key={item.id} value={item.id} className="focus:bg-emerald-500 focus:text-black">
-                              {item.name} — ₹{item.price}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
-                      <Input 
-                        type="number" 
-                        min="1" 
-                        value={quantity} 
-                        onChange={(e) => setQuantity(parseInt(e.target.value))}
-                        className="bg-muted border-border h-14 rounded-2xl font-black italic text-lg focus:border-emerald-500/50"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button 
-                      disabled={isSubmitting || !selectedItem} 
-                      onClick={handleAddItem}
-                      className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-emerald-500/10"
-                    >
-                      {isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirm Add'}
+              <div className="flex items-center gap-2">
+                <Dialog open={isAddingItem} onOpenChange={setIsAddingItem}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-black uppercase tracking-widest text-[9px] h-8 rounded-full border border-zinc-800">
+                      <Plus className="mr-1 h-3 w-3" /> Add Item
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                  </DialogTrigger>
+                  <DialogContent className="bg-background border-border text-foreground rounded-[2rem]">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">Add Item to Order</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-6 py-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Item</label>
+                        <Select value={selectedItem} onValueChange={setSelectedItem}>
+                          <SelectTrigger className="bg-muted border-border h-14 rounded-2xl font-bold italic text-sm">
+                            <SelectValue placeholder="Search menu..." />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card border-border text-foreground">
+                            {menuItems.map((item: any) => (
+                              <SelectItem key={item.id} value={item.id} className="focus:bg-emerald-500 focus:text-black">
+                                {item.name} — ₹{item.price}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
+                        <Input 
+                          type="number" 
+                          min="1" 
+                          value={quantity} 
+                          onChange={(e) => setQuantity(parseInt(e.target.value))}
+                          className="bg-muted border-border h-14 rounded-2xl font-black italic text-lg focus:border-emerald-500/50"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button 
+                        disabled={isSubmitting || !selectedItem} 
+                        onClick={handleAddItem}
+                        className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-emerald-500/10"
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirm Add'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={isAddingCombo} onOpenChange={setIsAddingCombo}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[9px] h-8 rounded-full">
+                      <Zap className="mr-1 h-3 w-3" /> Add Combo
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-background border-border text-foreground rounded-[2rem]">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-black italic uppercase tracking-tighter text-emerald-500">Add Combo Deal</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-6 py-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Combo</label>
+                        <Select value={selectedCombo} onValueChange={setSelectedCombo}>
+                          <SelectTrigger className="bg-muted border-border h-14 rounded-2xl font-bold italic text-sm">
+                            <SelectValue placeholder="Choose a bundle..." />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card border-border text-foreground">
+                            {availableCombos.map((combo: any) => (
+                              <SelectItem key={combo.id} value={combo.id} className="focus:bg-emerald-500 focus:text-black">
+                                {combo.name} — ₹{combo.totalPrice}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
+                        <Input 
+                          type="number" 
+                          min="1" 
+                          value={comboQuantity} 
+                          onChange={(e) => setComboQuantity(parseInt(e.target.value))}
+                          className="bg-muted border-border h-14 rounded-2xl font-black italic text-lg focus:border-emerald-500/50"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button 
+                        disabled={isSubmitting || !selectedCombo} 
+                        onClick={handleAddCombo}
+                        className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-emerald-500/10"
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirm Bundle Add'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
@@ -361,24 +466,57 @@ export function OrderDetailClient({ order, vendor, menuItems, tables }: {
                 </TableHeader>
                 <TableBody>
                   {order.items.map((item: any) => (
-                    <TableRow key={item.id} className="border-border hover:bg-muted/30 group transition-colors">
-                      <TableCell className="py-4 font-bold text-foreground uppercase italic text-sm">
-                        {item.menuItem?.name || item.customName || 'Legacy Item'}
-                        {item.menuItem?.category?.name && (
-                          <span className="block text-[8px] font-black text-emerald-500/60 tracking-widest mt-0.5">{item.menuItem.category.name}</span>
-                        )}
+                    <TableRow key={item.id} className="border-border/50 hover:bg-muted/30 transition-colors">
+                      <TableCell className="py-4">
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                            <ChefHat className="h-5 w-5 text-zinc-600" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-black italic uppercase text-foreground truncate">{item.menuItem?.name}</p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{item.menuItem?.category?.name || 'Item'}</p>
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell className="text-center font-black text-muted-foreground">{item.quantity}x</TableCell>
-                      <TableCell className="text-right font-bold text-muted-foreground">₹{item.unitPrice}</TableCell>
-                      <TableCell className="text-right font-black text-foreground italic">₹{item.totalPrice}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-center font-black italic text-sm">{item.quantity}</TableCell>
+                      <TableCell className="text-right font-black text-sm text-emerald-500">₹{item.unitPrice}</TableCell>
+                      <TableCell className="text-right font-black text-sm pr-6">₹{item.totalPrice}</TableCell>
+                      <TableCell>
                         <Button 
                           variant="ghost" 
                           size="icon" 
                           onClick={() => handleDeleteItem(item.id)}
-                          className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 size={14} />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {(order.combos || []).map((combo: any) => (
+                    <TableRow key={combo.id} className="border-border/50 bg-emerald-500/5 hover:bg-emerald-500/10 transition-colors">
+                      <TableCell className="py-4">
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0 text-emerald-500">
+                            <Zap className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-black italic uppercase text-emerald-500 truncate">{combo.combo?.name}</p>
+                            <p className="text-[9px] font-bold text-emerald-600/60 uppercase tracking-widest">Synergized Bundle</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center font-black italic text-sm">{combo.quantity}</TableCell>
+                      <TableCell className="text-right font-black text-sm text-emerald-500">₹{combo.unitPrice}</TableCell>
+                      <TableCell className="text-right font-black text-sm pr-6">₹{combo.totalPrice}</TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleDeleteCombo(combo.id)}
+                          className="h-8 w-8 text-emerald-600/60 hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                        >
+                          <Trash2 size={14} />
                         </Button>
                       </TableCell>
                     </TableRow>

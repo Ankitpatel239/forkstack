@@ -32,7 +32,7 @@ export default async function ReservationsPage() {
     orderBy: { tableNumber: 'asc' }
   });
 
-  const pendingCount = reservations.filter(r => r.status === 'PENDING').length;
+  const pendingCount = reservations.filter((r:any) => r.status === 'PENDING').length;
   const todayCount = reservations.filter((r: any) => {
     const today = new Date();
     return new Date(r.reservationDate).toDateString() === today.toDateString();

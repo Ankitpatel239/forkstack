@@ -14,7 +14,9 @@ import {
   Search,
   CheckCircle2,
   X,
-  Loader2
+  Loader2,
+  Zap,
+  Package
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,8 +55,11 @@ export function ManualOrderDialog({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [combos, setCombos] = useState<any[]>([]);
+  const [offers, setOffers] = useState<any[]>([]);
   const [tables, setTables] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState<'ITEMS' | 'COMBOS'>('ITEMS');
   
   const [formData, setFormData] = useState({
     customerName: reservation?.customerName || '',
@@ -63,7 +68,7 @@ export function ManualOrderDialog({
     paymentMethod: 'CASH'
   });
 
-  const [cart, setCart] = useState<{item: any, quantity: number}[]>([]);
+  const [cart, setCart] = useState<{item: any, quantity: number, isCombo?: boolean}[]>([]);
   const [orderMode, setOrderMode] = useState<'NEW' | 'APPEND'>(reservation?.order ? 'APPEND' : 'NEW');
 
   const existingOrder = reservation?.order;
@@ -75,27 +80,34 @@ export function ManualOrderDialog({
   }, [open]);
 
   async function fetchInitialData() {
-    const [items, tableList] = await Promise.all([
+    const { getMenuItems, getCombos, getOffers } = await import('@/app/actions/menu');
+    const { getAvailableTables } = await import('@/app/actions/reservations');
+    
+    const [items, comboList, offerList, tableList] = await Promise.all([
       getMenuItems(),
+      getCombos(),
+      getOffers(),
       getAvailableTables(vendorId, new Date())
     ]);
     setMenuItems(items);
+    setCombos(comboList);
+    setOffers(offerList);
     setTables(tableList);
   }
 
-  const addToCart = (item: any) => {
+  const addToCart = (item: any, isCombo = false) => {
     setCart(prev => {
-      const existing = prev.find(i => i.item.id === item.id);
+      const existing = prev.find(i => i.item.id === item.id && i.isCombo === isCombo);
       if (existing) {
-        return prev.map(i => i.item.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+        return prev.map(i => i.item.id === item.id && i.isCombo === isCombo ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      return [...prev, { item, quantity: 1 }];
+      return [...prev, { item, quantity: 1, isCombo }];
     });
   };
 
-  const updateQuantity = (itemId: string, delta: number) => {
+  const updateQuantity = (itemId: string, delta: number, isCombo = false) => {
     setCart(prev => prev.map(i => {
-      if (i.item.id === itemId) {
+      if (i.item.id === itemId && i.isCombo === isCombo) {
         const newQty = Math.max(0, i.quantity + delta);
         return { ...i, quantity: newQty };
       }
@@ -103,7 +115,7 @@ export function ManualOrderDialog({
     }).filter(i => i.quantity > 0));
   };
 
-  const totalAmount = cart.reduce((acc, i) => acc + (i.item.price * i.quantity), 0);
+  const totalAmount = cart.reduce((acc, i) => acc + ((i.isCombo ? i.item.totalPrice : i.item.price) * i.quantity), 0);
 
   const handleSubmit = async () => {
     if (cart.length === 0) {
@@ -120,9 +132,10 @@ export function ManualOrderDialog({
     try {
       if (orderMode === 'APPEND' && existingOrder) {
         const order = await addOrderItems(existingOrder.id, cart.map(i => ({
-          menuItemId: i.item.id,
+          menuItemId: i.isCombo ? undefined : i.item.id,
+          comboId: i.isCombo ? i.item.id : undefined,
           quantity: i.quantity,
-          unitPrice: i.item.price
+          unitPrice: i.isCombo ? i.item.totalPrice : i.item.price
         })));
         toast.success('Items added to existing order');
         if (onSuccess) onSuccess(order);
@@ -134,9 +147,10 @@ export function ManualOrderDialog({
           customerName: formData.customerName,
           customerPhone: formData.customerPhone,
           items: cart.map(i => ({
-            menuItemId: i.item.id,
+            menuItemId: i.isCombo ? undefined : i.item.id,
+            comboId: i.isCombo ? i.item.id : undefined,
             quantity: i.quantity,
-            unitPrice: i.item.price
+            unitPrice: i.isCombo ? i.item.totalPrice : i.item.price
           })),
           totalAmount,
           paymentMethod: formData.paymentMethod
@@ -156,6 +170,10 @@ export function ManualOrderDialog({
   };
 
   const filteredMenu = menuItems.filter(i => 
+    i.name.toLowerCase().includes(search.toLowerCase())
+  );
+  
+  const filteredCombos = combos.filter(i => 
     i.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -183,19 +201,35 @@ export function ManualOrderDialog({
 
         <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
           {/* Left: Menu Selection */}
-          <div className="flex-1 p-8 overflow-y-auto border-r border-white/5 custom-scrollbar">
-            <div className="relative mb-8 group">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-emerald-500 transition-colors" size={20} />
-              <Input 
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search dishes, drinks, appetizers..."
-                className="bg-zinc-900/50 border-zinc-800 h-16 pl-16 rounded-2xl font-bold italic text-white placeholder:text-zinc-700 focus:border-emerald-500/50"
-              />
+          <div>
+            <div className="relative mb-6 group flex items-center gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-emerald-500 transition-colors" size={20} />
+                <Input 
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder={activeTab === 'ITEMS' ? "Search dishes..." : "Scan combos..."}
+                  className="bg-zinc-900/50 border-zinc-800 h-16 pl-16 rounded-2xl font-bold italic text-white placeholder:text-zinc-700 focus:border-emerald-500/50"
+                />
+              </div>
+              <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800">
+                 <button 
+                   onClick={() => setActiveTab('ITEMS')}
+                   className={`h-12 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'ITEMS' ? 'bg-emerald-500 text-black shadow-lg' : 'text-zinc-500'}`}
+                 >
+                    Items
+                 </button>
+                 <button 
+                   onClick={() => setActiveTab('COMBOS')}
+                   className={`h-12 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'COMBOS' ? 'bg-emerald-500 text-black shadow-lg' : 'text-zinc-500'}`}
+                 >
+                    Combos
+                 </button>
+              </div>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
-              {filteredMenu.map(item => (
+              {activeTab === 'ITEMS' ? filteredMenu.map(item => (
                 <div 
                   key={item.id}
                   onClick={() => addToCart(item)}
@@ -212,6 +246,31 @@ export function ManualOrderDialog({
                     <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-black transition-all">
                       <Plus size={16} />
                     </div>
+                  </div>
+                </div>
+              )) : filteredCombos.map(combo => (
+                <div 
+                  key={combo.id}
+                  onClick={() => addToCart(combo, true)}
+                  className="group bg-emerald-500/5 border border-emerald-500/10 p-4 rounded-[1.5rem] cursor-pointer hover:border-emerald-500/30 transition-all active:scale-95 relative overflow-hidden"
+                >
+                  <div className="flex items-center gap-4 relative z-10">
+                    <div className="h-14 w-14 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                      <Package size={24} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-black italic uppercase text-zinc-100 truncate">{combo.name}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                         <p className="text-[10px] font-bold text-emerald-500">₹{combo.totalPrice}</p>
+                         <span className="text-[8px] font-black text-zinc-600 line-through">₹{combo.totalPrice + (combo.discount || 0)}</span>
+                      </div>
+                    </div>
+                    <div className="h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center text-black shadow-lg shadow-emerald-500/20">
+                      <Plus size={16} />
+                    </div>
+                  </div>
+                  <div className="absolute -right-2 -bottom-2 opacity-5 text-emerald-500">
+                     <Zap size={48} fill="currentColor" />
                   </div>
                 </div>
               ))}
@@ -302,15 +361,18 @@ export function ManualOrderDialog({
                 </div>
                 <div className="space-y-3">
                   {cart.map(i => (
-                    <div key={i.item.id} className="flex items-center gap-4 bg-black/20 p-3 rounded-xl border border-white/5">
+                    <div key={`${i.isCombo ? 'c' : 'i'}-${i.item.id}`} className="flex items-center gap-4 bg-black/20 p-3 rounded-xl border border-white/5">
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-black uppercase italic text-zinc-200 truncate">{i.item.name}</p>
-                        <p className="text-[10px] font-bold text-zinc-600">₹{i.item.price * i.quantity}</p>
+                        <p className="text-xs font-black uppercase italic text-zinc-200 truncate flex items-center gap-2">
+                           {i.isCombo && <Zap size={10} className="text-emerald-500" />}
+                           {i.item.name}
+                        </p>
+                        <p className="text-[10px] font-bold text-zinc-600">₹{(i.isCombo ? i.item.totalPrice : i.item.price) * i.quantity}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <button onClick={() => updateQuantity(i.item.id, -1)} className="h-6 w-6 rounded-lg bg-zinc-800 flex items-center justify-center hover:bg-zinc-700"><Minus size={12} /></button>
+                        <button onClick={() => updateQuantity(i.item.id, -1, i.isCombo)} className="h-6 w-6 rounded-lg bg-zinc-800 flex items-center justify-center hover:bg-zinc-700"><Minus size={12} /></button>
                         <span className="text-xs font-black italic">{i.quantity}</span>
-                        <button onClick={() => updateQuantity(i.item.id, 1)} className="h-6 w-6 rounded-lg bg-zinc-800 flex items-center justify-center hover:bg-zinc-700"><Plus size={12} /></button>
+                        <button onClick={() => updateQuantity(i.item.id, 1, i.isCombo)} className="h-6 w-6 rounded-lg bg-zinc-800 flex items-center justify-center hover:bg-zinc-700"><Plus size={12} /></button>
                       </div>
                     </div>
                   ))}
@@ -321,6 +383,32 @@ export function ManualOrderDialog({
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Active Offers Section */}
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                 <div className="flex items-center justify-between">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 italic">Eligible Campaigns</h3>
+                 </div>
+                 <div className="space-y-2">
+                    {offers.filter(o => o.isActive).map(offer => {
+                       const isEligible = offer.minOrderValue <= totalAmount;
+                       return (
+                          <div 
+                            key={offer.id} 
+                            className={`p-3 rounded-xl border transition-all flex items-center justify-between ${isEligible ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-zinc-900/50 border-zinc-900 opacity-50'}`}
+                          >
+                             <div className="min-w-0">
+                                <p className="text-[10px] font-black uppercase italic text-zinc-200 truncate">{offer.title}</p>
+                                <p className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest">
+                                   {offer.type === 'BOGO' ? '1+1 FREE' : offer.type === 'PERCENTAGE' ? `${offer.value}% OFF` : `₹${offer.value} OFF`}
+                                </p>
+                             </div>
+                             {isEligible ? <CheckCircle2 size={14} className="text-emerald-500" /> : <X size={12} className="text-zinc-700" />}
+                          </div>
+                       );
+                    })}
+                 </div>
               </div>
             </div>
 

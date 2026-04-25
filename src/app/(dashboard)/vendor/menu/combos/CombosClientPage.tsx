@@ -1,18 +1,18 @@
-
 'use client';
 
-import { useState } from 'react';
 import { 
   Plus, 
   Search, 
-  Trash2, 
+  Flame, 
+  Layers, 
+  Minus, 
+  Plus as PlusIcon, 
+  ShoppingCart,
   MoreVertical,
+  Edit,
+  Trash2,
   Package,
-  Layers,
-  ArrowRight,
-  Zap,
-  Flame,
-  Edit
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,38 +23,224 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { deleteCombo } from '@/app/actions/menu';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter,
+  DialogTrigger 
+} from '@/components/ui/dialog';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { deleteCombo, createCombo } from '@/app/actions/menu';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
-export default function CombosClientPage({ initialCombos }: { initialCombos: any[] }) {
+export default function CombosClientPage({ initialCombos, menuItems }: { initialCombos: any[], menuItems: any[] }) {
   const [combos, setCombos] = useState(initialCombos);
   const [search, setSearch] = useState('');
+  const [isForging, setIsForging] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const [newCombo, setNewCombo] = useState({
+    name: '',
+    description: '',
+    totalPrice: 0,
+    items: [] as { menuItemId: string, quantity: number, name: string, price: number }[]
+  });
 
   const filteredCombos = combos.filter((c: any) => 
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleAddItem = (itemId: string) => {
+    const item = menuItems.find(m => m.id === itemId);
+    if (!item) return;
+
+    setNewCombo(prev => {
+      const exists = prev.items.find(i => i.menuItemId === itemId);
+      if (exists) {
+        return {
+          ...prev,
+          items: prev.items.map(i => i.menuItemId === itemId ? { ...i, quantity: i.quantity + 1 } : i)
+        };
+      }
+      return {
+        ...prev,
+        items: [...prev.items, { menuItemId: itemId, quantity: 1, name: item.name, price: item.price }]
+      };
+    });
+  };
+
+  const updateQty = (itemId: string, delta: number) => {
+    setNewCombo(prev => ({
+      ...prev,
+      items: prev.items.map(i => i.menuItemId === itemId ? { ...i, quantity: Math.max(0, i.quantity + delta) } : i).filter(i => i.quantity > 0)
+    }));
+  };
+
+  const subtotal = newCombo.items.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+  const estimatedSavings = Math.max(0, subtotal - newCombo.totalPrice);
+
+  const handleForge = async () => {
+    if (!newCombo.name || newCombo.items.length === 0 || newCombo.totalPrice <= 0) {
+      toast.error('Please add items and a bundle price.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await createCombo({
+        ...newCombo,
+        discount: estimatedSavings
+      });
+      setCombos([result, ...combos]);
+      setIsForging(false);
+      setNewCombo({ name: '', description: '', totalPrice: 0, items: [] });
+      toast.success('Combo created successfully!');
+    } catch (e) {
+      toast.error('Failed to create combo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
-    if (!confirm('Decommission this bundle?')) return;
+    if (!confirm('Delete this combo?')) return;
     try {
       await deleteCombo(id);
       setCombos(combos.filter((c: any) => c.id !== id));
-      toast.success('Bundle decommissioned');
+      toast.success('Combo deleted');
     } catch (e) {
-      toast.error('Failed');
+      toast.error('Failed to delete');
     }
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 max-w-6xl mx-auto pb-20">
+    <div className="space-y-6 animate-in fade-in duration-500 max-w-6xl mx-auto pb-20 px-4 md:px-0">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white italic uppercase tracking-tighter text-emerald-500">Combo Synthesis</h1>
-          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mt-1">Bundle high-velocity items for maximum yield.</p>
+          <h1 className="text-2xl font-black text-white italic uppercase tracking-tighter text-emerald-500">Combo Deals</h1>
+          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mt-1">Create bundles to increase your sales.</p>
         </div>
-        <Button className="bg-white hover:bg-zinc-200 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-11 px-6 rounded-xl shadow-lg border-none active:scale-95 transition-all">
-          <Plus size={16} className="mr-2" /> Forge New Combo
-        </Button>
+        
+        <Dialog open={isForging} onOpenChange={setIsForging}>
+          <DialogTrigger asChild>
+            <Button className="bg-white hover:bg-zinc-200 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-11 px-6 rounded-xl shadow-lg border-none active:scale-95 transition-all w-full md:w-auto">
+              <Plus size={16} className="mr-2" /> Create New Combo
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-zinc-950 border-zinc-900 text-white rounded-[1.5rem] md:rounded-[2.5rem] max-w-4xl sm:max-w-4xl shadow-2xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
+            <DialogHeader className="p-6 md:p-8 border-b border-zinc-900 bg-zinc-900/30 shrink-0">
+               <DialogTitle className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-emerald-500 flex items-center gap-2">
+                  <Flame size={24} /> New Combo Deal
+               </DialogTitle>
+            </DialogHeader>
+            
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+               <div className="grid md:grid-cols-2 gap-8">
+                  {/* Left: Config */}
+                  <div className="space-y-6">
+                     <div className="space-y-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1">Combo Name</label>
+                        <Input 
+                          value={newCombo.name}
+                          onChange={e => setNewCombo({...newCombo, name: e.target.value})}
+                          placeholder="e.g. Burger & Fries Combo" 
+                          className="bg-zinc-900 border-zinc-800 rounded-xl font-bold"
+                        />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1">Short Description</label>
+                        <Input 
+                          value={newCombo.description}
+                          onChange={e => setNewCombo({...newCombo, description: e.target.value})}
+                          placeholder="Save 20% on this deal..." 
+                          className="bg-zinc-900 border-zinc-800 rounded-xl font-bold"
+                        />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1">Add Menu Items</label>
+                        <Select onValueChange={handleAddItem}>
+                           <SelectTrigger className="bg-zinc-900 border-zinc-800 rounded-xl font-bold">
+                              <SelectValue placeholder="Select an item..." />
+                           </SelectTrigger>
+                           <SelectContent className="bg-zinc-900 border-zinc-800 text-white font-bold">
+                              {menuItems.map(item => (
+                                <SelectItem key={item.id} value={item.id}>{item.name} (₹{item.price})</SelectItem>
+                              ))}
+                           </SelectContent>
+                        </Select>
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1 font-black text-emerald-500">Bundle Price (₹)</label>
+                        <Input 
+                          type="number"
+                          value={newCombo.totalPrice}
+                          onChange={e => setNewCombo({...newCombo, totalPrice: Number(e.target.value)})}
+                          placeholder="Price for the whole combo" 
+                          className="bg-zinc-900 border-zinc-800 rounded-xl font-black text-xl text-emerald-500"
+                        />
+                     </div>
+                  </div>
+
+                  {/* Right: Cart */}
+                  <div className="flex flex-col bg-zinc-900/50 rounded-2xl md:rounded-3xl p-6 border border-zinc-900 h-full min-h-[300px]">
+                     <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-4 italic">Items in Combo</h4>
+                     <div className="flex-1 space-y-3 overflow-y-auto custom-scrollbar">
+                        {newCombo.items.map(it => (
+                           <div key={it.menuItemId} className="flex items-center justify-between p-3 bg-zinc-950 rounded-xl border border-zinc-800/50">
+                              <div className="min-w-0">
+                                 <p className="text-[10px] font-black uppercase italic text-zinc-300 truncate">{it.name}</p>
+                                 <p className="text-[8px] font-bold text-zinc-600">₹{it.price * it.quantity}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                 <button onClick={() => updateQty(it.menuItemId, -1)} className="h-6 w-6 rounded bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"><Minus size={10} /></button>
+                                 <span className="text-[10px] font-black italic">{it.quantity}</span>
+                                 <button onClick={() => updateQty(it.menuItemId, 1)} className="h-6 w-6 rounded bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"><PlusIcon size={10} /></button>
+                              </div>
+                           </div>
+                        ))}
+                        {newCombo.items.length === 0 && (
+                           <div className="flex-1 flex flex-col items-center justify-center py-10 text-zinc-800 border-2 border-dashed border-zinc-800 rounded-2xl">
+                              <ShoppingCart size={32} />
+                              <p className="text-[9px] font-black uppercase mt-4 tracking-widest text-center">No items added yet</p>
+                           </div>
+                        )}
+                     </div>
+
+                     <div className="mt-6 pt-4 border-t border-zinc-800 space-y-2">
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-zinc-600">
+                           <span>Total Individual Price</span>
+                           <span>₹{subtotal}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                           <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Savings</span>
+                           <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[9px] font-black">₹{estimatedSavings} OFF</Badge>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <DialogFooter className="p-6 md:p-8 bg-zinc-900/30 border-t border-zinc-900 gap-4 shrink-0">
+               <Button variant="ghost" onClick={() => setIsForging(false)} className="text-zinc-500 hover:text-white font-black uppercase tracking-widest text-[10px]">Cancel</Button>
+               <Button 
+                 onClick={handleForge} 
+                 disabled={loading}
+                 className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] px-8 h-12 rounded-xl shadow-xl shadow-emerald-500/10"
+               >
+                 {loading ? <Loader2 className="animate-spin h-4 w-4" /> : "Save Combo"}
+               </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex items-center gap-3 bg-zinc-950 px-4 h-12 w-full md:w-[400px] rounded-2xl border border-zinc-900 group focus-within:border-emerald-500/30 transition-all">
@@ -63,20 +249,20 @@ export default function CombosClientPage({ initialCombos }: { initialCombos: any
           type="text" 
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Scan bundles..." 
+          placeholder="Search combos..." 
           className="bg-transparent border-none focus:ring-0 text-xs font-bold flex-1 outline-none text-white tracking-tight" 
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
         {filteredCombos.length === 0 ? (
           <div className="col-span-full py-24 text-center border-2 border-dashed border-zinc-900 rounded-[3rem] opacity-20">
             <Layers size={64} className="mx-auto mb-6" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em]">No synthesized bundles detected.</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em]">No combos found.</p>
           </div>
         ) : (
           filteredCombos.map((combo: any) => (
-            <div key={combo.id} className="bg-zinc-900/40 border border-zinc-800/80 p-8 rounded-[2.5rem] group hover:border-emerald-500/20 transition-all relative overflow-hidden shadow-2xl">
+            <div key={combo.id} className="bg-zinc-900/40 border border-zinc-800/80 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] group hover:border-emerald-500/20 transition-all relative overflow-hidden shadow-2xl">
               <div className="flex justify-between items-start relative z-10">
                 <div className="space-y-4">
                    <div className="flex items-center gap-3">
@@ -85,7 +271,7 @@ export default function CombosClientPage({ initialCombos }: { initialCombos: any
                       </div>
                       <div>
                          <h3 className="text-xl font-black text-white uppercase italic tracking-tighter leading-none">{combo.name}</h3>
-                         <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Active Synthesis Node</p>
+                         <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Active Deal</p>
                       </div>
                    </div>
                    <p className="text-xs text-zinc-400 font-medium max-w-[300px]">{combo.description || 'Synergistic bundle for premium users.'}</p>
@@ -99,10 +285,10 @@ export default function CombosClientPage({ initialCombos }: { initialCombos: any
                    </DropdownMenuTrigger>
                    <DropdownMenuContent align="end" className="bg-zinc-950 border-zinc-900 text-white w-40 rounded-xl p-1 shadow-2xl">
                       <DropdownMenuItem className="cursor-pointer text-[10px] font-bold py-2 px-3 rounded-lg focus:bg-emerald-500 focus:text-zinc-950">
-                         <Edit size={14} className="mr-2" /> Re-Forge
+                         <Edit size={14} className="mr-2" /> Edit Combo
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDelete(combo.id)} className="cursor-pointer text-red-500 text-[10px] font-bold py-2 px-3 rounded-lg focus:bg-red-500/10">
-                         <Trash2 size={14} className="mr-2" /> Decommission
+                         <Trash2 size={14} className="mr-2" /> Delete
                       </DropdownMenuItem>
                    </DropdownMenuContent>
                 </DropdownMenu>
@@ -110,9 +296,9 @@ export default function CombosClientPage({ initialCombos }: { initialCombos: any
 
               <div className="mt-8 space-y-6 relative z-10">
                  <div className="space-y-2">
-                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-600 px-1">Bundle Ingredients</p>
+                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-600 px-1">Items Included</p>
                     <div className="space-y-1">
-                       {combo.items.map((it: any) => (
+                       {combo.items?.map((it: any) => (
                           <div key={it.id} className="flex items-center justify-between text-[11px] font-bold text-zinc-300 p-2 bg-zinc-950/40 rounded-lg border border-zinc-900/50">
                              <div className="flex items-center gap-2">
                                 <span className="h-5 w-5 rounded bg-zinc-900 flex items-center justify-center text-[8px] text-zinc-500">{it.quantity}x</span>

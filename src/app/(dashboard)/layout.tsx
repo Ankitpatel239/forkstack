@@ -95,6 +95,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: 'All Menu Items', href: '/vendor/menu/items' },
         { name: 'Add New Item', href: '/vendor/menu/items?action=add' },
         { name: 'Edit Categories', href: '/vendor/menu/categories' },
+        { name: 'Combos & Bundles', href: '/vendor/menu/combos' },
+        { name: 'Active Offers', href: '/vendor/menu/offers' },
       ]
     },
     { 

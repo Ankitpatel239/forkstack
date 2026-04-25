@@ -305,8 +305,13 @@ export function OrdersClient({
                                 {item.quantity}x {item.menuItem?.name || 'Item'}
                              </Badge>
                            ))}
-                           {order.items.length > 4 && (
-                             <span className="text-[9px] font-black text-muted-foreground/60 ml-2">+{order.items.length - 4} More</span>
+                           {order.combos?.slice(0, 4).map((combo: any, i: number) => (
+                             <Badge key={`combo-${i}`} variant="outline" className="bg-emerald-500/10 border-emerald-500/20 text-emerald-500 text-[9px] font-bold py-1 px-3 rounded-full italic">
+                                {combo.quantity}x {combo.combo?.name || 'Combo'}
+                             </Badge>
+                           ))}
+                           {(order.items.length + (order.combos?.length || 0)) > 4 && (
+                             <span className="text-[9px] font-black text-muted-foreground/60 ml-2">+{(order.items.length + (order.combos?.length || 0)) - 4} More</span>
                            )}
                         </div>
                      </div>

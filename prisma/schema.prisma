@@ -60,6 +60,7 @@ enum ParcelStatus {
 enum PaymentStatus {
   PENDING
   COMPLETED
+  PARTIAL
   FAILED
   REFUNDED
 }
@@ -658,6 +659,7 @@ model Payment {
   method        String        // cash, card, upi, bank
   transactionId String?
   status        PaymentStatus @default(PENDING)
+  paidAmount    Float         @default(0)
   paidAt        DateTime?
   notes         String?
   createdAt     DateTime      @default(now())

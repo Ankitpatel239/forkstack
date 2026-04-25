@@ -1,7 +1,10 @@
-import { getOffers } from "@/app/actions/menu";
+import { getOffers, getMenuItems } from "@/app/actions/menu";
 import OffersClientPage from "./OffersClientPage";
 
 export default async function Page() {
-  const offers = await getOffers();
-  return <OffersClientPage initialOffers={offers} />;
+  const [offers, menuItems] = await Promise.all([
+    getOffers(),
+    getMenuItems()
+  ]);
+  return <OffersClientPage initialOffers={offers} menuItems={menuItems} />;
 }

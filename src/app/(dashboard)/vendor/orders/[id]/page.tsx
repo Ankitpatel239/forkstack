@@ -22,7 +22,24 @@ export default async function OrderPage({
     include: {
       items: {
         include: {
-          menuItem: true
+          menuItem: {
+            include: {
+              category: true
+            }
+          }
+        }
+      },
+      combos: {
+        include: {
+          combo: {
+            include: {
+              items: {
+                include: {
+                  menuItem: true
+                }
+              }
+            }
+          }
         }
       },
       table: true,
@@ -41,6 +58,19 @@ export default async function OrderPage({
     orderBy: { name: 'asc' }
   });
 
+  // Fetch all available combos
+  const availableCombos = await prisma.combo.findMany({
+    where: { vendorId: vendor.id },
+    include: {
+      items: {
+        include: {
+          menuItem: true
+        }
+      }
+    },
+    orderBy: { name: 'asc' }
+  });
+
   // Fetch all tables for table reassignment
   const tables = await prisma.table.findMany({
     where: { vendorId: vendor.id, isActive: true },
@@ -52,6 +82,7 @@ export default async function OrderPage({
       order={order as any} 
       vendor={vendor as any}
       menuItems={menuItems as any} 
+      availableCombos={availableCombos as any}
       tables={tables as any}
     />
   );

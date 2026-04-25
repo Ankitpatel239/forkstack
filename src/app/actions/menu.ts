@@ -262,6 +262,13 @@ export async function createOffer(data: any) {
       items: data.menuItemIds ? {
         create: data.menuItemIds.map((id: string) => ({ menuItemId: id }))
       } : undefined
+    },
+    include: {
+      items: {
+        include: {
+          menuItem: true
+        }
+      }
     }
   });
   revalidatePath('/vendor/menu/offers');
@@ -291,6 +298,13 @@ export async function updateOffer(id: string, data: any) {
       items: data.menuItemIds ? {
         create: data.menuItemIds.map((id: string) => ({ menuItemId: id }))
       } : undefined
+    },
+    include: {
+      items: {
+        include: {
+          menuItem: true
+        }
+      }
     }
   });
   revalidatePath('/vendor/menu/offers');
@@ -328,6 +342,13 @@ export async function createCombo(data: any) {
           menuItemId: it.menuItemId,
           quantity: Number(it.quantity) || 1
         }))
+      }
+    },
+    include: {
+      items: {
+        include: {
+          menuItem: true
+        }
       }
     }
   });

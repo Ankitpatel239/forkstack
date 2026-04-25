@@ -29,7 +29,7 @@ export async function placeOrder(data: {
   reservationId?: string | null;
   customerPhone: string;
   customerName?: string;
-  items: { menuItemId: string; quantity: number; unitPrice: number }[];
+  items: { menuItemId?: string; comboId?: string; quantity: number; unitPrice: number }[];
   totalAmount: number;
   paymentMethod: string;
   clientToken?: string;
@@ -46,13 +46,21 @@ export async function placeOrder(data: {
       customerPhone: data.customerPhone,
       customerName: data.customerName,
       clientToken: data.clientToken,
-      orderSource: 'VENDOR_DASHBOARD',
+      orderSource: data.tableId ? 'QR_TABLE' : 'VENDOR_DASHBOARD',
       totalAmount: data.totalAmount,
       finalAmount: data.totalAmount,
       status: 'PENDING',
       items: {
-        create: data.items.map(item => ({
+        create: data.items.filter(i => i.menuItemId).map(item => ({
           menuItemId: item.menuItemId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalPrice: item.unitPrice * item.quantity
+        }))
+      },
+      combos: {
+        create: data.items.filter(i => i.comboId).map(item => ({
+          comboId: item.comboId!,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           totalPrice: item.unitPrice * item.quantity
@@ -63,7 +71,7 @@ export async function placeOrder(data: {
           vendorId: data.vendorId,
           amount: data.totalAmount,
           method: data.paymentMethod,
-          status: data.paymentMethod === 'COD' ? 'PENDING' : 'COMPLETED',
+          status: 'PENDING', // Always start as pending for verification
         }
       }
     },
@@ -71,6 +79,19 @@ export async function placeOrder(data: {
       items: {
         include: {
           menuItem: true
+        }
+      },
+      combos: {
+        include: {
+          combo: {
+            include: {
+              items: {
+                include: {
+                  menuItem: true
+                }
+              }
+            }
+          }
         }
       },
       table: true,
@@ -132,7 +153,8 @@ export async function updatePaymentStatus(orderId: string, status: PaymentStatus
       where: { id: order.payment.id },
       data: { 
         status,
-        paidAt: status === 'COMPLETED' ? new Date() : null
+        paidAt: status === 'COMPLETED' ? new Date() : (status === 'PENDING' ? null : order.payment.paidAt),
+        paidAmount: status === 'COMPLETED' ? order.finalAmount : (status === 'PENDING' ? 0 : order.payment.paidAmount)
       }
     });
   }
@@ -141,13 +163,13 @@ export async function updatePaymentStatus(orderId: string, status: PaymentStatus
   return order;
 }
 
-export async function addOrderItems(orderId: string, items: { menuItemId: string; quantity: number; unitPrice: number }[]) {
+export async function addOrderItems(orderId: string, items: { menuItemId?: string; comboId?: string; quantity: number; unitPrice: number }[]) {
   console.log('addOrderItems started', { orderId, itemsCount: items.length });
   
   try {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      include: { items: true }
+      include: { items: true, combos: true }
     });
 
     if (!order) {
@@ -155,19 +177,37 @@ export async function addOrderItems(orderId: string, items: { menuItemId: string
       throw new Error('Original order not found');
     }
 
-    // 1. Create new items
-    console.log('Creating order items...');
-    await prisma.orderItem.createMany({
-      data: items.map((item: any) => ({
-        orderId,
-        menuItemId: item.menuItemId,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        totalPrice: item.unitPrice * item.quantity
-      }))
-    });
+    // 1. Create new menu items
+    const menuItemsToCreate = items.filter(i => i.menuItemId).map((item: any) => ({
+      orderId,
+      menuItemId: item.menuItemId,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      totalPrice: item.unitPrice * item.quantity
+    }));
 
-    // 2. Update order total
+    if (menuItemsToCreate.length > 0) {
+      await prisma.orderItem.createMany({
+        data: menuItemsToCreate
+      });
+    }
+
+    // 2. Create new combos
+    const combosToCreate = items.filter(i => i.comboId).map((item: any) => ({
+      orderId,
+      comboId: item.comboId!,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      totalPrice: item.unitPrice * item.quantity
+    }));
+
+    if (combosToCreate.length > 0) {
+      await (prisma.orderCombo as any).createMany({
+        data: combosToCreate
+      });
+    }
+
+    // 3. Update order total
     const additionalTotal = items.reduce((acc: any, item: any) => acc + (item.unitPrice * item.quantity), 0);
     const newTotal = (order.totalAmount || 0) + additionalTotal;
     console.log('Updating order total', { oldTotal: order.totalAmount, additional: additionalTotal, newTotal });
@@ -176,21 +216,34 @@ export async function addOrderItems(orderId: string, items: { menuItemId: string
       where: { id: orderId },
       data: {
         totalAmount: newTotal,
-        finalAmount: newTotal
+        finalAmount: newTotal - (order.discount || 0) + (order.tax || 0)
       }
     });
 
-    // 3. Update payment amount if exists
+    // 4. Update payment amount if exists
     console.log('Checking for existing payment...');
     const payment = await prisma.payment.findUnique({
       where: { orderId }
     });
 
     if (payment) {
-      console.log('Updating payment amount...', payment.id);
+      const finalAmount = newTotal - (order.discount || 0) + (order.tax || 0);
+      const paidAmount = payment.paidAmount || 0;
+      let newStatus: any = 'PENDING';
+      
+      if (paidAmount >= finalAmount && finalAmount > 0) {
+        newStatus = 'COMPLETED';
+      } else if (paidAmount > 0) {
+        newStatus = 'PARTIAL';
+      }
+
+      console.log('Updating payment status based on paidAmount', { paidAmount, finalAmount, newStatus });
       await prisma.payment.update({
         where: { id: payment.id },
-        data: { amount: newTotal }
+        data: { 
+          amount: finalAmount,
+          status: newStatus
+        }
       });
     }
 
@@ -200,6 +253,7 @@ export async function addOrderItems(orderId: string, items: { menuItemId: string
       where: { id: orderId },
       include: {
         items: { include: { menuItem: true } },
+        combos: { include: { combo: { include: { items: { include: { menuItem: true } } } } } },
         table: true,
         payment: true
       }
@@ -237,19 +291,35 @@ export async function deleteOrderItem(orderId: string, itemId: string) {
 
   if (order) {
     const newTotal = order.totalAmount - item.totalPrice;
+    const finalAmount = newTotal - (order.discount || 0) + (order.tax || 0);
     await prisma.order.update({
       where: { id: orderId },
       data: {
         totalAmount: newTotal,
-        finalAmount: newTotal
+        finalAmount: finalAmount
       }
     });
     
     // Update payment
-    await prisma.payment.update({
-      where: { orderId },
-      data: { amount: newTotal }
-    });
+    const payment = await prisma.payment.findUnique({ where: { orderId } });
+    if (payment) {
+      const paidAmount = payment.paidAmount || 0;
+      let newStatus: any = 'PENDING';
+      
+      if (paidAmount >= finalAmount && finalAmount > 0) {
+        newStatus = 'COMPLETED';
+      } else if (paidAmount > 0) {
+        newStatus = 'PARTIAL';
+      }
+
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { 
+          amount: finalAmount,
+          status: newStatus
+        }
+      });
+    }
   }
 
   revalidatePath(`/vendor/orders/${orderId}`);
@@ -292,13 +362,80 @@ export async function updateOrderDetails(orderId: string, data: {
   });
 
   // Update payment if exists
-  await prisma.payment.updateMany({
-    where: { orderId },
-    data: { amount: finalAmount }
-  });
+  const payment = await prisma.payment.findUnique({ where: { orderId } });
+  if (payment) {
+    const paidAmount = payment.paidAmount || 0;
+    let newStatus: any = 'PENDING';
+    
+    if (paidAmount >= finalAmount && finalAmount > 0) {
+      newStatus = 'COMPLETED';
+    } else if (paidAmount > 0) {
+      newStatus = 'PARTIAL';
+    }
+
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: { 
+        amount: finalAmount,
+        status: newStatus
+      }
+    });
+  }
 
   revalidatePath(`/vendor/orders/${orderId}`);
   revalidatePath('/vendor/orders');
   
   return { success: true, order: updatedOrder };
+}
+
+export async function deleteOrderCombo(orderId: string, comboId: string) {
+  const item = await (prisma.orderCombo as any).findUnique({
+    where: { id: comboId }
+  });
+
+  if (!item) throw new Error('Combo not found');
+
+  await (prisma.orderCombo as any).delete({
+    where: { id: comboId }
+  });
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId }
+  });
+
+  if (order) {
+    const newTotal = order.totalAmount - item.totalPrice;
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        totalAmount: newTotal,
+        finalAmount: newTotal - (order.discount || 0) + (order.tax || 0)
+      }
+    });
+    
+    // Update payment
+    const finalAmount = newTotal - (order.discount || 0) + (order.tax || 0);
+    const payment = await prisma.payment.findUnique({ where: { orderId } });
+    if (payment) {
+      const paidAmount = payment.paidAmount || 0;
+      let newStatus: any = 'PENDING';
+      
+      if (paidAmount >= finalAmount && finalAmount > 0) {
+        newStatus = 'COMPLETED';
+      } else if (paidAmount > 0) {
+        newStatus = 'PARTIAL';
+      }
+
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { 
+          amount: finalAmount,
+          status: newStatus
+        }
+      });
+    }
+  }
+
+  revalidatePath(`/vendor/orders/${orderId}`);
+  return { success: true };
 }
