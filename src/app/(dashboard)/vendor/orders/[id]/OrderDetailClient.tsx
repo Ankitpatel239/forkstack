@@ -51,21 +51,53 @@ import {
   updateOrderStatus, 
   updatePaymentStatus, 
   addOrderItems, 
-  deleteOrderItem 
+  deleteOrderItem,
+  updateOrderDetails 
 } from '@/app/actions/orders';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
+import { Edit2 } from 'lucide-react';
 
-export function OrderDetailClient({ order, vendor, menuItems }: { 
+export function OrderDetailClient({ order, vendor, menuItems, tables }: { 
   order: any, 
   vendor: any,
-  menuItems: any[] 
+  menuItems: any[],
+  tables: any[] 
 }) {
   const router = useRouter();
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [selectedItem, setSelectedItem] = useState('');
   const [quantity, setQuantity] = useState(1);
+  
+  // Edit Details State
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [editData, setEditData] = useState({
+    customerName: order.customerName || '',
+    customerPhone: order.customerPhone || '',
+    tableId: order.tableId || 'NONE',
+    discount: order.discount || 0
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleUpdateDetails = async () => {
+    setIsSubmitting(true);
+    try {
+      await updateOrderDetails(order.id, {
+        customerName: editData.customerName,
+        customerPhone: editData.customerPhone,
+        tableId: editData.tableId === 'NONE' ? null : editData.tableId,
+        discount: Number(editData.discount)
+      });
+      toast.success('Order details updated');
+      setIsEditingDetails(false);
+      router.refresh();
+    } catch (error) {
+      toast.error('Failed to update details');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const statusColors: any = {
     PENDING: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
@@ -427,25 +459,45 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-border space-y-2">
-                 <label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest ml-1">Payment Lifecycle</label>
-                 <Button 
-                   disabled={order.payment?.status === 'COMPLETED'}
-                   onClick={() => handlePaymentUpdate('COMPLETED')}
-                   className={`w-full h-12 rounded-xl font-black uppercase tracking-widest text-[9px] ${
-                    order.payment?.status === 'COMPLETED' ? 'bg-muted text-muted-foreground' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 border hover:bg-emerald-500 hover:text-foreground shadow-lg shadow-emerald-500/5'
-                   }`}
-                 >
-                   {order.payment?.status === 'COMPLETED' ? <><CheckCircle2 size={14} className="mr-2" /> Fully Paid</> : 'Verify & Mark as Paid'}
-                 </Button>
-              </div>
+              <div className="pt-4 border-t border-border space-y-3">
+                  <label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest ml-1">Payment Lifecycle</label>
+                  <Button 
+                    disabled={order.payment?.status === 'COMPLETED'}
+                    onClick={() => handlePaymentUpdate('COMPLETED')}
+                    className={`w-full h-12 rounded-xl font-black uppercase tracking-widest text-[9px] ${
+                     order.payment?.status === 'COMPLETED' ? 'bg-muted text-zinc-500' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 border hover:bg-emerald-500 hover:text-foreground shadow-lg shadow-emerald-500/5'
+                    }`}
+                  >
+                    {order.payment?.status === 'COMPLETED' ? <><CheckCircle2 size={14} className="mr-2 text-emerald-500" /> Payment Received</> : 'Verify & Mark as Paid'}
+                  </Button>
+                  
+                  {order.payment?.status === 'COMPLETED' && (
+                    <Button 
+                      variant="ghost"
+                      onClick={() => handlePaymentUpdate('PENDING')}
+                      className="w-full h-8 text-[8px] font-black uppercase tracking-widest text-muted-foreground hover:text-red-500 transition-colors"
+                    >
+                      Revert to Unpaid
+                    </Button>
+                  )}
+               </div>
             </CardContent>
           </Card>
 
                   <Card className="bg-card border-border rounded-[2rem] shadow-lg overflow-hidden transition-all">
             <CardHeader className="p-6 border-b border-border bg-muted/30">
-              <CardTitle className="text-base font-black italic uppercase tracking-widest text-foreground flex items-center gap-2">
-                <User className="h-4 w-4 text-emerald-500" /> Customer Data
+              <CardTitle className="text-base font-black italic uppercase tracking-widest text-foreground flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-emerald-500" /> Customer Data
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-500"
+                  onClick={() => setIsEditingDetails(true)}
+                >
+                  <Edit2 size={14} />
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
@@ -575,6 +627,75 @@ export function OrderDetailClient({ order, vendor, menuItems }: {
           }
         }
       `}</style>
+      {/* Edit Details Dialog */}
+      <Dialog open={isEditingDetails} onOpenChange={setIsEditingDetails}>
+        <DialogContent className="bg-card border-border rounded-[2rem] shadow-2xl max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black italic uppercase tracking-tight text-foreground flex items-center gap-2">
+              <Edit2 className="h-5 w-5 text-emerald-500" /> Adjust Order Details
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-6">
+             <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Customer Name</label>
+                <Input 
+                  value={editData.customerName}
+                  onChange={(e) => setEditData({...editData, customerName: e.target.value})}
+                  placeholder="Enter guest name"
+                  className="h-12 bg-muted border-border rounded-xl font-bold"
+                />
+             </div>
+             <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">WhatsApp Number</label>
+                <Input 
+                  value={editData.customerPhone}
+                  onChange={(e) => setEditData({...editData, customerPhone: e.target.value})}
+                  placeholder="7172xxxxxx"
+                  className="h-12 bg-muted border-border rounded-xl font-bold"
+                />
+             </div>
+             <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Dining Table</label>
+                <Select 
+                  value={editData.tableId} 
+                  onValueChange={(val) => setEditData({...editData, tableId: val})}
+                >
+                  <SelectTrigger className="h-12 bg-muted border-border rounded-xl font-bold">
+                    <SelectValue placeholder="Select Table" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border rounded-xl">
+                    <SelectItem value="NONE" className="font-bold">No Table (Delivery/Pickup)</SelectItem>
+                    {tables.map((t) => (
+                      <SelectItem key={t.id} value={t.id} className="font-bold">
+                        Table {t.tableNumber} ({t.capacity} Seats)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+             </div>
+             <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Applied Discount (₹)</label>
+                <Input 
+                  type="number"
+                  value={editData.discount}
+                  onChange={(e) => setEditData({...editData, discount: Number(e.target.value)})}
+                  placeholder="0.00"
+                  className="h-12 bg-muted border-border rounded-xl font-bold text-emerald-500"
+                />
+             </div>
+          </div>
+          <DialogFooter className="gap-3">
+             <Button variant="outline" onClick={() => setIsEditingDetails(false)} className="rounded-xl border-zinc-800">Cancel</Button>
+             <Button 
+               onClick={handleUpdateDetails} 
+               disabled={isSubmitting}
+               className="rounded-xl bg-emerald-500 text-black hover:bg-emerald-400 font-bold px-8"
+             >
+               {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Save Changes"}
+             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -264,3 +264,41 @@ export async function updateTableStatus(tableId: string, status: TableStatus) {
   revalidatePath('/vendor/tables');
   return { success: true };
 }
+
+export async function updateOrderDetails(orderId: string, data: {
+  customerName?: string;
+  customerPhone?: string;
+  tableId?: string | null;
+  discount?: number;
+}) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId }
+  });
+
+  if (!order) throw new Error('Order not found');
+
+  const discount = data.discount !== undefined ? data.discount : order.discount;
+  const finalAmount = order.totalAmount - discount + order.tax;
+
+  const updatedOrder = await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      customerName: data.customerName,
+      customerPhone: data.customerPhone,
+      tableId: data.tableId,
+      discount,
+      finalAmount
+    }
+  });
+
+  // Update payment if exists
+  await prisma.payment.updateMany({
+    where: { orderId },
+    data: { amount: finalAmount }
+  });
+
+  revalidatePath(`/vendor/orders/${orderId}`);
+  revalidatePath('/vendor/orders');
+  
+  return { success: true, order: updatedOrder };
+}

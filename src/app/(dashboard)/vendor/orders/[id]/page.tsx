@@ -41,11 +41,18 @@ export default async function OrderPage({
     orderBy: { name: 'asc' }
   });
 
+  // Fetch all tables for table reassignment
+  const tables = await prisma.table.findMany({
+    where: { vendorId: vendor.id, isActive: true },
+    orderBy: { tableNumber: 'asc' }
+  });
+
   return (
     <OrderDetailClient 
       order={order as any} 
       vendor={vendor as any}
       menuItems={menuItems as any} 
+      tables={tables as any}
     />
   );
 }

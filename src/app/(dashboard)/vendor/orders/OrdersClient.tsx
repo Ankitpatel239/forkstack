@@ -58,13 +58,15 @@ export function OrdersClient({
 
     socket.on('new-order', (newOrder: any) => {
       let isUpdate = false;
+      
+      // 1. First update the order in place to show the "Bill Updated" badge instantly
       setOrders(prev => {
         const exists = prev.some(o => o.id === newOrder.id);
         if (exists) {
           isUpdate = true;
           return prev.map(o => o.id === newOrder.id ? { ...newOrder, _justUpdated: true } : o);
         }
-        return [newOrder, ...prev];
+        return [{ ...newOrder, _isNew: true }, ...prev];
       });
 
       if (isUpdate) {
@@ -72,6 +74,14 @@ export function OrdersClient({
           description: `${newOrder.customerName || 'Guest'} added new items to their bill.`,
           className: "bg-blue-600 text-white border-none"
         });
+
+        // 2. After a delay (after the alert), move it to the top
+        setTimeout(() => {
+          setOrders(prev => {
+            const filtered = prev.filter(o => o.id !== newOrder.id);
+            return [{ ...newOrder, _justUpdated: true, _animateTop: true }, ...filtered];
+          });
+        }, 2000);
       } else {
         toast.info(`New Order #${newOrder.orderNumber.slice(-6)} received!`, {
           description: `${newOrder.customerName || 'Guest'} just placed an order.`,
@@ -92,7 +102,12 @@ export function OrdersClient({
         (order.customerName || '').toLowerCase().includes(search.toLowerCase()) ||
         (order.customerPhone || '').toLowerCase().includes(search.toLowerCase());
       
-      const matchesStatus = filter === 'ALL' || order.status === filter;
+      let matchesStatus = filter === 'ALL' || order.status === filter;
+      
+      // Special Filter for Updated Orders
+      if (filter === 'UPDATED') {
+        matchesStatus = !!order._justUpdated;
+      }
       
       const orderDate = new Date(order.orderDate);
       const today = new Date();
@@ -114,7 +129,18 @@ export function OrdersClient({
       }
       
       return matchesSearch && matchesStatus && matchesTime;
-    }).sort((a: any, b: any) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+    }).sort((a: any, b: any) => {
+      // Prioritize just updated or just new orders at the very top
+      if (a._animateTop && !b._animateTop) return -1;
+      if (!a._animateTop && b._animateTop) return 1;
+      if (a._isNew && !b._isNew) return -1;
+      if (!a._isNew && b._isNew) return 1;
+      
+      // Then sort by updatedAt if possible, else orderDate
+      const dateA = new Date(a.updatedAt || a.orderDate).getTime();
+      const dateB = new Date(b.updatedAt || b.orderDate).getTime();
+      return dateB - dateA;
+    });
   }, [orders, search, filter, timeFilter]);
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
@@ -158,6 +184,7 @@ export function OrdersClient({
         <div className="flex items-center gap-4 bg-muted/50 border border-border p-2 rounded-[2rem] backdrop-blur-xl">
            {[
              { id: 'ALL', label: 'All Feeds', icon: Filter },
+             { id: 'UPDATED', label: 'Recent Updates', icon: Zap },
              { id: 'PENDING', label: 'Incoming', icon: ShoppingBag, count: activeCount },
              { id: 'PROCESSING', label: 'Kitchen', icon: ChefHat, count: cookingCount },
              { id: 'DELIVERED', label: 'Completed', icon: PackageCheck }
