@@ -3,7 +3,8 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { TiffinMealType } from "@/types/tiffin";
+import { TiffinMealType, TiffinSubscriptionStatus, TiffinDeliveryStatus } from "@prisma/client";
+import { startOfDay, endOfDay, format } from "date-fns";
 
 export async function getTiffinPlans(vendorId: string) {
   return await prisma.tiffinPlan.findMany({
@@ -73,8 +74,7 @@ export async function getTiffinMenu(vendorId: string, date: Date, mealType: Tiff
   });
 }
 
-import { format, startOfDay, endOfDay } from "date-fns";
-import { TiffinDeliveryStatus } from "@prisma/client";
+
 
 export async function getVendorByUserId(userId: string) {
   return await prisma.vendorProfile.findUnique({

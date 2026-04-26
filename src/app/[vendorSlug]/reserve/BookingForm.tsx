@@ -57,8 +57,8 @@ export function BookingForm({ vendorId, tables, vendorSlug }: { vendorId: string
       startDateTime.setHours(parseInt(hours), parseInt(minutes));
 
       const result = await checkReservationConflicts(tableId, startDateTime);
-      if (result.type !== 'NONE') {
-        setConflict(result);
+      if (result.type !== 'NONE' && 'message' in result) {
+        setConflict(result as { type: string; message: string });
       } else {
         setConflict(null);
       }

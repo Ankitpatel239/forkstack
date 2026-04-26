@@ -2,6 +2,10 @@
 import { Server as NetServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 
+declare global {
+  var io: any;
+}
+
 export const emitNewOrder = (vendorId: string, order: any) => {
   if (global.io) {
     global.io.to(`vendor-${vendorId}`).emit("new-order", order);

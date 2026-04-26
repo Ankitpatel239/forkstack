@@ -30,7 +30,14 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    price: string;
+    mealCount: string;
+    mealType: TiffinMealType;
+    validityDays: string;
+    description: string;
+  }>({
     name: "",
     price: "",
     mealCount: "",
