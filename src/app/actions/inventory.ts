@@ -58,7 +58,7 @@ export async function createInventoryItem(data: {
   const item = await prisma.inventoryItem.create({
     data: {
       name: data.name,
-      sku: finalSku,
+      sku: finalSku!,
       barcode: data.barcode || null,
       category: data.category,
       quantity: Number(data.quantity) || 0,

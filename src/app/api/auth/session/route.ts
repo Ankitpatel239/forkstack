@@ -10,7 +10,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   // For compatibility, delegate to NextAuth handler if needed
-  const { handler } = await import("../[...nextauth]/route");
+  const { POST: handler } = await import("../[...nextauth]/route");
   // @ts-ignore – handler expects NextAuth request handling
-  return handler(request);
+  return handler(request, {} as any);
 }
