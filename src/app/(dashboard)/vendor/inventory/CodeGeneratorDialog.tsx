@@ -32,15 +32,22 @@ export function CodeGeneratorDialog({ item, open, onOpenChange }: CodeGeneratorD
   const [type, setType] = useState<'BARCODE' | 'QR'>('BARCODE');
   const [isGenerating, setIsGenerating] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const generationIdRef = useRef(0);
 
   useEffect(() => {
     if (open && item) {
-      generateCode();
+      // Small delay to ensure canvas ref is bound after dialog animation
+      const timer = setTimeout(() => {
+        generateCode();
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [open, type, item]);
 
   const generateCode = async () => {
     if (!item || !canvasRef.current) return;
+    
+    const currentId = ++generationIdRef.current;
     setIsGenerating(true);
     
     const canvas = canvasRef.current;
@@ -70,6 +77,9 @@ export function CodeGeneratorDialog({ item, open, onOpenChange }: CodeGeneratorD
       const img = new Image();
       
       img.onload = () => {
+        // Prevent drawing if a newer generation request has started
+        if (currentId !== generationIdRef.current) return;
+
         // Draw the code image centered
         const codeSize = type === 'BARCODE' ? { w: 450, h: 150 } : { w: 200, h: 200 };
         const x = (canvas.width - codeSize.w) / 2;

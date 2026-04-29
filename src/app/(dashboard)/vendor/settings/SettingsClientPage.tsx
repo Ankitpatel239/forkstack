@@ -31,7 +31,9 @@ import {
   Activity,
   Box,
   Badge,
-  Check
+  Check,
+  GripVertical,
+  ChevronDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -133,12 +135,15 @@ export function SettingsClientPage({
   });
 
   const [inventoryCategories, setInventoryCategories] = useState<any[]>([]);
+  const [masterCategories, setMasterCategories] = useState<any[]>([]);
   const [newCatName, setNewCatName] = useState('');
   const [catLoading, setCatLoading] = useState(false);
+  const [selectedMasterId, setSelectedMasterId] = useState<string | 'NONE'>('NONE');
 
   useEffect(() => {
     if (activeTab === 'Inventory Catalog') {
       loadCategories();
+      loadMasterCategories();
     }
   }, [activeTab]);
 
@@ -147,12 +152,36 @@ export function SettingsClientPage({
     setInventoryCategories(cats);
   };
 
+  const loadMasterCategories = async () => {
+    const { getMasterCategories } = await import('@/app/actions/master-categories');
+    const masters = await getMasterCategories();
+    setMasterCategories(masters);
+  };
+
+  const getFlattenedMasterCategories = (parentId: string | null = null, level = 0, result: any[] = []) => {
+    masterCategories
+      .filter(c => c.parentId === parentId)
+      .forEach(cat => {
+        result.push({ ...cat, level });
+        getFlattenedMasterCategories(cat.id, level + 1, result);
+      });
+    return result;
+  };
+
+  const [selectedParent, setSelectedParent] = useState<string | 'NONE'>('NONE');
+
   const handleAddCategory = async () => {
     if (!newCatName) return;
     setCatLoading(true);
     try {
-      await upsertInventoryCategory(newCatName);
+      await upsertInventoryCategory(
+        newCatName, 
+        selectedParent === 'NONE' ? undefined : selectedParent,
+        selectedMasterId === 'NONE' ? undefined : selectedMasterId
+      );
       setNewCatName('');
+      setSelectedParent('NONE');
+      setSelectedMasterId('NONE');
       loadCategories();
       toast.success('Category registered');
     } catch (e) {
@@ -160,6 +189,58 @@ export function SettingsClientPage({
     } finally {
       setCatLoading(false);
     }
+  };
+
+  const handleUpdateOrder = async (items: any[]) => {
+    const { updateCategoryOrder } = await import('@/app/actions/inventory');
+    await updateCategoryOrder(items.map((it, idx) => ({
+      id: it.id,
+      sortOrder: idx,
+      parentId: it.parentId
+    })));
+    loadCategories();
+  };
+
+  // Helper to render nested categories
+  const renderCategoryTree = (parentId: string | null = null, level = 0) => {
+    return inventoryCategories
+      .filter(cat => cat.parentId === parentId)
+      .map((cat: any) => (
+        <div key={cat.id} className="space-y-2">
+          <div 
+            style={{ marginLeft: level * 20 }}
+            className={`bg-zinc-950 border border-zinc-800 p-4 rounded-2xl flex items-center justify-between group hover:border-emerald-500/30 transition-all ${level > 0 ? 'bg-zinc-950/40 opacity-90' : ''}`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center transition-colors ${level > 0 ? 'text-zinc-700' : 'text-emerald-500'}`}>
+                <Tags size={14} />
+              </div>
+              <div>
+                <span className="text-[11px] font-black uppercase tracking-tight text-white">{cat.name}</span>
+                {cat._count?.items > 0 && (
+                  <span className="text-[8px] font-bold text-zinc-500 ml-2 uppercase">{cat._count.items} Items</span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+               <button 
+                  onClick={() => { setSelectedParent(cat.id); window.scrollTo({ top: 500, behavior: 'smooth' }); }}
+                  className="opacity-0 group-hover:opacity-100 p-2 text-zinc-700 hover:text-emerald-500 transition-all"
+                  title="Add Sub-category"
+               >
+                  <Plus size={14} />
+               </button>
+               <button 
+                  onClick={() => handleDeleteCategory(cat.id)}
+                  className="opacity-0 group-hover:opacity-100 p-2 text-zinc-700 hover:text-red-500 transition-all"
+               >
+                  <Trash2 size={14} />
+               </button>
+            </div>
+          </div>
+          {renderCategoryTree(cat.id, level + 1)}
+        </div>
+      ));
   };
 
   const handleDeleteCategory = async (id: string) => {
@@ -562,51 +643,92 @@ export function SettingsClientPage({
                   <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Manage classifications for your batch integrity and stock portfolio.</p>
                </div>
                
-               <div className="p-10 space-y-10">
-                  <div className="flex gap-4">
-                     <div className="flex-1 relative group">
-                        <Tags className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-emerald-500 transition-colors" size={18} />
-                        <Input 
-                          value={newCatName}
-                          onChange={e => setNewCatName(e.target.value)}
-                          placeholder="New category label..."
-                          className="bg-zinc-950 border-zinc-800 h-14 pl-14 text-zinc-100 font-black italic rounded-2xl focus:border-emerald-500/50" 
-                        />
-                     </div>
-                     <Button 
-                       onClick={handleAddCategory}
-                       disabled={catLoading}
-                       className="h-14 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest px-8 rounded-2xl shadow-lg transition-all active:scale-95"
-                     >
-                       {catLoading ? <Loader2 className="animate-spin" /> : <><Plus size={20} className="mr-2" /> Bind Class</>}
-                     </Button>
-                  </div>
+              <div className="bg-zinc-950/40 p-8 rounded-[2.5rem] border border-zinc-800/50 space-y-6">
+                 <div className="grid gap-6 md:grid-cols-3">
+                    <div className="space-y-2">
+                       <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Category Label</Label>
+                       <div className="relative group">
+                          <Tags className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-emerald-500 transition-colors" size={18} />
+                          <Input 
+                            value={newCatName}
+                            onChange={e => setNewCatName(e.target.value)}
+                            placeholder="e.g., Raw Materials..."
+                            className="bg-zinc-950 border-zinc-800 h-14 pl-14 text-zinc-100 font-black italic rounded-2xl focus:border-emerald-500/50" 
+                          />
+                       </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                       <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Parent Node</Label>
+                       <Select value={selectedParent} onValueChange={v => setSelectedParent(v)}>
+                          <SelectTrigger className="bg-zinc-950 border-zinc-800 h-14 rounded-2xl text-zinc-400 font-bold">
+                             <SelectValue placeholder="Select Parent" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                             <SelectItem value="NONE" className="font-bold uppercase tracking-widest text-[10px]">None (Root)</SelectItem>
+                             {inventoryCategories.filter(c => !c.parentId).map((cat: any) => (
+                                <SelectItem key={cat.id} value={cat.id} className="font-bold">{cat.name}</SelectItem>
+                             ))}
+                          </SelectContent>
+                       </Select>
+                    </div>
 
-                  <div className="grid gap-4 md:grid-cols-3">
-                     {inventoryCategories.length === 0 ? (
-                        <div className="col-span-3 py-10 text-center border border-dashed border-zinc-800 rounded-2xl opacity-40">
-                           <p className="text-[10px] font-black uppercase tracking-widest">No taxonomy defined.</p>
-                        </div>
-                     ) : (
-                        inventoryCategories.map((cat: any) => (
-                           <div key={cat.id} className="bg-zinc-950 border border-zinc-800 p-5 rounded-2xl flex items-center justify-between group hover:border-emerald-500/30 transition-all">
-                              <div className="flex items-center gap-3">
-                                 <div className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-600 group-hover:text-emerald-500 transition-colors">
-                                    <Tags size={14} />
-                                 </div>
-                                 <span className="text-[11px] font-black uppercase tracking-tight text-white">{cat.name}</span>
-                              </div>
-                              <button 
-                                 onClick={() => handleDeleteCategory(cat.id)}
-                                 className="opacity-0 group-hover:opacity-100 p-2 text-zinc-700 hover:text-red-500 transition-all"
-                              >
-                                 <Trash2 size={14} />
-                              </button>
-                           </div>
-                        ))
-                     )}
-                  </div>
-               </div>
+                    <div className="space-y-2">
+                       <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Master Link (Global)</Label>
+                       <Select value={selectedMasterId} onValueChange={v => setSelectedMasterId(v)}>
+                          <SelectTrigger className="bg-zinc-950 border-zinc-800 h-14 rounded-2xl text-zinc-400 font-bold">
+                             <SelectValue placeholder="Link to Master" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-zinc-900 border-zinc-800 text-white max-h-[300px]">
+                             <SelectItem value="NONE" className="font-bold uppercase tracking-widest text-[10px]">Independent Category</SelectItem>
+                             {getFlattenedMasterCategories().map((m: any) => (
+                                <SelectItem key={m.id} value={m.id} className="text-xs py-2">
+                                   {'\u00A0'.repeat(m.level * 4)}{m.name}
+                                </SelectItem>
+                             ))}
+                          </SelectContent>
+                       </Select>
+                    </div>
+                 </div>
+
+                 <Button 
+                   onClick={handleAddCategory}
+                   disabled={catLoading}
+                   className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest rounded-2xl shadow-lg transition-all active:scale-95"
+                 >
+                   {catLoading ? <Loader2 className="animate-spin" /> : <><Plus size={20} className="mr-2" /> Bind Taxonomy Class</>}
+                 </Button>
+              </div>
+
+              <div className="space-y-4">
+                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700 px-2 mb-4 flex items-center gap-2">
+                    <Database size={12} /> Active Taxonomy Tree (Drag to Sort)
+                 </h3>
+                 {inventoryCategories.length === 0 ? (
+                    <div className="py-20 text-center border-2 border-dashed border-zinc-800 rounded-[2.5rem] opacity-20">
+                       <Box size={48} className="mx-auto mb-4" />
+                       <p className="text-[10px] font-black uppercase tracking-widest">No taxonomy nodes detected.</p>
+                    </div>
+                 ) : (
+                    <div className="grid gap-3">
+                       {inventoryCategories
+                         .filter(cat => !cat.parentId)
+                         .sort((a, b) => a.sortOrder - b.sortOrder)
+                         .map((cat, idx) => (
+                           <DraggableCategory 
+                              key={cat.id} 
+                              cat={cat} 
+                              level={0} 
+                              allCategories={inventoryCategories}
+                              onDelete={handleDeleteCategory}
+                              onAddSub={setSelectedParent}
+                              onReorder={handleUpdateOrder}
+                           />
+                         ))
+                       }
+                    </div>
+                 )}
+              </div>
             </div>
           )}
 
@@ -769,6 +891,93 @@ export function SettingsClientPage({
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function DraggableCategory({ cat, level, allCategories, onDelete, onAddSub, onReorder }: any) {
+  const [isExpanded, setIsExpanded] = useState(level === 0); // Default expand only root level
+  const children = allCategories.filter((c: any) => c.parentId === cat.id).sort((a: any, b: any) => a.sortOrder - b.sortOrder);
+  
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('text/plain', cat.id);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const draggedId = e.dataTransfer.getData('text/plain');
+    if (draggedId === cat.id) return;
+
+    const items = [...allCategories];
+    const draggedIdx = items.findIndex(i => i.id === draggedId);
+    const targetIdx = items.findIndex(i => i.id === cat.id);
+    
+    const draggedItem = items.splice(draggedIdx, 1)[0];
+    items.splice(targetIdx, 0, draggedItem);
+    
+    onReorder(items.filter(i => i.parentId === cat.parentId));
+  };
+
+  return (
+    <div 
+      draggable 
+      onDragStart={handleDragStart}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={handleDrop}
+      className="space-y-2"
+    >
+      <div 
+        style={{ marginLeft: level * 32 }}
+        className={`bg-zinc-950 border border-zinc-800 p-4 rounded-2xl flex items-center justify-between group hover:border-emerald-500/30 transition-all ${level > 0 ? 'bg-zinc-950/40 opacity-90' : ''}`}
+      >
+        <div className="flex items-center gap-3">
+          {children.length > 0 ? (
+            <button onClick={() => setIsExpanded(!isExpanded)} className="p-1 hover:bg-zinc-900 rounded transition-colors">
+              {isExpanded ? <ChevronDown size={14} className="text-zinc-500" /> : <ChevronRight size={14} className="text-zinc-500" />}
+            </button>
+          ) : (
+            <div className="w-6" /> // Spacer for alignment
+          )}
+          <GripVertical size={14} className="text-zinc-800 cursor-grab active:cursor-grabbing" />
+          <div className={`h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center transition-colors ${level > 0 ? 'text-zinc-700' : 'text-emerald-500'}`}>
+            <Tags size={14} />
+          </div>
+          <div>
+            <span className="text-[11px] font-black uppercase tracking-tight text-white">{cat.name}</span>
+            {cat.masterCategory && (
+              <span className="text-[7px] font-black text-emerald-500 ml-2 border border-emerald-500/20 px-1 rounded uppercase">Master: {cat.masterCategory.name}</span>
+            )}
+            {children.length > 0 && !isExpanded && (
+              <span className="text-[7px] font-bold text-zinc-600 ml-2 uppercase">({children.length} sub-nodes)</span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+           <button 
+              onClick={() => { onAddSub(cat.id); setIsExpanded(true); window.scrollTo({ top: 500, behavior: 'smooth' }); }}
+              className="opacity-0 group-hover:opacity-100 p-2 text-zinc-700 hover:text-emerald-500 transition-all"
+           >
+              <Plus size={14} />
+           </button>
+           <button 
+              onClick={() => onDelete(cat.id)}
+              className="opacity-0 group-hover:opacity-100 p-2 text-zinc-700 hover:text-red-500 transition-all"
+           >
+              <Trash2 size={14} />
+           </button>
+        </div>
+      </div>
+      {isExpanded && children.map((child: any) => (
+        <DraggableCategory 
+          key={child.id} 
+          cat={child} 
+          level={level + 1} 
+          allCategories={allCategories}
+          onDelete={onDelete}
+          onAddSub={onAddSub}
+          onReorder={onReorder}
+        />
+      ))}
     </div>
   );
 }

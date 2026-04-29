@@ -35,6 +35,8 @@ import {
 } from '@/app/actions/inventory';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useSocket } from '@/hooks/useSocket';
 
 interface StockBatch {
   id: string;
@@ -66,6 +68,7 @@ interface InventoryDialogProps {
   item?: InventoryItem;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  vendorId?: string;
 }
 
 // Default categories fallback
@@ -75,15 +78,23 @@ const DEFAULT_CATEGORIES = [
   "Food & Beverages", "Dairy", "Produce", "Others"
 ];
 
-export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogProps) {
+export function InventoryDialog({ item, open, onOpenChange, vendorId: propVendorId }: InventoryDialogProps) {
   const router = useRouter();
+  const params = useParams() as { vendorId?: string | string[] };
+  
+  // Use the passed vendorId if available, otherwise try to get it from params
+  const vendorId = propVendorId || (Array.isArray(params.vendorId)
+    ? params.vendorId[0]
+    : params.vendorId ?? '');
+
+  const socket = useSocket(vendorId || '');
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'DETAILS' | 'REPLENISH'>(item ? 'REPLENISH' : 'DETAILS');
   const [adjustmentType, setAdjustmentType] = useState<'IN' | 'WASTE'>('IN');
   const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
   const [editQty, setEditQty] = useState<string>('');
   const [editReason, setEditReason] = useState<string>('');
-  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [categories, setCategories] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
     name: item?.name || '',
@@ -91,26 +102,34 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
     barcode: item?.barcode || '',
     category: item?.category || '',
     quantity: item?.quantity?.toString() || '0',
-    unit: item?.unit || 'units',
-    lowStockThreshold: item?.lowStockThreshold?.toString() || '10',
+    unit: item?.unit || 'Units',
+    lowStockThreshold: item?.lowStockThreshold?.toString() || '5',
     costPrice: item?.costPrice?.toString() || '0',
     price: item?.price?.toString() || '0',
     supplier: item?.supplier || '',
     brand: item?.brand || '',
     location: item?.location || '',
-    expiryDate: item?.expiryDate ? new Date(item.expiryDate).toISOString().split('T')[0] : '',
-    changeReason: '',
-    adjustmentValue: '0',
-    newBatchCost: item?.costPrice?.toString() || '0'
+    expiryDate: item?.expiryDate ? new Date(item?.expiryDate).toISOString().split('T')[0] : '',
+    adjustmentValue: '',
+    newBatchCost: item?.costPrice?.toString() || '0',
+    changeReason: ''
   });
+
+  // Helper to get flattened categories with indentation
+  const getFlattenedCategories = (parentId: string | null = null, level = 0, result: any[] = []) => {
+    categories
+      .filter(c => c.parentId === parentId)
+      .forEach(cat => {
+        result.push({ ...cat, level });
+        getFlattenedCategories(cat.id, level + 1, result);
+      });
+    return result;
+  };
 
   useEffect(() => {
     if (open) {
-      // Fetch dynamic categories
-      getInventoryCategories().then((cats: any) => {
-        if (cats && cats.length > 0) {
-          setCategories(cats.map((c: any) => c.name));
-        }
+      getInventoryCategories().then(cats => {
+        if (cats) setCategories(cats);
       });
 
       setMode(item ? 'REPLENISH' : 'DETAILS');
@@ -136,6 +155,18 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
       });
     }
   }, [item, open]);
+
+// Listen for real-time barcode scans from mobile app
+useEffect(() => {
+  if (!socket || !open) return;
+  const handler = (data: { barcode: string }) => {
+    setFormData(prev => ({ ...prev, barcode: data.barcode }));
+  };
+  socket.on('pos-scan', handler);
+  return () => {
+    socket.off('pos-scan', handler);
+  };
+}, [socket, open]);
 
   const handleBatchUpdate = async (batchId: string) => {
     if (!editQty || !editReason) return;
@@ -278,14 +309,30 @@ export function InventoryDialog({ item, open, onOpenChange }: InventoryDialogPro
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-zinc-500">Name</Label><Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-zinc-900 h-10 px-4 rounded-lg text-xs font-bold" /></div>
-                  <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-zinc-500">Barcode</Label><Input value={formData.barcode} onChange={e => setFormData({...formData, barcode: e.target.value})} className="bg-zinc-900 h-10 px-4 rounded-lg tracking-widest text-xs" /></div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[9px] font-bold uppercase text-zinc-500">Barcode</Label>
+                    <Input value={formData.barcode} onChange={e => setFormData({...formData, barcode: e.target.value})} className="bg-zinc-900 h-10 px-4 rounded-lg tracking-widest text-xs" placeholder="Scan from mobile..." />
+                    <p className="text-[8px] text-zinc-500 italic mt-1 flex items-center gap-1">
+                      <Package className="w-2 h-2 text-emerald-500" />
+                      Tip: Open mobile app scanner to fill automatically
+                    </p>
+                  </div>
                </div>
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5"><Label className="text-[9px] font-bold uppercase text-muted-foreground/60">Category</Label>
                     <Select value={formData.category} onValueChange={v => setFormData({...formData, category: v})}>
                       <SelectTrigger className="bg-muted h-10 rounded-lg text-xs font-bold border-border"><SelectValue /></SelectTrigger>
                       <SelectContent className="bg-card border-border text-foreground">
-                        {categories.map((cat: any) => <SelectItem key={cat} value={cat} className="text-xs py-2">{cat}</SelectItem>)}
+                        {getFlattenedCategories().map((cat: any) => (
+                          <SelectItem key={cat.id} value={cat.name} className="text-xs py-2">
+                            <div className="flex items-center gap-2">
+                              <span>{'\u00A0'.repeat(cat.level * 4)}{cat.name}</span>
+                              {cat.masterCategory && (
+                                <span className="text-[7px] font-black text-emerald-500 border border-emerald-500/20 px-1 rounded bg-emerald-500/5">MASTER</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

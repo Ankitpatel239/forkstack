@@ -15,5 +15,5 @@ export default async function InventoryPage() {
     orderBy: { updatedAt: 'desc' }
   });
 
-  return <InventoryClientPage initialItems={items} />;
+  return <InventoryClientPage initialItems={items} vendorId={vendor.id} />;
 }

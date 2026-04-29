@@ -201,17 +201,41 @@ model VendorProfile {
 }
 
 model InventoryCategory {
-  id          String   @id @default(cuid())
-  vendorId    String
-  name        String
+  id               String   @id @default(cuid())
+  vendorId         String
+  name             String
+  parentId         String?
+  sortOrder        Int      @default(0)
+  masterCategoryId String?
   
-  vendor      VendorProfile  @relation(fields: [vendorId], references: [id])
-  items       InventoryItem[]
+  parent           InventoryCategory?  @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  children         InventoryCategory[] @relation("SubCategories")
+  
+  masterCategory   MasterCategory?     @relation(fields: [masterCategoryId], references: [id])
+  
+  vendor           VendorProfile  @relation(fields: [vendorId], references: [id])
+  items            InventoryItem[]
 
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([vendorId, name, parentId])
+}
+
+model MasterCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  parentId    String?
+  sortOrder   Int      @default(0)
+  level       Int      @default(0) // 0: Root, 1: Sub, etc.
+  
+  parent      MasterCategory?  @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  children    MasterCategory[] @relation("SubCategories")
+  
+  vendorCategories InventoryCategory[]
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  @@unique([vendorId, name])
 }
 
 model ConnectedDrive {

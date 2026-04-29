@@ -23,29 +23,53 @@ export async function createInventoryItem(data: {
   const vendor = await requireVendor();
 
   let finalSku = data.sku;
-  if (!finalSku) {
+  
+  if (finalSku) {
+    const existing = await prisma.inventoryItem.findUnique({ where: { sku: finalSku } });
+    if (existing) {
+      throw new Error(`An item with SKU "${finalSku}" already exists.`);
+    }
+  } else {
     const prefix = (data.category || 'ITEM').substring(0, 3).toUpperCase();
-    const count = await prisma.inventoryItem.count({ 
-      where: { vendorId: vendor.id, category: data.category } 
-    });
-    finalSku = `${prefix}-${100 + count + 1}`;
+    let isUnique = false;
+    let offset = 0;
+    
+    while (!isUnique) {
+      const count = await prisma.inventoryItem.count({ 
+        where: { vendorId: vendor.id, category: data.category } 
+      });
+      finalSku = `${prefix}-${100 + count + 1 + offset}`;
+      
+      const existing = await prisma.inventoryItem.findUnique({ where: { sku: finalSku } });
+      if (!existing) {
+        isUnique = true;
+      } else {
+        offset++;
+      }
+      
+      // Fallback for extreme cases
+      if (offset > 50) {
+        finalSku = `${prefix}-${Date.now().toString().slice(-6)}`;
+        isUnique = true;
+      }
+    }
   }
 
   const item = await prisma.inventoryItem.create({
     data: {
       name: data.name,
       sku: finalSku,
-      barcode: data.barcode,
+      barcode: data.barcode || null,
       category: data.category,
       quantity: Number(data.quantity) || 0,
       unit: data.unit,
       lowStockThreshold: Number(data.lowStockThreshold) || 0,
       costPrice: data.costPrice !== undefined ? (Number(data.costPrice) || 0) : undefined,
       price: data.price !== undefined ? (Number(data.price) || 0) : 0,
-      supplier: data.supplier,
-      brand: data.brand,
-      location: data.location,
-      expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined,
+      supplier: data.supplier || null,
+      brand: data.brand || null,
+      location: data.location || null,
+      expiryDate: data.expiryDate ? new Date(data.expiryDate) : null,
       vendorId: vendor.id,
       batches: (Number(data.quantity) || 0) > 0 ? {
         create: {
@@ -248,21 +272,28 @@ export async function updateInventoryItem(id: string, data: {
 }) {
   const vendor = await requireVendor();
 
+  if (data.sku) {
+    const existing = await prisma.inventoryItem.findUnique({ where: { sku: data.sku } });
+    if (existing && existing.id !== id) {
+      throw new Error(`An item with SKU "${data.sku}" already exists.`);
+    }
+  }
+
   const item = await prisma.inventoryItem.update({
     where: { id, vendorId: vendor.id },
     data: {
       name: data.name,
-      sku: data.sku,
-      barcode: data.barcode,
+      sku: data.sku || undefined, // Don't nullify SKU, it's required
+      barcode: data.barcode || null,
       category: data.category,
       unit: data.unit,
       lowStockThreshold: Number(data.lowStockThreshold) || 0,
       costPrice: data.costPrice !== undefined ? (Number(data.costPrice) || 0) : undefined,
       price: data.price !== undefined ? (Number(data.price) || 0) : undefined,
-      supplier: data.supplier,
-      brand: data.brand,
-      location: data.location,
-      expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined
+      supplier: data.supplier || null,
+      brand: data.brand || null,
+      location: data.location || null,
+      expiryDate: data.expiryDate ? new Date(data.expiryDate) : null
     }
   });
 
@@ -317,25 +348,54 @@ export async function getInventoryCategories() {
   const vendor = await requireVendor();
   return await prisma.inventoryCategory.findMany({
     where: { vendorId: vendor.id },
-    orderBy: { name: 'asc' }
+    include: {
+      children: true,
+      masterCategory: true,
+      _count: { select: { items: true } }
+    },
+    orderBy: { sortOrder: 'asc' }
   });
 }
 
-export async function upsertInventoryCategory(name: string, id?: string) {
+export async function upsertInventoryCategory(name: string, parentId?: string, masterCategoryId?: string, id?: string) {
   const vendor = await requireVendor();
   if (id) {
     const updated = await prisma.inventoryCategory.update({
       where: { id, vendorId: vendor.id },
-      data: { name }
+      data: { 
+        name, 
+        parentId: parentId || null,
+        masterCategoryId: masterCategoryId || null
+      }
     });
     revalidatePath('/vendor/inventory');
     return updated;
   }
   const created = await prisma.inventoryCategory.create({
-    data: { name, vendorId: vendor.id }
+    data: { 
+      name, 
+      vendorId: vendor.id, 
+      parentId: parentId || null,
+      masterCategoryId: masterCategoryId || null
+    }
   });
   revalidatePath('/vendor/inventory');
   return created;
+}
+
+export async function updateCategoryOrder(items: { id: string, sortOrder: number, parentId: string | null }[]) {
+  const vendor = await requireVendor();
+  for (const item of items) {
+    await prisma.inventoryCategory.update({
+      where: { id: item.id, vendorId: vendor.id },
+      data: { 
+        sortOrder: item.sortOrder,
+        parentId: item.parentId
+      }
+    });
+  }
+  revalidatePath('/vendor/inventory');
+  return { success: true };
 }
 
 export async function deleteInventoryCategory(id: string) {

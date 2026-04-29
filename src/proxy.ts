@@ -6,25 +6,27 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
+    const userRole = (token?.role as string)?.toUpperCase();
+
     // Admin only
-    if (path.startsWith('/admin') && token?.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    if (path.startsWith('/admin') && userRole !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/', req.url));
     }
     // Vendor only
     if (
       path.startsWith('/vendor') &&
-      token?.role !== 'VENDOR_OWNER' &&
-      token?.role !== 'TEAM'
+      userRole !== 'VENDOR_OWNER' &&
+      userRole !== 'TEAM'
     ) {
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
+      return NextResponse.redirect(new URL('/', req.url));
     }
     // Team only (kitchen)
     if (
       path.startsWith('/team') &&
-      token?.role !== 'TEAM' &&
-      token?.role !== 'ADMIN'
+      userRole !== 'TEAM' &&
+      userRole !== 'ADMIN'
     ) {
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
+      return NextResponse.redirect(new URL('/', req.url));
     }
     return NextResponse.next();
   },

@@ -63,7 +63,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import Link from 'next/link';
 
-export default function InventoryClientPage({ initialItems }: { initialItems: any[] }) {
+export default function InventoryClientPage({ initialItems, vendorId }: { initialItems: any[], vendorId: string }) {
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
@@ -468,6 +468,7 @@ export default function InventoryClientPage({ initialItems }: { initialItems: an
         open={isDialogOpen} 
         onOpenChange={setIsDialogOpen}
         item={selectedItem}
+        vendorId={vendorId}
       />
 
       <CodeGeneratorDialog 
