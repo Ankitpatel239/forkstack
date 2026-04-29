@@ -15,7 +15,7 @@ if (!globalForPrisma.pool) {
     max: process.env.NODE_ENV === 'production' ? 10 : 5,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
   });
 }
 
