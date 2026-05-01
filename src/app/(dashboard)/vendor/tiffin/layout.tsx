@@ -7,39 +7,37 @@ export default function TiffinLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col h-full space-y-6">
-      <div className="flex flex-col space-y-2 border-b pb-4">
-        <h1 className="text-3xl font-bold tracking-tight">Tiffin Service</h1>
-        <p className="text-muted-foreground">
-          Manage your subscription-based food delivery service.
-        </p>
+    <div className="flex flex-col h-full space-y-8 p-1 sm:p-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/50 pb-6">
+        <div className="space-y-1">
+          <h1 className="text-4xl font-black tracking-tighter text-gradient-emerald">Tiffin Console</h1>
+          <p className="text-muted-foreground font-medium">
+            Next-gen meal subscription management engine.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/20 animate-pulse">
+          <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+          System Operational
+        </div>
       </div>
 
-      <nav className="flex space-x-4 border-b pb-2">
-        <Link
-          href="/vendor/tiffin/plans"
-          className="text-sm font-medium hover:text-primary transition-colors border-b-2 border-transparent hover:border-primary pb-2"
-        >
-          Plans
-        </Link>
-        <Link
-          href="/vendor/tiffin/menu"
-          className="text-sm font-medium hover:text-primary transition-colors border-b-2 border-transparent hover:border-primary pb-2"
-        >
-          Daily Menu
-        </Link>
-        <Link
-          href="/vendor/tiffin/subscriptions"
-          className="text-sm font-medium hover:text-primary transition-colors border-b-2 border-transparent hover:border-primary pb-2"
-        >
-          Subscribers
-        </Link>
-        <Link
-          href="/vendor/tiffin/deliveries"
-          className="text-sm font-medium hover:text-primary transition-colors border-b-2 border-transparent hover:border-primary pb-2"
-        >
-          Today's Deliveries
-        </Link>
+      <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-2 border-b border-border/40">
+        {[
+          { name: 'Overview', href: '/vendor/tiffin' },
+          { name: 'Plans', href: '/vendor/tiffin/plans' },
+          { name: 'Daily Menu', href: '/vendor/tiffin/menu' },
+          { name: 'Subscribers', href: '/vendor/tiffin/subscriptions' },
+          { name: 'Deliveries', href: '/vendor/tiffin/deliveries' },
+          { name: 'Settings', href: '/vendor/tiffin/settings' },
+        ].map((item) => (
+          <Link
+            key={item.name}
+            href={item.href}
+            className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl transition-all whitespace-nowrap"
+          >
+            {item.name}
+          </Link>
+        ))}
       </nav>
 
       <div className="flex-1">{children}</div>

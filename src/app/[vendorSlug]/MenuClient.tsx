@@ -196,14 +196,18 @@ export function MenuClient({ vendor, tableId }: { vendor: any, tableId?: string 
                <MapPin size={14} className="text-emerald-500" /> {vendor.address}
              </p>
           </div>
-          <div className="flex items-center gap-4">
+             <Link href={`/${vendor.tenantSlug}/tiffin`}>
+               <Button className="h-14 px-8 bg-emerald-500 text-zinc-950 hover:bg-emerald-400 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl transition-all active:scale-95 flex items-center gap-2 group">
+                 <ChefHat size={18} className="group-hover:scale-110 transition-transform" />
+                 Monthly Tiffin
+               </Button>
+             </Link>
              <Link href={`/${vendor.tenantSlug}/reserve`}>
                <Button className="h-14 px-8 bg-white text-zinc-950 hover:bg-emerald-500 hover:text-zinc-950 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl transition-all active:scale-95 flex items-center gap-2 group">
                  <Calendar size={18} className="group-hover:rotate-12 transition-transform" />
                  Reserve Table
                </Button>
              </Link>
-          </div>
         </div>
       </header>
 

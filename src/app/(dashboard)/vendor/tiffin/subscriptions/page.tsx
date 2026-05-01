@@ -17,6 +17,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
+import { SubscriptionActions } from "./subscription-actions";
+
 export default async function TiffinSubscriptionsPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/login');
@@ -83,7 +85,7 @@ export default async function TiffinSubscriptionsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              subscriptions.map((sub: SubscriptionWithDetails) => (
+              subscriptions.map((sub) => (
                 <TableRow key={sub.id} className="hover:bg-muted/20 border-border/50 transition-colors group">
                   <TableCell className="py-6 px-8">
                     <div className="flex items-center gap-4">
@@ -104,9 +106,25 @@ export default async function TiffinSubscriptionsPage() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <CreditCard size={12} className="text-indigo-500" />
-                        <p className="text-sm font-bold">{sub.plan.name}</p>
+                        <p className="text-sm font-bold">{sub.planNameSnapshot || sub.plan.name}</p>
                       </div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{sub.plan.mealType}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className={`text-[8px] h-4 px-1 border-none font-bold uppercase tracking-widest ${
+                          (sub.plan.mealType) === 'BREAKFAST' ? 'bg-amber-500 text-zinc-950' : 
+                          (sub.plan.mealType) === 'LUNCH' ? 'bg-emerald-500 text-white' : 
+                          (sub.plan.mealType) === 'DINNER' ? 'bg-indigo-500 text-white' : 'bg-zinc-500 text-white'
+                        }`}>
+                          {sub.plan.mealType}
+                        </Badge>
+                        <Badge variant="secondary" className="text-[8px] h-4 px-1 bg-indigo-500/10 text-indigo-500 border-none font-bold uppercase">
+                          {sub.dietTypeSnapshot || sub.plan.dietType || 'VEG'}
+                        </Badge>
+                        {sub.timeSlotSnapshot && (
+                          <span className="text-[9px] font-black text-muted-foreground/60 uppercase">
+                            {sub.timeSlotSnapshot}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -133,6 +151,11 @@ export default async function TiffinSubscriptionsPage() {
                       <div className="flex items-center gap-2">
                          <Calendar size={12} className="text-indigo-500" />
                          <p className="text-sm font-bold">Today, 12:30 PM</p>
+                         {sub.latitude && (
+                           <Badge variant="outline" className="h-4 px-1 rounded bg-emerald-500/5 text-emerald-500 border-emerald-500/20 animate-pulse text-[8px] font-black">
+                             GPS
+                           </Badge>
+                         )}
                       </div>
                       <p className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 uppercase tracking-wider truncate max-w-[150px]">
                         <MapPin className="h-3 w-3" /> {sub.address || "No address set"}
@@ -140,9 +163,10 @@ export default async function TiffinSubscriptionsPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right px-8">
-                    <Button variant="ghost" size="icon" className="rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground">
-                      <MoreVertical size={18} />
-                    </Button>
+                    <SubscriptionActions 
+                      subscriptionId={sub.id} 
+                      currentStatus={sub.status} 
+                    />
                   </TableCell>
                 </TableRow>
               ))

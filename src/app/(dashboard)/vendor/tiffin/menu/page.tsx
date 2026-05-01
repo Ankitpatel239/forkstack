@@ -18,8 +18,10 @@ export default function TiffinMenuPage() {
   const [vendorId, setVendorId] = useState<string | null>(null);
   const [isVendorLoading, setIsVendorLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()));
+  const [breakfastItems, setBreakfastItems] = useState<string[]>(["", "", "", ""]);
   const [lunchItems, setLunchItems] = useState<string[]>(["", "", "", ""]);
   const [dinnerItems, setDinnerItems] = useState<string[]>(["", "", "", ""]);
+  const [breakfastDesc, setBreakfastDesc] = useState("");
   const [lunchDesc, setLunchDesc] = useState("");
   const [dinnerDesc, setDinnerDesc] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -46,12 +48,19 @@ export default function TiffinMenuPage() {
     if (!vendorId) return;
     setIsLoading(true);
     try {
-      // In a real app, you might want to fetch both in parallel or adjust the action to fetch multiple
-      // For now, we'll fetch them individually as per the current action signature
-      const [lunchData, dinnerData] = await Promise.all([
+      const [breakfastData, lunchData, dinnerData] = await Promise.all([
+        getTiffinMenu(vendorId, selectedDate, TiffinMealType.BREAKFAST),
         getTiffinMenu(vendorId, selectedDate, TiffinMealType.LUNCH),
         getTiffinMenu(vendorId, selectedDate, TiffinMealType.DINNER)
       ]);
+
+      if (breakfastData) {
+        setBreakfastItems(breakfastData.items.length > 0 ? breakfastData.items : ["", "", "", ""]);
+        setBreakfastDesc(breakfastData.description || "");
+      } else {
+        setBreakfastItems(["", "", "", ""]);
+        setBreakfastDesc("");
+      }
 
       if (lunchData) {
         setLunchItems(lunchData.items.length > 0 ? lunchData.items : ["", "", "", ""]);
@@ -84,10 +93,18 @@ export default function TiffinMenuPage() {
     if (!vendorId) return;
     
     setIsSaving(mealType);
-    const items = mealType === TiffinMealType.LUNCH ? lunchItems : dinnerItems;
-    const description = mealType === TiffinMealType.LUNCH ? lunchDesc : dinnerDesc;
+    let items, description;
+    if (mealType === TiffinMealType.BREAKFAST) {
+      items = breakfastItems;
+      description = breakfastDesc;
+    } else if (mealType === TiffinMealType.LUNCH) {
+      items = lunchItems;
+      description = lunchDesc;
+    } else {
+      items = dinnerItems;
+      description = dinnerDesc;
+    }
     
-    // Filter out empty items
     const filteredItems = items.filter(item => item.trim() !== "");
 
     try {
@@ -98,7 +115,7 @@ export default function TiffinMenuPage() {
         items: filteredItems,
         description
       });
-      toast.success(`${mealType === TiffinMealType.LUNCH ? 'Lunch' : 'Dinner'} menu saved successfully!`);
+      toast.success(`${mealType.toLowerCase()} menu saved successfully!`);
     } catch (error) {
       console.error("Save failed:", error);
       toast.error("Failed to save menu");
@@ -108,7 +125,11 @@ export default function TiffinMenuPage() {
   };
 
   const updateItem = (mealType: TiffinMealType, index: number, value: string) => {
-    if (mealType === TiffinMealType.LUNCH) {
+    if (mealType === TiffinMealType.BREAKFAST) {
+      const newItems = [...breakfastItems];
+      newItems[index] = value;
+      setBreakfastItems(newItems);
+    } else if (mealType === TiffinMealType.LUNCH) {
       const newItems = [...lunchItems];
       newItems[index] = value;
       setLunchItems(newItems);
@@ -202,7 +223,71 @@ export default function TiffinMenuPage() {
           <p className="text-sm font-bold text-muted-foreground animate-pulse uppercase tracking-[0.3em]">Synchronizing Menu...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+          {/* Breakfast Menu */}
+          <Card className="border-none bg-card/40 backdrop-blur-2xl shadow-2xl overflow-hidden group relative">
+            <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-150 transition-transform duration-700">
+               <Sparkles size={120} className="text-amber-500" />
+            </div>
+            <CardHeader className="border-b border-border/50 bg-amber-500/5 pb-6">
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                    <Sparkles className="text-zinc-950" size={20} />
+                  </div>
+                  <CardTitle className="text-xl font-black">Breakfast Session</CardTitle>
+                </div>
+                <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 font-black uppercase tracking-widest text-[10px]">
+                  {breakfastItems.some(i => i.trim() !== "") ? 'Scheduled' : 'Draft'}
+                </Badge>
+              </div>
+              <CardDescription className="font-medium text-muted-foreground uppercase tracking-widest text-[10px]">
+                {format(selectedDate, 'do MMMM')} • Early Morning
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-8 space-y-6">
+              <div className="grid grid-cols-1 gap-4">
+                {breakfastItems.map((item, idx) => (
+                  <div key={`breakfast-${idx}`} className="space-y-2 group/item">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-focus-within/item:text-amber-500 transition-colors">
+                      {labels[idx] || `Item ${idx + 1}`}
+                    </Label>
+                    <Input 
+                      value={item}
+                      onChange={(e) => updateItem(TiffinMealType.BREAKFAST, idx, e.target.value)}
+                      placeholder={`Enter ${labels[idx] || 'dish'}...`} 
+                      className="bg-background/50 border-border/50 focus:border-amber-500/50 rounded-xl h-12 text-sm font-semibold transition-all"
+                    />
+                  </div>
+                ))}
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Special Description</Label>
+                <Input 
+                  value={breakfastDesc}
+                  onChange={(e) => setBreakfastDesc(e.target.value)}
+                  placeholder="e.g. Paratha special, Sprouts, etc." 
+                  className="bg-background/50 border-border/50 focus:border-amber-500/50 rounded-xl h-12 text-sm font-semibold"
+                />
+              </div>
+
+              <div className="pt-4">
+                <Button 
+                  className="w-full h-14 rounded-2xl bg-amber-500 hover:bg-amber-600 text-zinc-950 font-black uppercase tracking-[0.2em] shadow-xl shadow-amber-500/20 transition-all active:scale-[0.98] group/btn"
+                  onClick={() => handleSaveMenu(TiffinMealType.BREAKFAST)}
+                  disabled={isSaving !== null}
+                >
+                  {isSaving === TiffinMealType.BREAKFAST ? (
+                    <Loader2 className="animate-spin mr-2" size={20} />
+                  ) : (
+                    <Save className="mr-2 group-hover:scale-110 transition-transform" size={20} />
+                  )}
+                  Save Breakfast Plan
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
           {/* Lunch Menu */}
           <Card className="border-none bg-card/40 backdrop-blur-2xl shadow-2xl overflow-hidden group relative">
             <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-150 transition-transform duration-700">

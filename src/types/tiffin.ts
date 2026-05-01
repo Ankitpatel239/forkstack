@@ -1,7 +1,13 @@
-// Temporary type definitions until 'npx prisma generate' is run
-import { User, TiffinMealType, TiffinSubscriptionStatus } from "@prisma/client";
+import { TiffinSubscriptionStatus, User } from "@prisma/client";
 
-export { TiffinMealType, TiffinSubscriptionStatus };
+export const TiffinMealType = {
+  BREAKFAST: "BREAKFAST",
+  LUNCH: "LUNCH",
+  DINNER: "DINNER",
+  BOTH: "BOTH"
+} as const;
+
+export type TiffinMealType = (typeof TiffinMealType)[keyof typeof TiffinMealType];
 
 export interface TiffinPlan {
   id: string;
@@ -12,6 +18,23 @@ export interface TiffinPlan {
   mealCount: number;
   mealType: TiffinMealType;
   validityDays: number;
+  inclusions: string[];
+  
+  // Advanced fields
+  timeSlot?: string | null;
+  areas: string[];
+  deliveryRadiusKm?: number | null;
+  customStartAllowed: boolean;
+  pauseAllowed: boolean;
+  maxSkips: number;
+  dietType?: string | null;
+  spiceLevel?: string | null;
+  weeklyMenu?: any;
+  paymentType: string;
+  autoRenew: boolean;
+  maxSubscribers?: number | null;
+  tags: string[];
+
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -27,6 +50,17 @@ export interface TiffinSubscription {
   endDate: Date | null;
   remainingMeals: number;
   address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  
+  // Snapshots
+  planNameSnapshot: string | null;
+  planPriceSnapshot: number | null;
+  inclusionsSnapshot: string[];
+  timeSlotSnapshot?: string | null;
+  dietTypeSnapshot?: string | null;
+  spiceLevelSnapshot?: string | null;
+
   createdAt: Date;
   updatedAt: Date;
 }

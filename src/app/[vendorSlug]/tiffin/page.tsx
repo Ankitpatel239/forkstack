@@ -10,9 +10,10 @@ import { TiffinPlan } from "@/types/tiffin";
 export default async function TiffinCustomerPage({
   params,
 }: {
-  params: { vendorSlug: string };
+  params: Promise<{ vendorSlug: string }>;
 }) {
-  const plans = await getTiffinPlansBySlug(params.vendorSlug);
+  const { vendorSlug } = await params;
+  const plans = await getTiffinPlansBySlug(vendorSlug);
 
   return (
     <div className="container mx-auto py-12 px-4 max-w-6xl">
@@ -92,9 +93,11 @@ export default async function TiffinCustomerPage({
                   </li>
                 </ul>
               </CardContent>
-              <CardFooter className="p-8 pt-0">
-                <Button className="w-full rounded-2xl h-12 text-base font-bold shadow-lg shadow-primary/20 group-hover:scale-[1.02] transition-transform">
-                  Subscribe Now <ArrowRight className="ml-2 h-4 w-4" />
+              <CardFooter className="p-8 pt-0 mt-auto">
+                <Button asChild className="w-full rounded-2xl h-12 text-base font-bold shadow-lg shadow-primary/20 group-hover:scale-[1.02] transition-transform">
+                  <Link href={`/${vendorSlug}/tiffin/subscribe/${plan.id}`}>
+                    Subscribe Now <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
                 </Button>
               </CardFooter>
             </Card>

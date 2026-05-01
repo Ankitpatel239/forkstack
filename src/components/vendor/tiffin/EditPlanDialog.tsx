@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2, Save, Utensils, Truck, Settings, Wallet, Info } from "lucide-react";
+import { Edit, Loader2, Save, Utensils, Truck, Settings, Wallet, X } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
@@ -18,47 +18,49 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { createTiffinPlan, getVendorTiffinInclusions } from "@/app/actions/tiffin";
+import { Badge } from "@/components/ui/badge";
+import { updateTiffinPlan, getVendorTiffinInclusions } from "@/app/actions/tiffin";
 import { TiffinMealType } from "@/types/tiffin";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-interface AddPlanDialogProps {
+interface EditPlanDialogProps {
+  plan: any; // Using any for simplicity
   vendorId: string;
 }
 
-export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
+export function EditPlanDialog({ plan, vendorId }: EditPlanDialogProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    name: "",
-    price: "",
-    mealCount: "",
-    mealType: TiffinMealType.LUNCH,
-    validityDays: "30",
-    description: "",
-    inclusions: [] as string[],
-    timeSlot: "",
-    areas: [] as string[],
-    deliveryRadiusKm: "",
-    customStartAllowed: true,
-    pauseAllowed: true,
-    maxSkips: "5",
-    dietType: "VEG",
-    spiceLevel: "MEDIUM",
-    paymentType: "PREPAID",
-    autoRenew: false,
-    maxSubscribers: "",
-    tags: [] as string[]
+    name: plan.name,
+    price: plan.price.toString(),
+    mealCount: plan.mealCount.toString(),
+    mealType: plan.mealType,
+    validityDays: plan.validityDays.toString(),
+    description: plan.description || "",
+    inclusions: plan.inclusions || [] as string[],
+    timeSlot: plan.timeSlot || "",
+    areas: plan.areas || [] as string[],
+    deliveryRadiusKm: plan.deliveryRadiusKm?.toString() || "",
+    customStartAllowed: plan.customStartAllowed ?? true,
+    pauseAllowed: plan.pauseAllowed ?? true,
+    maxSkips: plan.maxSkips?.toString() || "5",
+    dietType: plan.dietType || "VEG",
+    spiceLevel: plan.spiceLevel || "MEDIUM",
+    paymentType: plan.paymentType || "PREPAID",
+    autoRenew: plan.autoRenew ?? false,
+    maxSubscribers: plan.maxSubscribers?.toString() || "",
+    tags: plan.tags || [] as string[]
   });
 
   const [areaInput, setAreaInput] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [availableInclusions, setAvailableInclusions] = useState<string[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function fetchInclusions() {
       const inc = await getVendorTiffinInclusions(vendorId);
       setAvailableInclusions(inc);
@@ -84,9 +86,8 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await createTiffinPlan({
+      await updateTiffinPlan(plan.id, {
         ...formData,
-        vendorId,
         price: parseFloat(formData.price),
         mealCount: parseInt(formData.mealCount),
         validityDays: parseInt(formData.validityDays),
@@ -95,11 +96,11 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
         maxSubscribers: formData.maxSubscribers ? parseInt(formData.maxSubscribers) : undefined,
       });
       
-      toast.success("Advanced Tiffin plan created!");
+      toast.success("Plan updated successfully!");
       setOpen(false);
       router.refresh();
     } catch (error) {
-      toast.error("Failed to create plan");
+      toast.error("Failed to update plan");
     } finally {
       setIsLoading(false);
     }
@@ -108,15 +109,15 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="rounded-xl bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold shadow-lg shadow-emerald-500/20">
-          <Plus className="mr-2 h-4 w-4" /> Add New Plan
+        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-emerald-500/10 hover:text-emerald-500 transition-all active:scale-90">
+          <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col p-0 rounded-[2.5rem] bg-card/95 backdrop-blur-3xl border-border shadow-2xl">
         <DialogHeader className="p-8 pb-0">
-          <DialogTitle className="text-3xl font-black tracking-tight italic uppercase">Advanced Plan Config</DialogTitle>
+          <DialogTitle className="text-3xl font-black tracking-tight italic uppercase text-emerald-500">Edit Plan</DialogTitle>
           <DialogDescription className="font-medium text-muted-foreground uppercase tracking-widest text-[10px]">
-            Configure delivery, meal types, and billing for your subscription.
+            Modify subscription settings and constraints.
           </DialogDescription>
         </DialogHeader>
 
@@ -143,7 +144,6 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
                   <Label className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Plan Name</Label>
                   <Input 
                     required 
-                    placeholder="e.g. Premium Veg Monthly" 
                     value={formData.name}
                     onChange={e => setFormData({...formData, name: e.target.value})}
                     className="h-12 rounded-xl bg-background/50"
@@ -183,7 +183,7 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
                   <Label className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Tags</Label>
                   <div className="flex gap-2">
                     <Input 
-                      placeholder="e.g. Best Seller" 
+                      placeholder="Add tag..." 
                       value={tagInput} 
                       onChange={e => setTagInput(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
@@ -192,9 +192,9 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
                     <Button type="button" onClick={addTag} variant="secondary" className="h-10 rounded-xl">Add</Button>
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {formData.tags.map(t => (
+                    {formData.tags.map((t: string) => (
                       <Badge key={t} className="bg-emerald-500/10 text-emerald-500 border-none px-2 py-0.5 rounded-lg text-[9px] font-black uppercase">
-                        {t} <X size={10} className="ml-1 cursor-pointer" onClick={() => setFormData({...formData, tags: formData.tags.filter(i => i !== t)})} />
+                        {t} <X size={10} className="ml-1 cursor-pointer" onClick={() => setFormData({...formData, tags: formData.tags.filter((i: string) => i !== t)})} />
                       </Badge>
                     ))}
                   </div>
@@ -215,7 +215,7 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
                   <Label className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Service Areas</Label>
                   <div className="flex gap-2">
                     <Input 
-                      placeholder="e.g. MP Nagar, Bhopal" 
+                      placeholder="Add area..." 
                       value={areaInput} 
                       onChange={e => setAreaInput(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addArea())}
@@ -224,9 +224,9 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
                     <Button type="button" onClick={addArea} variant="secondary" className="h-10 rounded-xl">Add</Button>
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {formData.areas.map(a => (
+                    {formData.areas.map((a: string) => (
                       <Badge key={a} className="bg-indigo-500/10 text-indigo-500 border-none px-2 py-0.5 rounded-lg text-[9px] font-black uppercase">
-                        {a} <X size={10} className="ml-1 cursor-pointer" onClick={() => setFormData({...formData, areas: formData.areas.filter(i => i !== a)})} />
+                        {a} <X size={10} className="ml-1 cursor-pointer" onClick={() => setFormData({...formData, areas: formData.areas.filter((i: string) => i !== a)})} />
                       </Badge>
                     ))}
                   </div>
@@ -279,13 +279,13 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
                 <div className="grid gap-2">
                   <Label className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Free Inclusions</Label>
                   <div className="flex flex-wrap gap-2">
-                    {availableInclusions.map(inc => (
+                    {availableInclusions.map((inc: string) => (
                       <button
                         key={inc}
                         type="button"
                         onClick={() => setFormData(p => ({
                           ...p,
-                          inclusions: p.inclusions.includes(inc) ? p.inclusions.filter(i => i !== inc) : [...p.inclusions, inc]
+                          inclusions: p.inclusions.includes(inc) ? p.inclusions.filter((i: string) => i !== inc) : [...p.inclusions, inc]
                         }))}
                         className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all ${
                           formData.inclusions.includes(inc) ? "bg-emerald-500 border-emerald-500 text-zinc-950" : "bg-background/50 border-border/50 text-muted-foreground"
@@ -322,7 +322,7 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
                 </div>
                 <div className="grid gap-2">
                   <Label className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Max Subscribers (Optional)</Label>
-                  <Input type="number" placeholder="Leave empty for unlimited" value={formData.maxSubscribers} onChange={e => setFormData({...formData, maxSubscribers: e.target.value})} className="h-12 rounded-xl bg-background/50" />
+                  <Input type="number" value={formData.maxSubscribers} onChange={e => setFormData({...formData, maxSubscribers: e.target.value})} className="h-12 rounded-xl bg-background/50" />
                 </div>
               </TabsContent>
             </div>
@@ -335,41 +335,11 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
               className="w-full h-14 rounded-2xl bg-zinc-950 dark:bg-white dark:text-zinc-950 font-black uppercase tracking-widest text-[11px] shadow-2xl transition-all active:scale-95"
             >
               {isLoading ? <Loader2 className="animate-spin mr-2" size={20} /> : <Save className="mr-2" size={20} />}
-              Launch This Plan
+              Update Plan Details
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-// Subcomponents for Badge with X
-function Badge({ children, className, key }: { children: React.ReactNode, className?: string, key?: string }) {
-  return (
-    <div key={key} className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${className}`}>
-      {children}
-    </div>
-  );
-}
-
-function X({ size, className, onClick }: { size: number, className?: string, onClick?: () => void }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      onClick={onClick}
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
   );
 }

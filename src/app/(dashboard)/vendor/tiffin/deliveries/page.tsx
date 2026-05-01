@@ -17,7 +17,8 @@ import {
   Loader2,
   UserCheck,
   Search,
-  Filter
+  Filter,
+  FileText
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { getVendorByUserId, getDailyDeliveries, markAsDelivered } from "@/app/actions/tiffin";
@@ -155,6 +156,15 @@ export default function TiffinDeliveriesPage() {
               className="bg-background/50 border-none h-10 pl-10 pr-4 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none w-[200px]"
             />
           </div>
+
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="rounded-xl font-bold text-[10px] uppercase tracking-widest h-10 border-indigo-500/20 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all shadow-lg shadow-indigo-500/10"
+            onClick={() => window.print()}
+          >
+            <FileText className="mr-2" size={14} /> Print Sheet
+          </Button>
 
           <Button 
             variant="outline" 

@@ -6,6 +6,7 @@ import { Trash2, Edit, Calendar, Clock, CreditCard, Sparkles, ChefHat } from "lu
 import { Badge } from "@/components/ui/badge";
 import { TiffinPlan } from "@/types/tiffin";
 import { AddPlanDialog } from "@/components/vendor/tiffin/AddPlanDialog";
+import { EditPlanDialog } from "@/components/vendor/tiffin/EditPlanDialog";
 import { DeletePlanButton } from "@/components/vendor/tiffin/DeletePlanButton";
 import { getCurrentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -47,7 +48,7 @@ export default async function TiffinPlansPage() {
             <AddPlanDialog vendorId={vendor.id} />
           </div>
         ) : (
-          plans.map((plan: TiffinPlan) => (
+          plans.map((plan) => (
             <Card key={plan.id} className="border-none bg-card/40 backdrop-blur-2xl shadow-2xl overflow-hidden group relative transition-all hover:scale-[1.02] hover:shadow-emerald-500/10">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
               
@@ -94,9 +95,7 @@ export default async function TiffinPlansPage() {
               </CardContent>
               
               <CardFooter className="flex justify-end gap-3 border-t border-border/50 pt-6 mt-2 bg-muted/20">
-                <Button variant="ghost" size="icon" className="rounded-xl hover:bg-emerald-500/10 hover:text-emerald-500 transition-all active:scale-90">
-                  <Edit className="h-4 w-4" />
-                </Button>
+                <EditPlanDialog plan={plan} vendorId={vendor.id} />
                 <DeletePlanButton planId={plan.id} />
               </CardFooter>
             </Card>
