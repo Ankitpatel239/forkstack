@@ -80,12 +80,16 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }: any) {
-      if (session.user) {
+      if (session?.user && token) {
         session.user.role = token.role;
         session.user.id = token.id;
       }
       return session;
     },
+  },
+  pages: {
+    signIn: '/login',
+    error: '/login',
   },
 };
 

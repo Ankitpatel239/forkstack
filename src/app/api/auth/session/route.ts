@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
-  return NextResponse.json(session ?? null);
+  return NextResponse.json(session || {});
 }
 
 export async function POST(request: Request) {
