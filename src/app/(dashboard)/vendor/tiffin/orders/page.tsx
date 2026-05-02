@@ -35,6 +35,7 @@ import { TiffinSubscriptionStatus } from "@prisma/client";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
+import { AddSubscriptionDialog } from "@/components/vendor/tiffin/AddSubscriptionDialog";
 
 export default function TiffinOrdersPage() {
   const { data: session } = useSession();
@@ -140,6 +141,7 @@ export default function TiffinOrdersPage() {
           <Button variant="outline" className="rounded-xl border-border/50 h-11 px-4 text-muted-foreground hover:text-foreground">
              <Filter className="mr-2" size={16} /> Filter
           </Button>
+          {vendorId && <AddSubscriptionDialog vendorId={vendorId} onSuccess={fetchData} />}
         </div>
       </div>
 

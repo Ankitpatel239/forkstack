@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { CheckoutForm } from './CheckoutForm';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, ShieldCheck, Clock, Truck } from 'lucide-react';
+import { Check, ShieldCheck, Clock, Truck, UtensilsCrossed } from 'lucide-react';
 
 export default async function TiffinCheckoutPage({
   params
@@ -26,136 +26,157 @@ export default async function TiffinCheckoutPage({
   const settings = await getVendorTiffinSettings(vendor.id);
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4 transition-colors duration-500">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-        {/* Order Summary */}
-        <div className="space-y-8 sticky top-12">
-          <div className="space-y-4">
-            <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-white uppercase italic">Complete Subscription</h1>
-            <p className="text-zinc-500 dark:text-zinc-400 font-medium text-lg">Fresh, home-cooked meals delivered daily to your doorstep.</p>
-          </div>
-
-          <Card className="rounded-[2.5rem] border-none shadow-2xl overflow-hidden bg-white dark:bg-zinc-900/50 backdrop-blur-xl border border-zinc-200/50 dark:border-white/5">
-             <div className="h-3 bg-gradient-to-r from-emerald-500 to-teal-400" />
-              <CardHeader className="p-8 pb-4">
-                <div className="flex justify-between items-start">
-                   <div className="space-y-2">
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        <Badge className={`border-none font-black px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest ${
-                          plan.mealType === 'BREAKFAST' ? 'bg-amber-500 text-zinc-950' : 
-                          plan.mealType === 'LUNCH' ? 'bg-emerald-500 text-white' : 
-                          plan.mealType === 'DINNER' ? 'bg-indigo-500 text-white' : 'bg-zinc-500 text-white'
-                        }`}>
-                          {plan.mealType}
-                        </Badge>
-                        {plan.tags && plan.tags.map(tag => (
-                          <Badge key={tag} className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-none font-black px-3 py-1 rounded-lg text-[9px] uppercase tracking-widest italic">
-                            #{tag}
-                          </Badge>
-                        ))}
-                      </div>
-                      <CardTitle className="text-3xl font-black text-zinc-900 dark:text-white">{plan.name}</CardTitle>
-                      {plan.timeSlot && (
-                        <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 font-bold text-xs">
-                          <Clock size={14} className="text-emerald-500" />
-                          Delivery Window: {plan.timeSlot}
-                        </div>
-                      )}
-                   </div>
-                   <div className="text-right">
-                      <div className="text-3xl font-black text-emerald-500">₹{plan.price}</div>
-                      <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Total Cycle Due</div>
-                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-8 space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   <div className="flex items-center gap-4 group">
-                      <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0 border border-emerald-500/20 group-hover:scale-110 transition-transform">
-                         <Check size={20} />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-black text-zinc-900 dark:text-zinc-100">{plan.mealCount} Scheduled Meals</span>
-                        <span className="text-xs text-zinc-500">{plan.dietType || 'VEG'} • {plan.spiceLevel || 'MEDIUM'} SPICE</span>
-                      </div>
-                   </div>
-
-                   <div className="flex items-center gap-4 group">
-                      <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0 border border-blue-500/20 group-hover:scale-110 transition-transform">
-                         <Clock size={20} />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-black text-zinc-900 dark:text-zinc-100">Valid for {plan.validityDays} days</span>
-                        <span className="text-xs text-zinc-500">Up to {plan.maxSkips} skips allowed</span>
-                      </div>
-                   </div>
-                </div>
-
-                {plan.areas && plan.areas.length > 0 && (
-                  <div className="p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/10">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2 italic flex items-center gap-2">
-                      <Truck size={12} /> Serviceable Areas
-                    </div>
-                    <p className="text-xs font-bold text-zinc-600 dark:text-zinc-400">{plan.areas.join(' • ')}</p>
-                  </div>
-                )}
-
-                {plan.inclusions && plan.inclusions.length > 0 && (
-                  <div className="p-6 rounded-3xl bg-emerald-500/5 border border-emerald-500/10">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-3 italic">Free Add-ons Included</div>
-                    <div className="flex flex-wrap gap-2">
-                       {plan.inclusions.map((item, idx) => (
-                         <Badge key={idx} variant="outline" className="rounded-xl border-emerald-500/20 bg-emerald-500/5 text-emerald-500 font-bold px-3 py-1">
-                           + {item}
-                         </Badge>
-                       ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-8 border-t border-zinc-200 dark:border-white/5 space-y-4">
-                   <div className="flex items-center gap-2 text-emerald-500">
-                      <ShieldCheck size={20} />
-                      <span className="text-xs font-black uppercase tracking-widest italic">ForkStack Assurance</span>
-                   </div>
-                   <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed italic bg-zinc-50 dark:bg-zinc-950/50 p-4 rounded-2xl border border-zinc-200/50 dark:border-white/5">
-                     "Your subscription is protected. {plan.pauseAllowed ? 'Pause/Resume anytime.' : ''} {plan.paymentType === 'POSTPAID' ? 'Postpaid billing enabled.' : 'Secured via prepaid credits.'}"
-                   </p>
-                </div>
-             </CardContent>
-          </Card>
-          
-          <div className="p-8 rounded-[2rem] bg-emerald-500/5 border border-emerald-500/10 dark:border-emerald-500/5">
-             <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-4">Onboarding Process</h4>
-             <ul className="space-y-4">
-                {[
-                  "Register your details and precise delivery address.",
-                  "Select your starting date for the service cycle.",
-                  "Receive daily menu broadcasts and enjoy fresh meals!"
-                ].map((step, i) => (
-                  <li key={i} className="text-xs font-bold text-zinc-600 dark:text-zinc-400 flex gap-3 items-center">
-                    <span className="h-6 w-6 rounded-lg bg-emerald-500 text-zinc-950 flex items-center justify-center text-[10px] font-black shrink-0">0{i+1}</span>
-                    {step}
-                  </li>
-                ))}
-             </ul>
-          </div>
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4 transition-colors duration-500 selection:bg-emerald-500/30">
+      <div className="max-w-7xl mx-auto">
+        {/* Progress Header */}
+        <div className="mb-12 text-center space-y-2">
+          <Badge variant="outline" className="rounded-full px-6 py-1 border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-[0.2em] text-[10px]">
+            Secure Checkout
+          </Badge>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-zinc-900 dark:text-white uppercase italic">
+            Finalize <span className="text-emerald-500">Subscription</span>
+          </h1>
+          <p className="text-zinc-500 dark:text-zinc-400 font-medium max-w-2xl mx-auto">
+            You're just one step away from fresh, home-cooked meals delivered daily.
+          </p>
         </div>
 
-        {/* Checkout Form Container */}
-        <div className="bg-white dark:bg-zinc-900/50 p-8 md:p-12 rounded-[3rem] shadow-2xl border border-zinc-100 dark:border-white/5 relative overflow-hidden transition-colors">
-           <div className="absolute top-0 right-0 p-8 opacity-5 dark:opacity-10 pointer-events-none">
-              <Truck size={120} className="rotate-12" />
-           </div>
-           <CheckoutForm 
-             vendorId={vendor.id} 
-             planId={planId} 
-             availableOptions={{
-               timeSlots: settings?.tiffinTimeSlots || [],
-               dietTypes: settings?.tiffinDietTypes || [],
-               spiceLevels: settings?.tiffinSpiceLevels || []
-             }}
-           />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          {/* LEFT COLUMN: Plan Summary (Sticky on Desktop) */}
+          <div className="lg:col-span-5 space-y-8 lg:sticky lg:top-12">
+            <Card className="rounded-[3rem] border-none shadow-2xl overflow-hidden bg-white dark:bg-zinc-900/40 backdrop-blur-3xl border border-zinc-200/50 dark:border-white/5">
+              <div className="h-2 bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500" />
+              
+              <CardHeader className="p-10 pb-6">
+                <div className="space-y-6">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge className={`border-none font-black px-4 py-1.5 rounded-xl text-[10px] uppercase tracking-widest ${
+                      plan.mealTypes[0] === 'BREAKFAST' ? 'bg-amber-500 text-zinc-950' : 
+                      plan.mealTypes[0] === 'LUNCH' ? 'bg-emerald-500 text-white' : 
+                      plan.mealTypes[0] === 'DINNER' ? 'bg-indigo-500 text-white' : 'bg-zinc-500 text-white'
+                    }`}>
+                      {plan.mealTypes.join(" + ")}
+                    </Badge>
+                    {plan.tags && plan.tags.map(tag => (
+                      <Badge key={tag} className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-none font-bold px-4 py-1.5 rounded-xl text-[9px] uppercase tracking-widest italic">
+                        #{tag}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  <div className="space-y-1">
+                    <CardTitle className="text-4xl font-black text-zinc-900 dark:text-white leading-tight">
+                      {plan.name}
+                    </CardTitle>
+                    <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 font-bold text-xs uppercase tracking-wider">
+                      <Clock size={14} className="text-emerald-500" />
+                      Window: {plan.timeSlot || 'Standard Delivery'}
+                    </div>
+                  </div>
+
+                  <div className="pt-6 border-t border-zinc-100 dark:border-white/5 flex justify-between items-end">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-1">Price Per Cycle</p>
+                      <div className="text-5xl font-black text-emerald-500 tracking-tighter">
+                        ₹{plan.price}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-1">Duration</p>
+                      <div className="text-xl font-bold text-zinc-900 dark:text-white">{plan.validityDays} Days</div>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="p-10 pt-0 space-y-10">
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Total Meals</p>
+                    <p className="text-lg font-black text-zinc-900 dark:text-white">{plan.mealCount}</p>
+                  </div>
+                  <div className="text-right space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Max Skips</p>
+                    <p className="text-lg font-black text-zinc-900 dark:text-white">{plan.maxSkips}</p>
+                  </div>
+                </div>
+
+                {plan.inclusions && plan.inclusions.length > 0 && (
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500 flex items-center gap-2">
+                      <UtensilsCrossed size={12} /> Standard Inclusions
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {plan.inclusions.map((item, idx) => (
+                        <div key={idx} className="px-3 py-1.5 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-8 border-t border-zinc-100 dark:border-white/5">
+                  <div className="bg-zinc-50 dark:bg-zinc-950/50 p-6 rounded-[2rem] border border-zinc-200/50 dark:border-white/5 space-y-3">
+                    <div className="flex items-center gap-2 text-emerald-500">
+                      <ShieldCheck size={18} />
+                      <span className="text-[10px] font-black uppercase tracking-widest italic">Consumer Protection Protocol</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed italic">
+                      "This subscription includes automatic meal credit rollover. {plan.pauseAllowed ? 'You can pause your service at any time.' : ''} Quality is guaranteed by {vendor.businessName}."
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="px-10 py-6 rounded-[2.5rem] bg-zinc-950 text-white flex items-center justify-between group cursor-help transition-all hover:scale-[1.02]">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-emerald-400">
+                  <Check size={20} />
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-xs font-black uppercase tracking-widest">Verified Vendor</p>
+                  <p className="text-[10px] text-zinc-400 font-medium">Licensed Tiffin Provider</p>
+                </div>
+              </div>
+              <ShieldCheck className="text-emerald-500 opacity-20 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: Checkout Form */}
+          <div className="lg:col-span-7">
+            <div className="bg-white dark:bg-zinc-900/40 p-8 md:p-14 rounded-[3.5rem] shadow-2xl border border-zinc-100 dark:border-white/5 relative overflow-hidden backdrop-blur-3xl">
+              <div className="absolute top-0 right-0 p-12 opacity-5 dark:opacity-10 pointer-events-none -mr-8 -mt-8">
+                <Truck size={200} className="rotate-12" />
+              </div>
+              
+              <div className="relative z-10">
+                <CheckoutForm 
+                  vendorId={vendor.id} 
+                  planId={planId} 
+                  availableOptions={{
+                    timeSlots: settings?.timeSlots || [],
+                    dietTypes: settings?.dietTypes || [],
+                    spiceLevels: settings?.spiceLevels || []
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Support/Trust Footer */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+              <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                <ShieldCheck size={14} /> PCI Compliant
+              </div>
+              <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                <Check size={14} /> Verified Logistics
+              </div>
+              <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                <Clock size={14} /> 24/7 Support
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

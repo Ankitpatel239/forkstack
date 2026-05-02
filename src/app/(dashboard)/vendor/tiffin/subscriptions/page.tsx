@@ -109,13 +109,15 @@ export default async function TiffinSubscriptionsPage() {
                         <p className="text-sm font-bold">{sub.planNameSnapshot || sub.plan.name}</p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge className={`text-[8px] h-4 px-1 border-none font-bold uppercase tracking-widest ${
-                          (sub.plan.mealType) === 'BREAKFAST' ? 'bg-amber-500 text-zinc-950' : 
-                          (sub.plan.mealType) === 'LUNCH' ? 'bg-emerald-500 text-white' : 
-                          (sub.plan.mealType) === 'DINNER' ? 'bg-indigo-500 text-white' : 'bg-zinc-500 text-white'
-                        }`}>
-                          {sub.plan.mealType}
-                        </Badge>
+                        {sub.plan.mealTypes.map((type) => (
+                          <Badge key={type} className={`text-[8px] h-4 px-1 border-none font-bold uppercase tracking-widest ${
+                            type === 'BREAKFAST' ? 'bg-amber-500 text-zinc-950' : 
+                            type === 'LUNCH' ? 'bg-emerald-500 text-white' : 
+                            type === 'DINNER' ? 'bg-indigo-500 text-white' : 'bg-zinc-500 text-white'
+                          }`}>
+                            {type}
+                          </Badge>
+                        ))}
                         <Badge variant="secondary" className="text-[8px] h-4 px-1 bg-indigo-500/10 text-indigo-500 border-none font-bold uppercase">
                           {sub.dietTypeSnapshot || sub.plan.dietType || 'VEG'}
                         </Badge>

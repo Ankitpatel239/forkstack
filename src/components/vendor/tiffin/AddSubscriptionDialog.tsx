@@ -21,19 +21,27 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { Plus, UserPlus, Phone, Mail, MapPin, Calendar, Loader2 } from 'lucide-react';
-import { createManualSubscription, getTiffinPlans } from '@/app/actions/tiffin';
+import { createManualSubscription, getTiffinPlans, getVendorTiffinSettings } from '@/app/actions/tiffin';
 import { toast } from 'sonner';
 import { TiffinPlan } from '@/types/tiffin';
 
 interface AddSubscriptionDialogProps {
   vendorId: string;
+  onSuccess?: () => void;
 }
 
-export function AddSubscriptionDialog({ vendorId }: AddSubscriptionDialogProps) {
+export function AddSubscriptionDialog({ vendorId, onSuccess }: AddSubscriptionDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [plans, setPlans] = useState<TiffinPlan[]>([]);
   const [isPlansLoading, setIsPlansLoading] = useState(false);
+  
+  // Masters State
+  const [availableOptions, setAvailableOptions] = useState<{
+    timeSlots: string[];
+    dietTypes: string[];
+    spiceLevels: string[];
+  }>({ timeSlots: [], dietTypes: [], spiceLevels: [] });
 
   // Form State
   const [name, setName] = useState('');
@@ -42,23 +50,35 @@ export function AddSubscriptionDialog({ vendorId }: AddSubscriptionDialogProps) 
   const [planId, setPlanId] = useState('');
   const [address, setAddress] = useState('');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedSlot, setSelectedSlot] = useState('');
+  const [selectedDiet, setSelectedDiet] = useState('');
+  const [selectedSpice, setSelectedSpice] = useState('');
   const [lat, setLat] = useState<number | undefined>();
   const [lng, setLng] = useState<number | undefined>();
 
   useEffect(() => {
     if (isOpen) {
-      async function fetchPlans() {
+      async function fetchMasters() {
         setIsPlansLoading(true);
         try {
-          const data = await getTiffinPlans(vendorId);
-          setPlans(data as any);
+          const [plansData, settingsData] = await Promise.all([
+            getTiffinPlans(vendorId),
+            getVendorTiffinSettings(vendorId)
+          ]);
+          setPlans(plansData as any);
+          setAvailableOptions(settingsData);
+          
+          // Set defaults
+          if (settingsData.timeSlots.length > 0) setSelectedSlot(settingsData.timeSlots[0]);
+          if (settingsData.dietTypes.length > 0) setSelectedDiet(settingsData.dietTypes[0]);
+          if (settingsData.spiceLevels.length > 0) setSelectedSpice(settingsData.spiceLevels[0]);
         } catch (e) {
-          toast.error("Failed to load plans");
+          toast.error("Failed to load master data");
         } finally {
           setIsPlansLoading(false);
         }
       }
-      fetchPlans();
+      fetchMasters();
     }
   }, [isOpen, vendorId]);
 
@@ -94,11 +114,15 @@ export function AddSubscriptionDialog({ vendorId }: AddSubscriptionDialogProps) 
         customerEmail: email || undefined,
         address,
         startDate: new Date(startDate),
+        timeSlot: selectedSlot,
+        dietType: selectedDiet,
+        spiceLevel: selectedSpice,
         latitude: lat,
         longitude: lng,
       });
       toast.success("Subscription created successfully");
       setIsOpen(false);
+      onSuccess?.();
       // Reset form
       setName('');
       setPhone('');
@@ -121,15 +145,15 @@ export function AddSubscriptionDialog({ vendorId }: AddSubscriptionDialogProps) 
           <UserPlus size={18} /> Add New Subscriber
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] rounded-3xl border-border/50 bg-background/95 backdrop-blur-xl">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-3xl border-border/50 bg-background/95 backdrop-blur-xl custom-scrollbar">
+        <DialogHeader className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl pb-4 mb-2">
           <DialogTitle className="text-2xl font-black tracking-tight">Manual Onboarding</DialogTitle>
           <DialogDescription className="font-medium">
-            Add a customer manually to the tiffin service. They will be notified via SMS/WhatsApp.
+            Add a customer manually. They will be notified via SMS/WhatsApp.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 py-4">
+        <form onSubmit={handleSubmit} className="space-y-6 py-2 pr-2">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Full Name</Label>
@@ -196,6 +220,49 @@ export function AddSubscriptionDialog({ vendorId }: AddSubscriptionDialogProps) 
                 className="rounded-xl bg-muted/50 border-none h-11"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Delivery Slot</Label>
+              <Select value={selectedSlot} onValueChange={setSelectedSlot}>
+                <SelectTrigger className="rounded-xl bg-muted/50 border-none h-11">
+                  <SelectValue placeholder="Select Slot" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {availableOptions.timeSlots.map(slot => (
+                    <SelectItem key={slot} value={slot} className="font-bold">{slot}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Diet Type</Label>
+              <Select value={selectedDiet} onValueChange={setSelectedDiet}>
+                <SelectTrigger className="rounded-xl bg-muted/50 border-none h-11">
+                  <SelectValue placeholder="Select Diet" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {availableOptions.dietTypes.map(diet => (
+                    <SelectItem key={diet} value={diet} className="font-bold">{diet}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Spice Level</Label>
+            <Select value={selectedSpice} onValueChange={setSelectedSpice}>
+              <SelectTrigger className="rounded-xl bg-muted/50 border-none h-11">
+                <SelectValue placeholder="Select Spice" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                {availableOptions.spiceLevels.map(spice => (
+                  <SelectItem key={spice} value={spice} className="font-bold">{spice}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

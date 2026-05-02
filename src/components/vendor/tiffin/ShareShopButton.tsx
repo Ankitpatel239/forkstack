@@ -14,8 +14,9 @@ interface ShareShopButtonProps {
 export function ShareShopButton({ slug, businessName }: ShareShopButtonProps) {
   const [copied, setCopied] = useState(false);
   
-  const shopUrl = `${window.location.origin}/${slug}`;
-  const tiffinUrl = `${window.location.origin}/${slug}/tiffin`;
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const shopUrl = `${origin}/${slug}`;
+  const tiffinUrl = `${origin}/${slug}/tiffin`;
 
   const copyToClipboard = async (url: string, label: string) => {
     try {

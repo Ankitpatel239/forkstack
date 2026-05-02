@@ -3,8 +3,7 @@ import { TiffinSubscriptionStatus, User } from "@prisma/client";
 export const TiffinMealType = {
   BREAKFAST: "BREAKFAST",
   LUNCH: "LUNCH",
-  DINNER: "DINNER",
-  BOTH: "BOTH"
+  DINNER: "DINNER"
 } as const;
 
 export type TiffinMealType = (typeof TiffinMealType)[keyof typeof TiffinMealType];
@@ -16,7 +15,7 @@ export interface TiffinPlan {
   description: string | null;
   price: number;
   mealCount: number;
-  mealType: TiffinMealType;
+  mealTypes: TiffinMealType[];
   validityDays: number;
   inclusions: string[];
   

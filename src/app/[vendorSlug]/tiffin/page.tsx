@@ -50,7 +50,7 @@ export default async function TiffinCustomerPage({
               <CardHeader className="pt-8 px-8">
                 <div className="flex items-center space-x-2 mb-2">
                   <Badge variant="secondary" className="rounded-full">
-                    {plan.mealType}
+                    {plan.mealTypes.join(" + ")}
                   </Badge>
                 </div>
                 <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>

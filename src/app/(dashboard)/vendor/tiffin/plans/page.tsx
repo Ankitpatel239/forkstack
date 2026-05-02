@@ -56,7 +56,7 @@ export default async function TiffinPlansPage() {
                 <div className="flex justify-between items-start mb-2">
                   <CardTitle className="text-xl font-black">{plan.name}</CardTitle>
                   <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-black uppercase tracking-widest text-[10px]">
-                    {plan.mealType}
+                    {plan.mealTypes.join(" + ")}
                   </Badge>
                 </div>
                 <CardDescription className="line-clamp-2 min-h-[40px] font-medium text-muted-foreground">

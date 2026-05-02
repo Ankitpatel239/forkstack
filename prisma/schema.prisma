@@ -111,7 +111,7 @@ enum ReservationStatus {
 model User {
   id                String    @id @default(cuid())
   email             String    @unique
-  password          String
+  password          String?
   name              String
   phone             String?
   role              Role
@@ -174,12 +174,6 @@ model VendorProfile {
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
  
-  // Tiffin Settings
-  tiffinInclusions      String[]           @default([]) // e.g., ["Papad", "Achar", "Cucumber", "Salad"]
-  tiffinTimeSlots       String[]           @default([]) // e.g., ["12:30-1:00 PM", "1:30-2:00 PM"]
-  tiffinDietTypes       String[]           @default([]) // e.g., ["VEG", "NON-VEG", "EGG"]
-  tiffinSpiceLevels     String[]           @default([]) // e.g., ["MEDIUM", "SPICY", "BLAND"]
- 
   // Relations
   owner                 User?              @relation("VendorOwner", fields: [ownerId], references: [id])
   accountManager        User?              @relation("AccountManager", fields: [accountManagerId], references: [id])
@@ -203,6 +197,14 @@ model VendorProfile {
   tiffinPlans           TiffinPlan[]
   tiffinSubscriptions   TiffinSubscription[]
   tiffinMenus           TiffinMenu[]
+  tiffinMenuSets        TiffinMenuSet[]
+  tiffinWeeklySchedules TiffinWeeklySchedule[]
+  tiffinItems           TiffinItem[]
+  tiffinSessions        TiffinMealSession[]
+  tiffinInclusionMaster TiffinInclusion[]
+  tiffinAreaMaster      TiffinArea[]
+  tiffinDietMaster      TiffinDietType[]
+  tiffinSpiceMaster     TiffinSpiceLevel[]
   reservations          Reservation[]
 }
 
@@ -793,7 +795,6 @@ enum TiffinMealType {
   BREAKFAST
   LUNCH
   DINNER
-  BOTH
 }
 
 enum TiffinSubscriptionStatus {
@@ -819,7 +820,7 @@ model TiffinPlan {
   description       String?
   price             Float
   mealCount         Int              // Total meals in the plan (e.g., 20, 30)
-  mealType          TiffinMealType   @default(LUNCH)
+  mealTypes         TiffinMealType[] // Changed from mealType to mealTypes array
   validityDays      Int              // Days the plan is valid for (e.g., 30)
   inclusions        String[]         // e.g., ["Papad", "Achar", "Cucumber"]
   
@@ -873,6 +874,7 @@ model TiffinSubscription {
   customer      User                   @relation(fields: [customerId], references: [id])
   plan          TiffinPlan             @relation(fields: [planId], references: [id])
   deliveries    TiffinDelivery[]
+  mealRequests  TiffinMealRequest[]
   
   createdAt     DateTime               @default(now())
   updatedAt     DateTime               @updatedAt
@@ -891,16 +893,136 @@ model TiffinMenu {
   @@unique([vendorId, date, mealType])
 }
 
+model TiffinMenuSet {
+  id          String   @id @default(cuid())
+  vendorId    String
+  name        String   // e.g., "Standard North Indian"
+  mealType    TiffinMealType
+  items       String[]
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  weeklySchedules TiffinWeeklySchedule[]
+}
+
+model TiffinWeeklySchedule {
+  id          String   @id @default(cuid())
+  vendorId    String
+  dayOfWeek   Int      // 0 (Sunday) to 6 (Saturday)
+  mealType    TiffinMealType
+  menuSetId   String
+  
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  menuSet     TiffinMenuSet @relation(fields: [menuSetId], references: [id])
+
+  @@unique([vendorId, dayOfWeek, mealType])
+}
+
+model TiffinMealRequest {
+  id              String         @id @default(cuid())
+  subscriptionId  String
+  date            DateTime
+  mealType        TiffinMealType
+  type            TiffinRequestType 
+  status          TiffinRequestStatus @default(PENDING)
+  notes           String?
+  quantity        Int            @default(1) 
+  
+  subscription    TiffinSubscription @relation(fields: [subscriptionId], references: [id])
+  
+  @@unique([subscriptionId, date, mealType])
+}
+
+enum TiffinRequestType {
+  SKIP
+  EXTRA
+  CUSTOM
+}
+
+enum TiffinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
 model TiffinDelivery {
   id              String         @id @default(cuid())
   subscriptionId  String
   date            DateTime       @default(now())
+  mealType        TiffinMealType
   status          TiffinDeliveryStatus @default(PENDING)
   notes           String?
   
   subscription    TiffinSubscription @relation(fields: [subscriptionId], references: [id])
   
-  @@unique([subscriptionId, date])
+  @@unique([subscriptionId, date, mealType])
+}
+
+model TiffinItem {
+  id          String   @id @default(cuid())
+  vendorId    String
+  name        String
+  description String?
+  category    String?  // e.g., "Main Course", "Side", "Dessert"
+  isVeg       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+}
+
+model TiffinMealSession {
+  id          String   @id @default(cuid())
+  vendorId    String
+  mealType    TiffinMealType
+  startTime   String   // "08:00 AM"
+  endTime     String   // "10:00 AM"
+  isActive    Boolean  @default(true)
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+
+  @@unique([vendorId, mealType])
+}
+
+model TiffinInclusion {
+  id          String   @id @default(cuid())
+  vendorId    String
+  name        String
+  price       Float    @default(0) // If they want to charge extra for some inclusions later
+  
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  @@unique([vendorId, name])
+}
+
+model TiffinArea {
+  id          String   @id @default(cuid())
+  vendorId    String
+  name        String
+  deliveryCharge Float @default(0)
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  @@unique([vendorId, name])
+}
+
+model TiffinDietType {
+  id          String   @id @default(cuid())
+  vendorId    String
+  name        String
+  
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  @@unique([vendorId, name])
+}
+
+model TiffinSpiceLevel {
+  id          String   @id @default(cuid())
+  vendorId    String
+  name        String
+  
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  @@unique([vendorId, name])
 }
 
 // ========== FEATURE REQUESTS ==========
