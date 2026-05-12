@@ -151,7 +151,7 @@ export function CodeGeneratorDialog({ item, open, onOpenChange }: CodeGeneratorD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-background border-border text-foreground sm:max-w-[480px] p-0 overflow-hidden rounded-[2rem] shadow-2xl outline-none">
+      <DialogContent className="bg-background border-border text-foreground sm:max-w-[480px] max-h-[95vh] p-0 overflow-hidden flex flex-col rounded-[2rem] shadow-2xl outline-none">
         <DialogHeader className="p-6 pb-3 bg-gradient-to-br from-muted/30 to-background border-b border-border relative">
           <div className="absolute top-0 right-0 p-6 opacity-5">
              <BarcodeIcon size={60} />
@@ -169,7 +169,7 @@ export function CodeGeneratorDialog({ item, open, onOpenChange }: CodeGeneratorD
           </div>
         </DialogHeader>
 
-        <div className="p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
            <div className="grid grid-cols-2 gap-3">
               <button 
                 onClick={() => setType('BARCODE')}

@@ -12,12 +12,14 @@ import {
   MoreHorizontal,
   History,
   TrendingUp,
-  Download
+  Download,
+  Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { redirect } from 'next/navigation';
 import { PayoutRequestButton } from '@/components/vendor/PayoutRequestButton';
+import { ExportLedgerButton } from '@/components/vendor/ExportLedgerButton';
 
 export default async function VendorPaymentsPage() {
   const user = await getCurrentUser();
@@ -25,18 +27,39 @@ export default async function VendorPaymentsPage() {
     redirect('/auth/login');
   }
 
-  const vendor = await prisma.vendorProfile.findUnique({
-    where: { ownerId: user.id },
-    include: {
-      payments: {
-        orderBy: { createdAt: 'desc' },
-        take: 10
-      },
-      payouts: {
-        orderBy: { requestedAt: 'desc' }
-      }
-    }
-  });
+  // Using raw SQL to bypass stale enum validation for subscriptionPlan
+  const vendorsRaw = await prisma.$queryRawUnsafe<any[]>(
+    `SELECT * FROM "VendorProfile" WHERE "ownerId" = $1 LIMIT 1`,
+    user.id
+  );
+  const vendorRaw = vendorsRaw[0];
+
+  if (!vendorRaw) {
+    return <div>Vendor profile not found.</div>;
+  }
+
+  const [payments, payouts, subscriptionPayments] = await Promise.all([
+    prisma.payment.findMany({
+      where: { vendorId: vendorRaw.id },
+      orderBy: { createdAt: 'desc' },
+      take: 10
+    }),
+    prisma.payout.findMany({
+      where: { vendorId: vendorRaw.id },
+      orderBy: { requestedAt: 'desc' }
+    }),
+    prisma.$queryRawUnsafe<any[]>(
+      `SELECT * FROM "SubscriptionPayment" WHERE "vendorId" = $1 ORDER BY "createdAt" DESC`,
+      vendorRaw.id
+    )
+  ]);
+
+  const vendor = {
+    ...vendorRaw,
+    payments,
+    payouts,
+    subscriptionPayments
+  };
 
   if (!vendor) {
     return <div>Vendor profile not found.</div>;
@@ -62,6 +85,11 @@ export default async function VendorPaymentsPage() {
   }).then((res: any) => res._sum.amount || 0);
 
   const availableBalance = totalRevenue - totalWithdrawn - pendingPayouts;
+  
+  // Calculate subscription remaining days
+  const daysRemaining = vendorRaw.subscriptionEnd 
+    ? Math.max(0, Math.ceil((new Date(vendorRaw.subscriptionEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : 0;
 
   return (
     <div className="space-y-10 pb-20">
@@ -72,27 +100,30 @@ export default async function VendorPaymentsPage() {
           <p className="text-zinc-500 font-medium">Track your revenue, manage payouts, and analyze fiscal growth.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="rounded-xl border-zinc-800 bg-zinc-900 h-12 px-6 text-zinc-400 font-black uppercase tracking-widest text-[10px]">
-            <Download className="w-4 h-4 mr-2" /> Export Ledger
-          </Button>
+          <ExportLedgerButton 
+            payments={payments} 
+            payouts={payouts} 
+            subscriptionPayments={subscriptionPayments} 
+          />
           <PayoutRequestButton vendorId={vendor.id} availableBalance={availableBalance} />
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-5">
         {[
           { label: 'Available Balance', val: `₹${availableBalance.toLocaleString()}`, icon: Wallet, color: 'emerald' },
           { label: 'Total Revenue', val: `₹${totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'blue' },
           { label: 'Pending Payouts', val: `₹${pendingPayouts.toLocaleString()}`, icon: Clock, color: 'orange' },
           { label: 'Total Withdrawn', val: `₹${totalWithdrawn.toLocaleString()}`, icon: History, color: 'zinc' },
+          { label: 'Subscription Pulse', val: `${daysRemaining} Days Left`, icon: Zap, color: 'purple' },
         ].map((s: any, i: number) => (
           <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 group relative overflow-hidden">
             <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
               <s.icon size={60} />
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-2">{s.label}</p>
-            <h3 className="text-2xl font-black text-white italic tracking-tighter">{s.val}</h3>
+            <h3 className="text-xl font-black text-white italic tracking-tighter">{s.val}</h3>
           </div>
         ))}
       </div>
@@ -171,6 +202,50 @@ export default async function VendorPaymentsPage() {
               ))
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Subscription History */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl">
+        <div className="p-10 border-b border-zinc-800 bg-zinc-950/20 flex items-center justify-between">
+           <div>
+              <h4 className="text-xl font-black text-white italic uppercase leading-none">Platform Subscription Ledger</h4>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-2">Audit your platform usage fees and membership cycles.</p>
+           </div>
+           <div className="h-12 w-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-emerald-500">
+              <History size={20} />
+           </div>
+        </div>
+        
+        <div className="divide-y divide-zinc-800">
+           {(!vendor.subscriptionPayments || vendor.subscriptionPayments.length === 0) ? (
+              <div className="p-20 text-center text-zinc-600">
+                 <div className="flex flex-col items-center gap-4 opacity-20">
+                    <History size={40} />
+                    <p className="text-[10px] font-black uppercase tracking-widest">No subscription history detected.</p>
+                 </div>
+              </div>
+           ) : (
+              vendor.subscriptionPayments.map((p: any) => (
+                 <div key={p.id} className="p-8 flex items-center justify-between hover:bg-zinc-950/40 transition-all">
+                    <div className="flex items-center gap-6">
+                       <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                          <CheckCircle2 size={20} />
+                       </div>
+                       <div>
+                          <p className="text-xs font-black text-white uppercase italic tracking-widest leading-none">{p.plan} Membership</p>
+                          <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest mt-2">
+                             {new Date(p.createdAt).toLocaleDateString()} • Ref: #{p.id.slice(-8).toUpperCase()}
+                          </p>
+                       </div>
+                    </div>
+                    <div className="text-right">
+                       <p className="text-lg font-black text-white italic">₹{p.amount}</p>
+                       <div className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mt-1">SUCCESS</div>
+                    </div>
+                 </div>
+              ))
+           )}
         </div>
       </div>
     </div>

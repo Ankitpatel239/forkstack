@@ -16,9 +16,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TableCard } from './TableCard';
 import { TableActions } from './TableActions';
+import { redirect } from 'next/navigation';
+import { getVendorFeatures } from '@/app/actions/vendor-subscription';
 
 export default async function TablesPage() {
   const vendor = await requireVendor();
+  const features = await getVendorFeatures();
+
+  if (!features.success || !features.data?.features?.includes('QR_ORDERING')) {
+    redirect('/vendor/subscription?error=feature_restriction');
+  }
   
   const tables = await prisma.table.findMany({
     where: { vendorId: vendor.id },

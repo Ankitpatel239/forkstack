@@ -405,7 +405,12 @@ export async function createManualSubscription(data: any) {
   // 2. Upsert Customer (User)
   // We identify by phone for tiffin service
   let user = await prisma.user.findFirst({
-    where: { phone: customerPhone }
+    where: {
+      OR: [
+        { phone: customerPhone },
+        customerEmail ? { email: customerEmail } : undefined
+      ].filter(Boolean) as any
+    }
   });
 
   if (!user) {
@@ -428,13 +433,14 @@ export async function createManualSubscription(data: any) {
       status: "ACTIVE",
       startDate: new Date(startDate),
       remainingMeals: plan.mealCount,
+      customerName,
       address,
       dietTypeSnapshot: dietType || plan.dietType,
       spiceLevelSnapshot: spiceLevel || plan.spiceLevel,
       planNameSnapshot: plan.name,
       planPriceSnapshot: plan.price,
       inclusionsSnapshot: plan.inclusions,
-      timeSlotSnapshot: plan.timeSlot
+      timeSlotSnapshot: data.timeSlot || plan.timeSlot
     }
   });
 

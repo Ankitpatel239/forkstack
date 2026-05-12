@@ -7,6 +7,20 @@ datasource db {
 }
 
 // ========== ENUMS ==========
+enum ProductionStatus {
+  PLANNED
+  PREPARING
+  COOKED
+  PACKED
+  DISPATCHED
+}
+
+enum RiderStatus {
+  AVAILABLE
+  ASSIGNED
+  DELIVERING
+  OFFLINE
+}
 enum Role {
   ADMIN
   VENDOR_OWNER
@@ -15,23 +29,59 @@ enum Role {
   CUSTOMER
 }
 
-model PlatformPlan {
-  id          String           @id @default(cuid())
-  name        String           @unique // e.g., "BASIC", "PRO", "ENTERPRISE"
-  displayName String           // e.g., "Starter Pack"
-  description String?
-  price       Float
-  features    String[]         // List of feature flags/names
-  isActive    Boolean          @default(true)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-}
-
-enum SubscriptionPlan {
-  BASIC
-  PRO
+enum PlanCategory {
+  MENU
+  TIFFIN
+  HYBRID
   ENTERPRISE
 }
+
+model PlatformCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique // e.g., "MENU", "TIFFIN"
+  label       String   // e.g., "Menu Service"
+  description String?
+  icon        String?  @default("Package")
+  plans       PlatformPlan[]
+  features    PlatformFeature[]
+  createdAt   DateTime @default(now())
+}
+
+model PlatformLimit {
+  id          String   @id @default(cuid())
+  key         String   @unique // e.g., "menuItems", "whatsapp"
+  label       String   // e.g., "Menu Items"
+  unit        String?  // e.g., "Items"
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model PlatformFeature {
+  id          String   @id @default(cuid())
+  key         String   @unique // e.g., "WHATSAPP_ALERTS"
+  label       String   // e.g., "WhatsApp Alerts"
+  categoryName String  // Reference to PlatformCategory.name
+  category    PlatformCategory @relation(fields: [categoryName], references: [name])
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model PlatformPlan {
+  id            String   @id @default(cuid())
+  name          String   @unique // machine name e.g. "standard_tiffin"
+  categoryName  String   // Reference to PlatformCategory.name
+  category      PlatformCategory @relation(fields: [categoryName], references: [name])
+  displayName   String   // Display name e.g. "Standard Tiffin"
+  description   String?
+  price         Float
+  features      String[] // Array of PlatformFeature keys
+  limits        Json?    // { menuItems: 10, staff: 2, etc }
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+
 
 enum SubscriptionStatus {
   ACTIVE
@@ -149,7 +199,7 @@ model VendorProfile {
   customDomain          String?            @unique   // e.g., "portal.sweetbakery.com"
   
   // Subscription
-  subscriptionPlan      SubscriptionPlan   @default(BASIC)
+  subscriptionPlan      String             @default("BASIC")
   subscriptionStatus    SubscriptionStatus @default(ACTIVE)
   subscriptionStart     DateTime           @default(now())
   subscriptionEnd       DateTime
@@ -206,6 +256,10 @@ model VendorProfile {
   tiffinDietMaster      TiffinDietType[]
   tiffinSpiceMaster     TiffinSpiceLevel[]
   reservations          Reservation[]
+  recipes               Recipe[]
+  productionPlans       ProductionPlan[]
+  deliveryAgents        DeliveryAgent[]
+  stockAlerts           StockAlert[]
 }
 
 model InventoryCategory {
@@ -404,6 +458,8 @@ model MenuItem {
   orderItems  OrderItem[]
   promoCodeItems PromoCodeItem[]
   media          MenuItemMedia[]
+  recipe         Recipe?
+  productionItems ProductionItem[]
 
   @@index([vendorId])
   @@index([categoryId])
@@ -451,6 +507,9 @@ model InventoryItem {
   orderItems         OrderItem[]
   history            StockHistory[]
   batches            StockBatch[]
+  recipeIngredients  RecipeIngredient[]
+  consumptions       InventoryConsumption[]
+  stockAlerts        StockAlert[]
 
   @@index([vendorId])
   @@index([categoryId])
@@ -752,7 +811,7 @@ model SubscriptionPayment {
   id         String           @id @default(cuid())
   vendorId   String
   amount     Float
-  plan       SubscriptionPlan
+  plan       String
   startDate  DateTime
   endDate    DateTime
   stripeId   String?
@@ -856,6 +915,7 @@ model TiffinSubscription {
   startDate     DateTime               @default(now())
   endDate       DateTime?
   remainingMeals Int
+  customerName  String?                // Specific recipient name for this subscription
   address       String?                // Delivery address for this subscription
   
   // Geolocation
@@ -957,6 +1017,7 @@ model TiffinDelivery {
   notes           String?
   
   subscription    TiffinSubscription @relation(fields: [subscriptionId], references: [id])
+  assignment      DeliveryAssignment?
   
   @@unique([subscriptionId, date, mealType])
 }
@@ -972,6 +1033,8 @@ model TiffinItem {
   updatedAt   DateTime @updatedAt
 
   vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+  recipe      Recipe?
+  productionItems ProductionItem[]
 }
 
 model TiffinMealSession {
@@ -1038,4 +1101,169 @@ model FeatureRequest {
   updatedAt   DateTime @updatedAt
 
   vendor      VendorProfile @relation(fields: [vendorId], references: [id])
+}
+
+model Recipe {
+  id              String           @id @default(cuid())
+  vendorId        String
+  name            String
+  description     String?
+  instructions    String?          @db.Text
+  servings        Float            @default(1) // Base servings this recipe is for
+  
+  // Links (one recipe can be for a MenuItem or a TiffinItem)
+  menuItemId      String?          @unique
+  tiffinItemId    String?          @unique
+  
+  menuItem        MenuItem?        @relation(fields: [menuItemId], references: [id])
+  tiffinItem      TiffinItem?      @relation(fields: [tiffinItemId], references: [id])
+  
+  vendor          VendorProfile    @relation(fields: [vendorId], references: [id])
+  ingredients     RecipeIngredient[]
+  
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([vendorId])
+}
+
+model RecipeIngredient {
+  id              String           @id @default(cuid())
+  recipeId        String
+  inventoryItemId String
+  quantity        Float            // Quantity needed
+  unit            String           // e.g., "kg", "grams", "pcs"
+  wastagePercent  Float            @default(0) // 0-100
+  isOptional      Boolean          @default(false)
+  
+  recipe          Recipe           @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  inventoryItem   InventoryItem    @relation(fields: [inventoryItemId], references: [id])
+
+  @@index([recipeId])
+  @@index([inventoryItemId])
+}
+
+model ProductionPlan {
+  id              String           @id @default(cuid())
+  vendorId        String
+  date            DateTime         @default(now())
+  mealType        TiffinMealType?  // Optional if it's for cafe items
+  status          ProductionStatus @default(PLANNED)
+  
+  // Items to produce
+  items           ProductionItem[]
+  
+  vendor          VendorProfile    @relation(fields: [vendorId], references: [id])
+  
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([vendorId, date, mealType])
+}
+
+model ProductionItem {
+  id              String           @id @default(cuid())
+  planId          String
+  
+  // Link to either MenuItem or TiffinItem
+  menuItemId      String?
+  tiffinItemId    String?
+  
+  name            String           // Snapshot of name
+  estimatedServings Float           // Based on orders/subscriptions
+  actualPrepared  Float            @default(0)
+  wasteQuantity   Float            @default(0)
+  
+  menuItem        MenuItem?        @relation(fields: [menuItemId], references: [id])
+  tiffinItem      TiffinItem?      @relation(fields: [tiffinItemId], references: [id])
+  plan            ProductionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  consumptions    InventoryConsumption[]
+
+  @@index([planId])
+}
+
+model DeliveryAgent {
+  id              String           @id @default(cuid())
+  vendorId        String
+  name            String
+  phone           String
+  email           String?
+  vehicleType     String?          // e.g., "BIKE", "SCOOTER"
+  vehicleNumber   String?
+  status          RiderStatus      @default(OFFLINE)
+  currentLat      Float?
+  currentLng      Float?
+  
+  vendor          VendorProfile    @relation(fields: [vendorId], references: [id])
+  assignments     DeliveryAssignment[]
+  earnings        RiderEarning[]
+  
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([vendorId])
+}
+
+model DeliveryAssignment {
+  id              String           @id @default(cuid())
+  agentId         String
+  deliveryId      String           @unique // Link to TiffinDelivery
+  status          TiffinDeliveryStatus @default(PENDING)
+  assignedAt      DateTime         @default(now())
+  deliveredAt     DateTime?
+  
+  agent           DeliveryAgent    @relation(fields: [agentId], references: [id])
+  delivery        TiffinDelivery   @relation(fields: [deliveryId], references: [id])
+
+  @@index([agentId])
+}
+
+model RiderEarning {
+  id              String           @id @default(cuid())
+  agentId         String
+  amount          Float
+  reason          String?          // e.g., "Per delivery commission", "Bonus"
+  date            DateTime         @default(now())
+  
+  agent           DeliveryAgent    @relation(fields: [agentId], references: [id])
+
+  @@index([agentId])
+}
+
+model InventoryConsumption {
+  id              String           @id @default(cuid())
+  inventoryItemId String
+  productionItemId String?
+  quantity        Float
+  date            DateTime         @default(now())
+  
+  inventoryItem   InventoryItem    @relation(fields: [inventoryItemId], references: [id])
+  productionItem  ProductionItem?  @relation(fields: [productionItemId], references: [id])
+
+  @@index([inventoryItemId])
+}
+
+model StockAlert {
+  id              String           @id @default(cuid())
+  vendorId        String
+  inventoryItemId String
+  message         String
+  severity        String           @default("WARNING") // INFO, WARNING, CRITICAL
+  isResolved      Boolean          @default(false)
+  
+  vendor          VendorProfile    @relation(fields: [vendorId], references: [id])
+  inventoryItem   InventoryItem    @relation(fields: [inventoryItemId], references: [id])
+  
+  createdAt       DateTime         @default(now())
+
+  @@index([vendorId])
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String   @db.Text
+  group       String   @default("GENERAL") // GENERAL, CONNECTIVITY, INFRASTRUCTURE, etc.
+  description String?  @db.Text
+  updatedAt   DateTime @updatedAt
 }

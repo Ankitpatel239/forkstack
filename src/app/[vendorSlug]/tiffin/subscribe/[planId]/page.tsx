@@ -64,13 +64,30 @@ export default async function TiffinCheckoutPage({
                     ))}
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <CardTitle className="text-4xl font-black text-zinc-900 dark:text-white leading-tight">
                       {plan.name}
                     </CardTitle>
-                    <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 font-bold text-xs uppercase tracking-wider">
-                      <Clock size={14} className="text-emerald-500" />
-                      Window: {plan.timeSlot || 'Standard Delivery'}
+                    {plan.description && (
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium italic leading-relaxed">
+                        {plan.description}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-4 pt-2">
+                      <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 font-bold text-[10px] uppercase tracking-wider">
+                        <Clock size={14} className="text-emerald-500" />
+                        Window: {plan.timeSlot || 'Standard Delivery'}
+                      </div>
+                      {plan.dietType && (
+                        <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 font-bold text-[10px] uppercase tracking-wider">
+                          <Badge variant="outline" className="h-4 border-emerald-500/30 text-[8px]">{plan.dietType}</Badge>
+                        </div>
+                      )}
+                      {plan.spiceLevel && (
+                        <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 font-bold text-[10px] uppercase tracking-wider">
+                          <Badge variant="outline" className="h-4 border-orange-500/30 text-[8px]">{plan.spiceLevel} SPICE</Badge>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -100,6 +117,19 @@ export default async function TiffinCheckoutPage({
                     <p className="text-lg font-black text-zinc-900 dark:text-white">{plan.maxSkips}</p>
                   </div>
                 </div>
+
+                {plan.areas && plan.areas.length > 0 && (
+                  <div className="space-y-3">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Service Coverage</p>
+                    <div className="flex flex-wrap gap-2">
+                      {plan.areas.map(area => (
+                        <Badge key={area} variant="outline" className="bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-[10px] px-3">
+                          {area}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {plan.inclusions && plan.inclusions.length > 0 && (
                   <div className="space-y-4">

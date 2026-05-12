@@ -40,6 +40,7 @@ import { HeaderSecurityToggle } from '@/components/dashboard/HeaderSecurityToggl
 import { DashboardLockScreen } from '@/components/dashboard/DashboardLockScreen';
 import { Lock as LockIcon } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { getVendorFeatures } from '@/app/actions/vendor-subscription';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -47,6 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isWorkstationLocked, setIsWorkstationLocked] = useState(false);
   const [lockPassword, setLockPassword] = useState<string | null>(null);
+  const [vendorSubscription, setVendorSubscription] = useState<{ features: string[], category: string } | null>(null);
 
   // Sync workstation lock with session storage
   useEffect(() => {
@@ -65,6 +67,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }
     }
     fetchLockData();
+
+    // Fetch subscription features for vendors
+    async function fetchSubscriptionData() {
+      if (session?.user?.role === 'VENDOR_OWNER') {
+        const result = await getVendorFeatures();
+        if (result.success && result?.data) {
+          setVendorSubscription(result.data);
+        }
+      }
+    }
+    fetchSubscriptionData();
   }, [session]);
 
   const handleLock = () => {
@@ -81,7 +94,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     name: string;
     href: string;
     icon: any;
-    children?: { name: string; href: string }[];
+    requiredCategory?: string | string[];
+    requiredFeature?: string | string[];
+    children?: { name: string; href: string; requiredFeature?: string | string[] }[];
   }
 
   const vendorNavItems: NavItem[] = useMemo(() => [
@@ -91,6 +106,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       name: 'Menu Management', 
       href: '/vendor/menu/items', 
       icon: ChefHat,
+      requiredCategory: ['MENU', 'HYBRID', 'ENTERPRISE'],
       children: [
         { name: 'All Menu Items', href: '/vendor/menu/items' },
         { name: 'Add New Item', href: '/vendor/menu/items?action=add' },
@@ -103,11 +119,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       name: 'Tiffin Service', 
       href: '/vendor/tiffin', 
       icon: Timer,
+      requiredCategory: ['TIFFIN', 'HYBRID', 'ENTERPRISE'],
       children: [
         { name: 'Subscription Orders', href: '/vendor/tiffin/orders' },
         { name: 'Service Plans', href: '/vendor/tiffin/plans' },
         { name: 'All Clients', href: '/vendor/tiffin/subscriptions' },
         { name: 'Daily Deliveries', href: '/vendor/tiffin/deliveries' },
+        { name: 'Kitchen Prep', href: '/vendor/tiffin/production' },
+        { name: 'Delivery Fleet', href: '/vendor/tiffin/riders' },
         { name: 'Menu Planner', href: '/vendor/tiffin/menu' },
       ]
     },
@@ -115,6 +134,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       name: 'Dining Tables', 
       href: '/vendor/tables', 
       icon: LayoutDashboard,
+      requiredFeature: 'QR_ORDERING',
       children: [
         { name: 'Table Layout', href: '/vendor/tables' },
         { name: 'Reservations', href: '/vendor/reservations' },
@@ -122,10 +142,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: 'QR Designer', href: '/vendor/qr-designer' },
       ]
     },
-    { name: 'Inventory', href: '/vendor/inventory', icon: Store },
+    { 
+      name: 'Inventory', 
+      href: '/vendor/inventory', 
+      icon: Store,
+      requiredFeature: 'INVENTORY_SYNC'
+    },
     { name: 'Staff', href: '/vendor/staff', icon: Users },
     { name: 'Payments & Fiscal', href: '/vendor/payments', icon: Wallet },
     { name: 'Settings', href: '/vendor/settings', icon: Settings },
+    { name: 'Subscription & Plans', href: '/vendor/subscription', icon: CreditCard },
     { name: 'Feature Requests', href: '/vendor/requests', icon: MessageSquare },
   ], []);
 
@@ -134,6 +160,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: 'Automation Core', href: '/admin/automation', icon: Brain },
     { name: 'Platform Cron Jobs', href: '/admin/jobs', icon: Timer },
     { name: 'Partner Vendors', href: '/admin/vendors', icon: Store },
+    { name: 'Master Inventory', href: '/admin/inventory', icon: ShoppingBag },
     { name: 'Referral Network', href: '/admin/affiliates', icon: Handshake },
     { name: 'Subscription Plans', href: '/admin/plans', icon: CreditCard },
     { name: 'Global Broadcast', href: '/admin/broadcast', icon: Send },
@@ -148,7 +175,52 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: 'Feature Inbox', href: '/admin/requests', icon: MessageSquare },
   ], []);
 
-  const navItems = session?.user?.role === 'ADMIN' ? adminNavItems : vendorNavItems;
+  const navItems = useMemo(() => {
+    if (session?.user?.role === 'ADMIN') return adminNavItems;
+    
+      // For VENDORS, filter based on subscription
+      return vendorNavItems.filter(item => {
+        // If no requirement, always show
+        if (!item.requiredCategory && !item.requiredFeature) return true;
+        
+        // If we don't have subscription data yet, show only essentials
+        if (!vendorSubscription) {
+          return ['Overview', 'Subscription & Plans', 'Settings', 'Payments & Fiscal'].includes(item.name);
+        }
+
+        const planCategory = vendorSubscription.category;
+        const planFeatures = vendorSubscription.features || [];
+
+        // Special handling for HYBRID: It shouldn't automatically show everything 
+        // unless it has a feature from that module.
+        if (planCategory === 'HYBRID') {
+          // If the item is Tiffin related, check for Tiffin features
+          if (item.name === 'Tiffin Service') {
+            const tiffinFeatures = ['AUTO_RENEWAL', 'DIET_PREFERENCES', 'DELIVERY_TRACKING'];
+            return tiffinFeatures.some(f => planFeatures.includes(f));
+          }
+          // If the item is Menu related, check for Menu features
+          if (item.name === 'Menu Management') {
+            const menuFeatures = ['DIGITAL_MENU', 'QR_ORDERING'];
+            return menuFeatures.some(f => planFeatures.includes(f));
+          }
+        }
+
+        // Broad Category Check
+        if (item.requiredCategory) {
+          const allowedCategories = Array.isArray(item.requiredCategory) ? item.requiredCategory : [item.requiredCategory];
+          if (allowedCategories.includes(planCategory)) return true;
+        }
+
+        // Specific Feature Check
+        if (item.requiredFeature) {
+          const requiredFeatures = Array.isArray(item.requiredFeature) ? item.requiredFeature : [item.requiredFeature];
+          if (requiredFeatures.some(f => planFeatures.includes(f))) return true;
+        }
+
+        return false;
+      });
+  }, [session, adminNavItems, vendorNavItems, vendorSubscription]);
 
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
 

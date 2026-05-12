@@ -1,0 +1,17 @@
+
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+async function main() {
+  const plans = await prisma.platformPlan.findMany({
+    select: {
+      name: true,
+      displayName: true,
+      categoryName: true,
+      features: true
+    }
+  });
+  console.log(JSON.stringify(plans, null, 2));
+}
+
+main().catch(console.error).finally(() => prisma.$disconnect());

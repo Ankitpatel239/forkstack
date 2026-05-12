@@ -91,11 +91,13 @@ export default async function TiffinSubscriptionsPage() {
                     <div className="flex items-center gap-4">
                       <Avatar className="h-12 w-12 rounded-2xl border-2 border-background shadow-lg">
                         <AvatarFallback className="bg-indigo-500 text-white font-black text-lg">
-                          {sub.customer.name.charAt(0)}
+                          {(sub.customerName || sub.customer.name).charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="space-y-1">
-                        <p className="text-sm font-black text-foreground group-hover:text-emerald-500 transition-colors">{sub.customer.name}</p>
+                        <p className="text-sm font-black text-foreground group-hover:text-emerald-500 transition-colors">
+                          {sub.customerName || sub.customer.name}
+                        </p>
                         <p className="text-[10px] font-bold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
                           <Phone className="h-3 w-3 text-indigo-500" /> {sub.customer.phone}
                         </p>
@@ -122,9 +124,25 @@ export default async function TiffinSubscriptionsPage() {
                           {sub.dietTypeSnapshot || sub.plan.dietType || 'VEG'}
                         </Badge>
                         {sub.timeSlotSnapshot && (
-                          <span className="text-[9px] font-black text-muted-foreground/60 uppercase">
-                            {sub.timeSlotSnapshot}
-                          </span>
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {sub.timeSlotSnapshot.split(", ").map((slot, idx) => {
+                              const [session, time] = slot.split(": ");
+                              return (
+                                <div key={idx} className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-white/5 shadow-sm">
+                                  <span className={`text-[7px] font-black ${
+                                    session === 'BREAKFAST' ? 'text-amber-500' : 
+                                    session === 'LUNCH' ? 'text-emerald-500' : 
+                                    session === 'DINNER' ? 'text-indigo-500' : 'text-zinc-500'
+                                  }`}>
+                                    {session.charAt(0)}
+                                  </span>
+                                  <span className="text-[8px] font-bold text-muted-foreground tracking-tighter">
+                                    {time}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -196,3 +214,4 @@ export default async function TiffinSubscriptionsPage() {
     </div>
   );
 }
+

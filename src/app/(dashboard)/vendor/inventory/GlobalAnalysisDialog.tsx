@@ -134,10 +134,10 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-background border-border text-foreground sm:max-w-[700px] p-0 overflow-hidden rounded-[2.5rem] shadow-2xl outline-none">
+      <DialogContent className="bg-background border-border text-foreground sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden rounded-[2.5rem] shadow-2xl outline-none">
         <div className="grid md:grid-cols-5 h-full">
            {/* Sidebar Info */}
-           <div className="md:col-span-2 bg-muted/30 border-r border-border p-8 space-y-8">
+           <div className="md:col-span-2 bg-muted/30 border-r border-border p-8 space-y-8 overflow-y-auto custom-scrollbar">
               <div>
                  <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 mb-4">
                     <BarChart3 size={24} />
@@ -179,7 +179,7 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
            </div>
 
            {/* Main Content */}
-           <div className="md:col-span-3 flex flex-col h-[600px]">
+           <div className="md:col-span-3 flex flex-col h-full max-h-[95vh] overflow-hidden">
               <div className="p-8 border-b border-border bg-card flex flex-col gap-4">
                  <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 flex items-center gap-2">

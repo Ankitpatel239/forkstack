@@ -10,16 +10,28 @@ export async function getCurrentVendor() {
     return null;
   }
 
-  const vendor = await prisma.vendorProfile.findFirst({
-    where: {
-      OR: [
-        { ownerId: (session.user as any).id },
-        { staffAssignments: { some: { userId: (session.user as any).id } } }
-      ]
-    }
-  });
+  const userId = (session.user as any).id;
 
-  return vendor;
+  // Using raw SQL to bypass stale enum validation in the generated Prisma client
+  const vendorsRaw = await prisma.$queryRawUnsafe<any[]>(
+    `SELECT v.* FROM "VendorProfile" v 
+     LEFT JOIN "UserVendorAssignment" uva ON v.id = uva."vendorId"
+     WHERE v."ownerId" = $1 OR uva."userId" = $1
+     LIMIT 1`,
+    userId
+  );
+  
+  const vendor = vendorsRaw[0];
+
+  if (vendor) {
+    // Attach subscription history - using raw SQL to avoid enum parsing errors
+    vendor.subscriptionPayments = await prisma.$queryRawUnsafe<any[]>(
+      `SELECT * FROM "SubscriptionPayment" WHERE "vendorId" = $1 ORDER BY "createdAt" DESC`,
+      vendor.id
+    );
+  }
+
+  return vendor || null;
 }
 
 export async function requireVendor() {
@@ -29,9 +41,14 @@ export async function requireVendor() {
   }
   return vendor;
 }
+
 export async function getVendorBySlug(slug: string) {
   if (!slug) return null;
-  return prisma.vendorProfile.findUnique({
-    where: { tenantSlug: slug }
-  });
+  
+  const vendorsRaw = await prisma.$queryRawUnsafe<any[]>(
+    `SELECT * FROM "VendorProfile" WHERE "tenantSlug" = $1 LIMIT 1`,
+    slug
+  );
+  
+  return vendorsRaw[0] || null;
 }

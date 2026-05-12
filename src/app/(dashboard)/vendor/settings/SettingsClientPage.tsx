@@ -33,7 +33,8 @@ import {
   Badge,
   Check,
   GripVertical,
-  ChevronDown
+  ChevronDown,
+  History
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -738,7 +739,9 @@ export function SettingsClientPage({
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
                      <div className="space-y-2">
                         <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[10px] font-black uppercase tracking-widest mb-2">Current Lifecycle</Badge>
-                        <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">{vendor.subscriptionPlan} Tier</h3>
+                        <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">
+                           {plans.find((p: any) => p.name === vendor.subscriptionPlan)?.displayName || vendor.subscriptionPlan} Tier
+                        </h3>
                         <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">
                            Expires on {new Date(vendor.subscriptionEnd).toLocaleDateString()} • {vendor.subscriptionStatus}
                         </p>
@@ -772,8 +775,13 @@ export function SettingsClientPage({
                                {plan.name} {isCurrent && '• Active Node'}
                             </Badge>
                             <h4 className="text-xl font-black text-white italic uppercase leading-none">{plan.displayName}</h4>
+                             {plan.description && (
+                               <p className="text-[10px] font-medium text-zinc-500 mt-2 leading-relaxed line-clamp-2 italic">
+                                 {plan.description}
+                               </p>
+                             )}
                             <div className="flex items-baseline gap-1 mt-4">
-                               <span className="text-3xl font-black text-white">${plan.price}</span>
+                               <span className="text-3xl font-black text-white">₹{plan.price}</span>
                                <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">/ monthly</span>
                             </div>
                          </div>
@@ -799,19 +807,47 @@ export function SettingsClientPage({
                   })}
                </div>
 
-               <div className="bg-zinc-950/40 border border-zinc-800 p-10 rounded-[2.5rem] flex items-center justify-between gap-10">
-                  <div className="flex items-center gap-6">
-                     <div className="h-16 w-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-500">
-                        <CreditCard size={32} />
-                     </div>
+               <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl">
+                  <div className="p-10 border-b border-zinc-800 bg-zinc-950/20 flex items-center justify-between">
                      <div>
                         <h4 className="text-xl font-black text-white italic uppercase leading-none">Global Ledger History</h4>
                         <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-2">Audit your platform subscription payments and fiscal cycles.</p>
                      </div>
+                     <div className="h-12 w-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-emerald-500">
+                        <CreditCard size={20} />
+                     </div>
                   </div>
-                  <Button variant="outline" className="h-14 px-10 border-zinc-800 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-900">
-                     Audit Billing Node
-                  </Button>
+                  
+                  <div className="divide-y divide-zinc-800">
+                     {(!vendor.subscriptionPayments || vendor.subscriptionPayments.length === 0) ? (
+                        <div className="p-20 text-center text-zinc-600">
+                           <div className="flex flex-col items-center gap-4 opacity-20">
+                              <History size={40} />
+                              <p className="text-[10px] font-black uppercase tracking-widest">No transaction history detected.</p>
+                           </div>
+                        </div>
+                     ) : (
+                        vendor.subscriptionPayments.map((p: any) => (
+                           <div key={p.id} className="p-8 flex items-center justify-between hover:bg-zinc-950/40 transition-all">
+                              <div className="flex items-center gap-6">
+                                 <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                                    <Check size={20} />
+                                 </div>
+                                 <div>
+                                    <p className="text-xs font-black text-white uppercase italic tracking-widest leading-none">{p.plan} Subscription</p>
+                                    <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest mt-2">
+                                       {new Date(p.createdAt).toLocaleDateString()} • Ref: #{p.id.slice(-8).toUpperCase()}
+                                    </p>
+                                 </div>
+                              </div>
+                              <div className="text-right">
+                                 <p className="text-lg font-black text-white italic">₹{p.amount}</p>
+                                 <div className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mt-1">SUCCESS</div>
+                              </div>
+                           </div>
+                        ))
+                     )}
+                  </div>
                </div>
             </div>
          )}

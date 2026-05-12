@@ -242,14 +242,17 @@ export default function TiffinDeliveriesPage() {
                       <Clock size={14} className="text-indigo-500 mt-0.5" />
                       <div className="flex flex-col">
                         <span className="text-[10px] font-black uppercase text-muted-foreground">Slot</span>
-                        <p className="text-[10px] font-bold mt-1">
-                          {sub.timeSlotSnapshot || (
-                            (() => {
-                              const s = sessions.find(s => s.mealType === activeMealType);
-                              return s ? `${s.startTime} - ${s.endTime}` : "Standard";
-                            })()
-                          )}
-                        </p>
+                        <div className="text-[10px] font-bold mt-1">
+                          {(() => {
+                            if (sub.timeSlotSnapshot) {
+                              const slots = sub.timeSlotSnapshot.split(", ");
+                              const matching = slots.find(s => s.startsWith(activeMealType));
+                              if (matching) return matching;
+                            }
+                            const s = sessions.find(s => s.mealType === activeMealType);
+                            return s ? `${s.mealType}: ${s.startTime} - ${s.endTime}` : "Standard";
+                          })()}
+                        </div>
                       </div>
                     </div>
                   </div>

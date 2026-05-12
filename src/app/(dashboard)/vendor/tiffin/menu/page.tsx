@@ -37,6 +37,7 @@ import { TiffinMealType } from "@prisma/client";
 import { toast } from "sonner";
 import { format, addDays, subDays, startOfDay } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import RecipeManagement from "@/components/vendor/tiffin/RecipeManagement";
 import {
   Dialog,
   DialogContent,
@@ -292,6 +293,7 @@ export default function TiffinMenuPage() {
             <TabsTrigger value="daily" className="rounded-xl px-6 data-[state=active]:bg-emerald-500 data-[state=active]:text-white transition-all font-bold text-xs uppercase tracking-widest">Planner</TabsTrigger>
             <TabsTrigger value="sets" className="rounded-xl px-6 data-[state=active]:bg-emerald-500 data-[state=active]:text-white transition-all font-bold text-xs uppercase tracking-widest">Sets</TabsTrigger>
             <TabsTrigger value="schedule" className="rounded-xl px-6 data-[state=active]:bg-emerald-500 data-[state=active]:text-white transition-all font-bold text-xs uppercase tracking-widest">Weekly</TabsTrigger>
+            <TabsTrigger value="recipes" className="rounded-xl px-6 data-[state=active]:bg-emerald-500 data-[state=active]:text-white transition-all font-bold text-xs uppercase tracking-widest">Recipes</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -458,6 +460,10 @@ export default function TiffinMenuPage() {
               </div>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="recipes" className="mt-0 outline-none">
+          <RecipeManagement vendorId={vendorId!} />
         </TabsContent>
       </Tabs>
     </div>

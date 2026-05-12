@@ -55,7 +55,7 @@ export function CheckoutForm({ vendorId, planId, availableOptions }: CheckoutFor
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   
   // Custom Selection State
-  const [selectedSlot, setSelectedSlot] = useState(availableOptions.timeSlots[0] || '');
+  const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
   const [selectedDiet, setSelectedDiet] = useState(availableOptions.dietTypes[0] || '');
   const [selectedSpice, setSelectedSpice] = useState(availableOptions.spiceLevels[0] || '');
 
@@ -93,12 +93,12 @@ export function CheckoutForm({ vendorId, planId, availableOptions }: CheckoutFor
       await createCustomerSubscription({
         vendorId,
         planId,
-        name,
-        phone,
-        email: email || undefined,
+        customerName: name,
+        customerPhone: phone,
+        customerEmail: email || undefined,
         address,
         startDate: new Date(startDate),
-        timeSlot: selectedSlot,
+        timeSlot: selectedSlots.join(", "),
         dietType: selectedDiet,
         spiceLevel: selectedSpice,
         latitude: lat,
@@ -118,31 +118,51 @@ export function CheckoutForm({ vendorId, planId, availableOptions }: CheckoutFor
     }
   };
 
-  const ChipGroup = ({ label, options, selected, onSelect, icon: Icon, colorClass }: any) => (
-    <div className="space-y-3">
-      <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-1 flex items-center gap-2">
-        <Icon size={12} className={colorClass} /> {label}
-      </Label>
-      <div className="flex flex-wrap gap-2">
-        {options.map((opt: string) => (
-          <button
-            key={opt}
-            type="button"
-            onClick={() => onSelect(opt)}
-            className={cn(
-              "px-4 py-2 rounded-xl text-xs font-bold transition-all border",
-              selected === opt 
-                ? "bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 border-transparent shadow-lg" 
-                : "bg-zinc-50 dark:bg-zinc-950/50 border-zinc-200 dark:border-white/5 text-zinc-500 hover:border-zinc-300 dark:hover:border-white/10"
-            )}
-          >
-            {opt}
-          </button>
-        ))}
-        {options.length === 0 && <span className="text-[10px] text-zinc-400 italic">No options defined by vendor</span>}
+  const ChipGroup = ({ label, options, selected, onSelect, icon: Icon, colorClass, multi = false }: any) => {
+    const isSelected = (opt: string) => {
+      if (multi) return (selected as string[]).includes(opt);
+      return selected === opt;
+    };
+
+    const handleSelect = (opt: string) => {
+      if (multi) {
+        const current = selected as string[];
+        if (current.includes(opt)) {
+          onSelect(current.filter(s => s !== opt));
+        } else {
+          onSelect([...current, opt]);
+        }
+      } else {
+        onSelect(opt);
+      }
+    };
+
+    return (
+      <div className="space-y-3">
+        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-1 flex items-center gap-2">
+          <Icon size={12} className={colorClass} /> {label}
+        </Label>
+        <div className="flex flex-wrap gap-2">
+          {options.map((opt: string) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => handleSelect(opt)}
+              className={cn(
+                "px-4 py-2 rounded-xl text-xs font-bold transition-all border",
+                isSelected(opt)
+                  ? "bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 border-transparent shadow-lg" 
+                  : "bg-zinc-50 dark:bg-zinc-950/50 border-zinc-200 dark:border-white/5 text-zinc-500 hover:border-zinc-300 dark:hover:border-white/10"
+              )}
+            >
+              {opt}
+            </button>
+          ))}
+          {options.length === 0 && <span className="text-[10px] text-zinc-400 italic">No options defined by vendor</span>}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (isSuccess) {
     return (
@@ -238,24 +258,15 @@ export function CheckoutForm({ vendorId, planId, availableOptions }: CheckoutFor
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div className="space-y-4">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-1 flex items-center gap-2">
-              <Clock size={12} className="text-blue-500" /> Dispatch Window
-            </Label>
-            <Select value={selectedSlot} onValueChange={setSelectedSlot}>
-              <SelectTrigger className="h-20 rounded-[1.5rem] bg-zinc-50 dark:bg-zinc-950/50 border-zinc-200 dark:border-white/5 font-bold text-lg px-6">
-                <SelectValue placeholder="Select session" />
-              </SelectTrigger>
-              <SelectContent className="rounded-2xl border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900">
-                {availableOptions.timeSlots.map((slot) => (
-                  <SelectItem key={slot} value={slot} className="font-bold py-4 rounded-xl focus:bg-emerald-500 focus:text-zinc-950">
-                    {slot}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {availableOptions.timeSlots.length === 0 && <p className="text-[10px] text-zinc-400 italic">Default timing applies</p>}
-          </div>
+          <ChipGroup 
+            label="Service Sessions" 
+            options={availableOptions.timeSlots} 
+            selected={selectedSlots} 
+            onSelect={setSelectedSlots} 
+            icon={Clock} 
+            colorClass="text-blue-500"
+            multi={true}
+          />
 
           <div className="space-y-4">
             <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-1">Activation Date</Label>

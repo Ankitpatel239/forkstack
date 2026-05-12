@@ -115,7 +115,7 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-background border-border text-foreground sm:max-w-[500px] p-0 overflow-hidden rounded-[2rem] shadow-2xl outline-none">
+      <DialogContent className="bg-background border-border text-foreground sm:max-w-[500px] max-h-[95vh] p-0 overflow-hidden flex flex-col rounded-[2rem] shadow-2xl outline-none">
         <DialogHeader className="p-6 pb-2 bg-gradient-to-br from-muted/50 to-background border-b border-border/50">
            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -140,7 +140,7 @@ export function ItemAnalysisDialog({ item, history = [], open, onOpenChange }: I
           <AnalysisTab id="FULL" label="Full Intel" icon={Zap} active={view === 'FULL'} onClick={() => setView('FULL')} />
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
           {view === 'SALES' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                <div className="grid grid-cols-2 gap-4">

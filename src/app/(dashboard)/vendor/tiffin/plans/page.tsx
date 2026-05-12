@@ -54,7 +54,16 @@ export default async function TiffinPlansPage() {
               
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start mb-2">
-                  <CardTitle className="text-xl font-black">{plan.name}</CardTitle>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2 mb-1">
+                      {plan.tags.includes('B2B') ? (
+                        <Badge className="bg-indigo-500/10 text-indigo-500 border-indigo-500/20 text-[8px] font-black tracking-widest px-1">B2B CORPORATE</Badge>
+                      ) : plan.tags.includes('B2C') ? (
+                        <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[8px] font-black tracking-widest px-1">B2C INDIVIDUAL</Badge>
+                      ) : null}
+                    </div>
+                    <CardTitle className="text-xl font-black">{plan.name}</CardTitle>
+                  </div>
                   <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-black uppercase tracking-widest text-[10px]">
                     {plan.mealTypes.join(" + ")}
                   </Badge>

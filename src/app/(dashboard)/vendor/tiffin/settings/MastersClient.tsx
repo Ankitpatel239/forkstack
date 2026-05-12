@@ -80,7 +80,19 @@ export default function MastersClient({
   const [newSpiceLevel, setNewSpiceLevel] = useState('');
 
   // Session states
-  const getSession = (type: TiffinMealType) => sessions.find(s => s.mealType === type) || { startTime: '08:00 AM', endTime: '10:00 AM', isActive: false };
+  const getSession = (type: TiffinMealType) => {
+    const session = sessions.find(s => s.mealType === type);
+    if (session) return session;
+    
+    // Sensible defaults if not set
+    switch(type) {
+      case 'BREAKFAST': return { startTime: '08:00 AM', endTime: '10:00 AM', isActive: false };
+      case 'LUNCH': return { startTime: '12:00 PM', endTime: '02:00 PM', isActive: false };
+      case 'DINNER': return { startTime: '07:30 PM', endTime: '09:30 PM', isActive: false };
+      default: return { startTime: '08:00 AM', endTime: '10:00 AM', isActive: false };
+    }
+  };
+
   const [sessionForm, setSessionForm] = useState({
     BREAKFAST: getSession(TiffinMealType.BREAKFAST),
     LUNCH: getSession(TiffinMealType.LUNCH),

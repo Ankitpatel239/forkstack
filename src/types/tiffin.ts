@@ -48,6 +48,7 @@ export interface TiffinSubscription {
   startDate: Date;
   endDate: Date | null;
   remainingMeals: number;
+  customerName: string | null;
   address: string | null;
   latitude: number | null;
   longitude: number | null;

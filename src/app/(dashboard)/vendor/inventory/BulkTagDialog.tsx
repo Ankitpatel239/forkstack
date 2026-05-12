@@ -144,11 +144,11 @@ export function BulkTagDialog({ items, open, onOpenChange }: BulkTagDialogProps)
 
             <div id="printable-area" className="grid grid-cols-2 gap-4">
                {items.map((item: any) => (
-                 <div key={item.id} className="print-tag bg-card text-foreground p-4 rounded-2xl border border-border/50 shadow-sm flex flex-col items-center gap-3 relative overflow-hidden min-h-[250px] justify-between text-center">
+                  <div key={item.id} className="print-tag bg-white text-zinc-950 p-4 rounded-2xl border border-zinc-200 shadow-xl flex flex-col items-center gap-3 relative overflow-hidden min-h-[250px] justify-between text-center group hover:scale-[1.02] transition-all duration-300">
                     {/* Design Header */}
                     <div className="w-full">
-                       <h3 className="text-[12px] font-black uppercase tracking-tighter line-clamp-1 text-foreground">{item.name}</h3>
-                       <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest mt-0.5">SKU: {item.sku || 'N/A'}</p>
+                        <h3 className="text-[12px] font-black uppercase tracking-tighter line-clamp-1 text-zinc-950">{item.name}</h3>
+                        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">SKU: {item.sku || 'N/A'}</p>
                     </div>
 
                     {/* Code Section */}
@@ -161,9 +161,9 @@ export function BulkTagDialog({ items, open, onOpenChange }: BulkTagDialogProps)
                     </div>
 
                     {/* Location/Footer */}
-                    <div className="w-full border-t border-border/50 pt-2 mt-auto">
-                       <span className="text-[10px] font-black uppercase text-emerald-500 tracking-widest">LOC: {item.location || 'UNSPECIFIED'}</span>
-                    </div>
+                     <div className="w-full border-t border-zinc-100 pt-2 mt-auto">
+                        <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest">LOC: {item.location || 'UNSPECIFIED'}</span>
+                     </div>
 
                     {/* Corner Accents for screen aesthetics */}
                     <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-emerald-500/10 no-print" />

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Share2, Link as LinkIcon, ExternalLink, Check } from 'lucide-react';
 import { toast } from 'sonner';
@@ -13,10 +13,16 @@ interface ShareShopButtonProps {
 
 export function ShareShopButton({ slug, businessName }: ShareShopButtonProps) {
   const [copied, setCopied] = useState(false);
-  
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const [origin, setOrigin] = useState('');
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
   const shopUrl = `${origin}/${slug}`;
   const tiffinUrl = `${origin}/${slug}/tiffin`;
+  const relativeTiffinUrl = `/${slug}/tiffin`;
+  const relativeShopUrl = `/${slug}`;
 
   const copyToClipboard = async (url: string, label: string) => {
     try {
@@ -72,7 +78,7 @@ export function ShareShopButton({ slug, businessName }: ShareShopButtonProps) {
           asChild
           className="rounded-xl font-bold text-[10px] uppercase tracking-widest h-10 border-border/50 hover:bg-muted"
         >
-          <a href={tiffinUrl} target="_blank" rel="noopener noreferrer">
+          <a href={relativeTiffinUrl} target="_blank" rel="noopener noreferrer">
             <ExternalLink size={14} className="mr-2" />
             View Public Page
           </a>

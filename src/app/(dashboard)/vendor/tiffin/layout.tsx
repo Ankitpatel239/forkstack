@@ -1,11 +1,19 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getVendorFeatures } from "@/app/actions/vendor-subscription";
 
-export default function TiffinLayout({
+export default async function TiffinLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const result = await getVendorFeatures();
+  
+  if (!result?.success || !['TIFFIN', 'HYBRID', 'ENTERPRISE'].includes(result?.data?.category)) {
+    redirect('/vendor/subscription?error=plan_restriction');
+  }
+
   return (
     <div className="flex flex-col h-full space-y-8 p-1 sm:p-4">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/50 pb-6">

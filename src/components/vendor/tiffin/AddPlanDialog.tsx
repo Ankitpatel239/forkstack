@@ -52,7 +52,8 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
     paymentType: "PREPAID",
     autoRenew: false,
     maxSubscribers: "",
-    tags: [] as string[]
+    tags: [] as string[],
+    planType: "B2C"
   });
 
   const [areaInput, setAreaInput] = useState("");
@@ -109,6 +110,7 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
         deliveryRadiusKm: formData.deliveryRadiusKm ? parseFloat(formData.deliveryRadiusKm) : null,
         maxSkips: parseInt(formData.maxSkips),
         maxSubscribers: formData.maxSubscribers ? parseInt(formData.maxSubscribers) : null,
+        tags: [...formData.tags, formData.planType],
       });
       toast.success("Tiffin plan created successfully!");
       setOpen(false);
@@ -180,6 +182,26 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
                 <div className="grid gap-2">
                   <Label className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Plan Name</Label>
                   <Input required placeholder="e.g. Premium Veg Monthly" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="h-12 rounded-xl bg-background/50" />
+                </div>
+                <div className="grid gap-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Subscription Nature</Label>
+                  <div className="flex gap-4">
+                    {['B2C', 'B2B'].map(type => (
+                      <div 
+                        key={type}
+                        onClick={() => setFormData({...formData, planType: type})}
+                        className={`flex-1 p-4 rounded-2xl border cursor-pointer transition-all ${formData.planType === type ? 'border-emerald-500 bg-emerald-500/5 ring-1 ring-emerald-500' : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700'}`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className={`text-[10px] font-black uppercase tracking-widest ${formData.planType === type ? 'text-emerald-500' : 'text-zinc-500'}`}>{type}</span>
+                          {formData.planType === type && <Check className="text-emerald-500" size={14} />}
+                        </div>
+                        <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-tighter">
+                          {type === 'B2C' ? 'Individual / Household' : 'Corporate / Bulk / Office'}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
