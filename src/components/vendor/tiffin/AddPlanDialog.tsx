@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2, Save, Utensils, Truck, Settings, Wallet, Info, X } from "lucide-react";
+import { Plus, Loader2, Save, Utensils, Truck, Settings, Wallet, Info, X, Check } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
@@ -133,7 +133,8 @@ export function AddPlanDialog({ vendorId }: AddPlanDialogProps) {
         paymentType: "PREPAID",
         autoRenew: false,
         maxSubscribers: "",
-        tags: []
+        tags: [],
+        planType: "B2C"
       });
       router.refresh();
     } catch (error) {

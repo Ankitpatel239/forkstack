@@ -97,6 +97,7 @@ export default function MastersClient({
     BREAKFAST: getSession(TiffinMealType.BREAKFAST),
     LUNCH: getSession(TiffinMealType.LUNCH),
     DINNER: getSession(TiffinMealType.DINNER),
+    BOTH: getSession(TiffinMealType.BOTH),
   });
 
   const handleUpdateSession = async (type: TiffinMealType) => {

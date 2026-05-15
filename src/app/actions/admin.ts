@@ -18,7 +18,7 @@ export async function createVendor(data: {
   try {
     const vendor = await prisma.vendorProfile.create({
       data: {
-        ...data,
+        ...(data as any),
         subscriptionStatus: 'ACTIVE',
         subscriptionEnd: new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // 1 year default
       }
@@ -34,7 +34,7 @@ export async function updateVendor(id: string, data: any) {
   try {
     const vendor = await prisma.vendorProfile.update({
       where: { id },
-      data
+      data: data as any
     });
     revalidatePath('/admin/vendors');
     return { success: true, data: vendor };

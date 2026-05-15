@@ -42,17 +42,17 @@ export async function deductStockForProduction(productionItemId: string, actualP
     const invItem = await prisma.inventoryItem.update({
       where: { id: ingredient.inventoryItemId },
       data: {
-        currentStock: { decrement: consumptionQty }
+        quantity: { decrement: consumptionQty }
       }
     });
 
     // Check for low stock alert
-    if (invItem.currentStock < (invItem.minStockLevel || 0)) {
+    if (invItem.quantity < (invItem.lowStockThreshold || 0)) {
       await prisma.stockAlert.create({
         data: {
           vendorId: invItem.vendorId,
           inventoryItemId: invItem.id,
-          message: `Low stock for ${invItem.name}: ${invItem.currentStock.toFixed(2)} ${invItem.unit} left.`,
+          message: `Low stock for ${invItem.name}: ${invItem.quantity.toFixed(2)} ${invItem.unit} left.`,
           severity: 'WARNING'
         }
       });
@@ -101,8 +101,8 @@ export async function getStockImpactPreview(productionItemId: string, quantity: 
   return recipe.ingredients.map(ing => ({
     name: ing.inventoryItem.name,
     required: ing.quantity * multiplier,
-    available: ing.inventoryItem.currentStock,
+    available: ing.inventoryItem.quantity,
     unit: ing.unit,
-    isShortage: (ing.inventoryItem.currentStock < (ing.quantity * multiplier))
+    isShortage: (ing.inventoryItem.quantity < (ing.quantity * multiplier))
   }));
 }

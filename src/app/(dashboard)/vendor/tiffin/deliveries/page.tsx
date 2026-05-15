@@ -246,10 +246,10 @@ export default function TiffinDeliveriesPage() {
                           {(() => {
                             if (sub.timeSlotSnapshot) {
                               const slots = sub.timeSlotSnapshot.split(", ");
-                              const matching = slots.find(s => s.startsWith(activeMealType));
+                              const matching = slots.find((s: string) => s.startsWith(activeMealType));
                               if (matching) return matching;
                             }
-                            const s = sessions.find(s => s.mealType === activeMealType);
+                            const s = sessions.find((s: any) => s.mealType === activeMealType);
                             return s ? `${s.mealType}: ${s.startTime} - ${s.endTime}` : "Standard";
                           })()}
                         </div>

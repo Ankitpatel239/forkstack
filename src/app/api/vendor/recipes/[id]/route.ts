@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentVendor } from '@/lib/vendor';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const vendor = await getCurrentVendor();
   if (!vendor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
     const recipe = await prisma.recipe.findFirst({
-      where: { id: params.id, vendorId: vendor.id },
+      where: { id, vendorId: vendor.id },
       include: {
         ingredients: {
           include: {
@@ -28,7 +29,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const vendor = await getCurrentVendor();
   if (!vendor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -40,12 +42,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const updatedRecipe = await prisma.$transaction(async (tx) => {
       // Delete old ingredients
       await tx.recipeIngredient.deleteMany({
-        where: { recipeId: params.id }
+        where: { recipeId: id }
       });
 
       // Update recipe
       return await tx.recipe.update({
-        where: { id: params.id, vendorId: vendor.id },
+        where: { id, vendorId: vendor.id },
         data: {
           name,
           description,
@@ -80,13 +82,14 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const vendor = await getCurrentVendor();
   if (!vendor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
     await prisma.recipe.delete({
-      where: { id: params.id, vendorId: vendor.id }
+      where: { id, vendorId: vendor.id }
     });
     return NextResponse.json({ success: true });
   } catch (error: any) {

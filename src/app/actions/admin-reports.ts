@@ -10,7 +10,7 @@ export async function getPlatformReports() {
     const vendors = await prisma.vendorProfile.findMany({
       select: { subscriptionPlan: true }
     });
-    
+
     const distribution: Record<string, number> = { total: vendors.length };
     vendors.forEach(v => {
       distribution[v.subscriptionPlan] = (distribution[v.subscriptionPlan] || 0) + 1;
@@ -23,7 +23,11 @@ export async function getPlatformReports() {
     });
 
     const orderRevenue = await prisma.order.aggregate({
-      where: { paymentStatus: 'COMPLETED' },
+      where: { 
+        payment: {
+          status: 'COMPLETED'
+        }
+      },
       _sum: { totalAmount: true }
     });
 
@@ -64,8 +68,8 @@ export async function getPlatformReports() {
         distribution,
         revenue: {
           subscriptions: subscriptionRevenue._sum.amount || 0,
-          orders: orderRevenue._sum.amount || 0,
-          platformFees: (orderRevenue._sum.amount || 0) * 0.05 // Example 5% fee
+          orders: orderRevenue?._sum?.totalAmount || 0,
+          platformFees: (orderRevenue?._sum?.totalAmount || 0) * 0.05 // Example 5% fee
         },
         monthlyData,
         recentTransactions

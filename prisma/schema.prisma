@@ -15,6 +15,13 @@ enum ProductionStatus {
   DISPATCHED
 }
 
+enum SubscriptionPlan {
+  BASIC
+  PRO
+  ENTERPRISE
+  HYBRID_STANDARD @map("Hybrid Standard")
+}
+
 enum RiderStatus {
   AVAILABLE
   ASSIGNED
@@ -199,7 +206,7 @@ model VendorProfile {
   customDomain          String?            @unique   // e.g., "portal.sweetbakery.com"
   
   // Subscription
-  subscriptionPlan      String             @default("BASIC")
+  subscriptionPlan      SubscriptionPlan   @default(BASIC)
   subscriptionStatus    SubscriptionStatus @default(ACTIVE)
   subscriptionStart     DateTime           @default(now())
   subscriptionEnd       DateTime
@@ -811,7 +818,7 @@ model SubscriptionPayment {
   id         String           @id @default(cuid())
   vendorId   String
   amount     Float
-  plan       String
+  plan       SubscriptionPlan
   startDate  DateTime
   endDate    DateTime
   stripeId   String?
@@ -854,6 +861,7 @@ enum TiffinMealType {
   BREAKFAST
   LUNCH
   DINNER
+  BOTH
 }
 
 enum TiffinSubscriptionStatus {
