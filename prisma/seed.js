@@ -14,61 +14,106 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  // 1. Seed Categories
+  const categories = [
+    { name: 'MENU', label: 'Menu Management', description: 'Core digital menu and QR ordering systems.', icon: 'LayoutGrid' },
+    { name: 'POS', label: 'Point of Sale', description: 'Point of Sale and billing systems.', icon: 'CreditCard' },
+    { name: 'ORDER', label: 'Order Management', description: 'Complete order management.', icon: 'ShoppingCart' },
+    { name: 'TIFFIN', label: 'Tiffin Service', description: 'Subscription based meal delivery orchestration.', icon: 'Package' },
+    { name: 'HYBRID', label: 'Hybrid Stack', description: 'Complete restaurant and delivery management suite.', icon: 'Zap' },
+    { name: 'ENTERPRISE', label: 'Enterprise', description: 'Custom infrastructure for large hospitality groups.', icon: 'ShieldCheck' },
+  ];
+
+  console.log('Seeding platform categories...');
+  for (const cat of categories) {
+    await prisma.platformCategory.upsert({
+      where: { name: cat.name },
+      update: cat,
+      create: cat,
+    });
+  }
+
+  // 2. Seed Limits
+  const limits = [
+    { key: 'menuItems', label: 'Menu Items', unit: 'Items', description: 'Max items in digital menu' },
+    { key: 'staff', label: 'Staff Accounts', unit: 'Users', description: 'Number of team members allowed' },
+    { key: 'whatsapp', label: 'WhatsApp Alerts', unit: 'Msgs', description: 'Monthly WhatsApp quota' },
+    { key: 'posTable', label: 'POS Tables', unit: 'Tables', description: 'Active tables supported' },
+  ];
+
+  console.log('Seeding platform limits...');
+  for (const limit of limits) {
+    await prisma.platformLimit.upsert({
+      where: { key: limit.key },
+      update: limit,
+      create: limit,
+    });
+  }
+
+  // 3. Seed Features
+  const features = [
+    { key: 'QR_ORDERING', label: 'QR Table Ordering', categoryName: 'MENU', description: 'Self-service ordering via QR codes' },
+    { key: 'DIGITAL_MENU', label: 'Digital Menu', categoryName: 'MENU', description: 'Interactive mobile-friendly menu' },
+    { key: 'AUTO_RENEWAL', label: 'Auto-Renewal', categoryName: 'TIFFIN', description: 'Auto subscription management' },
+  ];
+
+  console.log('Seeding platform features...');
+  for (const feature of features) {
+    await prisma.platformFeature.upsert({
+      where: { key: feature.key },
+      update: feature,
+      create: feature,
+    });
+  }
+
+  // 4. Seed Plans
   const platformPlans = [
     {
       name: 'BASIC',
+      categoryName: 'MENU',
       displayName: 'Essential Starter',
       description: 'Perfect for small cafes and bootstrap eateries.',
       price: 29.00,
-      features: [
-        '50 Menu Items',
-        'Basic Analytics',
-        'Standard Support',
-        'QR Table Ordering',
-        'Digital Menu'
-      ],
-      isActive: true,
+      features: ['DIGITAL_MENU'],
+      limits: { menuItems: 50, staff: 2, posTable: 5 },
     },
     {
       name: 'PRO',
+      categoryName: 'MENU',
       displayName: 'Business Professional',
-      description: 'Advanced features for growing restaurants and professional kitchens.',
+      description: 'Advanced features for growing restaurants.',
       price: 99.00,
-      features: [
-        'Unlimited Menu Items',
-        'Advanced Analytics',
-        'Priority Support',
-        'WhatsApp Integration',
-        'Custom Domain',
-        'Inventory Management',
-        'Staff Roles'
-      ],
-      isActive: true,
-    },
-    {
-      name: 'ENTERPRISE',
-      displayName: 'Platform Scaler',
-      description: 'Enterprise grade infrastructure for large hospitality groups.',
-      price: 299.00,
-      features: [
-        'Multi-store Support',
-        'Dedicated Manager',
-        'SLA Guarantee',
-        'API Access',
-        'Whitelabeling',
-        'Advanced Marketing automation',
-        'AI Insights'
-      ],
-      isActive: true,
+      features: ['DIGITAL_MENU', 'QR_ORDERING'],
+      limits: { menuItems: 200, staff: 10, posTable: 20 },
     }
   ];
 
   console.log('Seeding platform subscription plans...');
-  for (const plan of platformPlans) {
+  for (const planData of platformPlans) {
+    const { features, limits, ...baseData } = planData;
     await prisma.platformPlan.upsert({
-      where: { name: plan.name },
-      update: plan,
-      create: plan,
+      where: { name: baseData.name },
+      update: {
+        ...baseData,
+        features: { set: features.map(f => ({ key: f })) },
+        limits: {
+          deleteMany: {},
+          create: Object.entries(limits).map(([key, value]) => ({
+            limitKey: key,
+            value: value
+          }))
+        }
+      },
+      create: {
+        ...baseData,
+        features: { connect: features.map(f => ({ key: f })) },
+        limits: {
+          create: Object.entries(limits).map(([key, value]) => ({
+            limitKey: key,
+            value: value
+          }))
+        }
+      },
     });
   }
 
