@@ -6,6 +6,9 @@ import { revalidatePath } from 'next/cache';
 export async function seedPlatformCategories() {
   const categories = [
     { name: 'MENU', label: 'Menu Management', description: 'Core digital menu and QR ordering systems.', icon: 'LayoutGrid' },
+    { name: 'POS', label: 'Point of Sale', description: 'Point of Sale and billing systems.', icon: 'CreditCard' },
+    { name: 'ORDER', label: 'Order Management', description: 'Complete order management.', icon: 'ShoppingCart' },
+    
     { name: 'TIFFIN', label: 'Tiffin Service', description: 'Subscription based meal delivery orchestration.', icon: 'Package' },
     { name: 'HYBRID', label: 'Hybrid Stack', description: 'Complete restaurant and delivery management suite.', icon: 'Zap' },
     { name: 'ENTERPRISE', label: 'Enterprise', description: 'Custom infrastructure for large hospitality groups.', icon: 'ShieldCheck' },
@@ -72,6 +75,9 @@ export async function seedPlatformFeatures() {
     { key: 'WHITE_LABEL', label: 'White Labeling', categoryName: 'ENTERPRISE', description: 'Full custom branding and domain support' },
     { key: 'API_ACCESS', label: 'External API Access', categoryName: 'ENTERPRISE', description: 'Connect third-party apps to your data' },
     { key: 'CUSTOM_CONTRACTS', label: 'Custom Contracts', categoryName: 'ENTERPRISE', description: 'Tailored billing and SLA terms' },
+    
+    // GLOBAL / CORE
+    { key: 'TEAM_MANAGEMENT', label: 'Staff & Roles', categoryName: 'HYBRID', description: 'Manage team members and granular permissions' },
   ];
 
   try {
@@ -107,7 +113,7 @@ export async function seedDemoPlans() {
       displayName: 'Smart Dining',
       description: 'Full QR ordering and advanced management.',
       price: 2499,
-      features: ['DIGITAL_MENU', 'QR_ORDERING', 'BASIC_ANALYTICS'],
+      features: ['DIGITAL_MENU', 'QR_ORDERING', 'BASIC_ANALYTICS', 'TEAM_MANAGEMENT'],
       limits: { menuItems: 200, staff: 5, whatsapp: 1000, posTable: 20 },
     },
     {
@@ -116,7 +122,7 @@ export async function seedDemoPlans() {
       displayName: 'Ultimate Menu',
       description: 'High-volume dining with priority support.',
       price: 4999,
-      features: ['DIGITAL_MENU', 'QR_ORDERING', 'BASIC_ANALYTICS', 'ADVANCED_REPORTS'],
+      features: ['DIGITAL_MENU', 'QR_ORDERING', 'BASIC_ANALYTICS', 'ADVANCED_REPORTS', 'TEAM_MANAGEMENT'],
       limits: { menuItems: 0, staff: 15, whatsapp: 5000, posTable: 0 },
     },
 
@@ -136,7 +142,7 @@ export async function seedDemoPlans() {
       displayName: 'Delivery Pro',
       description: 'Scale your catering business with ease.',
       price: 3999,
-      features: ['AUTO_RENEWAL', 'DIET_PREFERENCES', 'DELIVERY_TRACKING'],
+      features: ['AUTO_RENEWAL', 'DIET_PREFERENCES', 'DELIVERY_TRACKING', 'TEAM_MANAGEMENT'],
       limits: { staff: 10, whatsapp: 3000, deliveryRadius: 15 },
     },
     {
@@ -145,7 +151,7 @@ export async function seedDemoPlans() {
       displayName: 'Catering Giant',
       description: 'Enterprise grade delivery orchestration.',
       price: 8999,
-      features: ['AUTO_RENEWAL', 'DIET_PREFERENCES', 'DELIVERY_TRACKING', 'INVENTORY_SYNC'],
+      features: ['AUTO_RENEWAL', 'DIET_PREFERENCES', 'DELIVERY_TRACKING', 'INVENTORY_SYNC', 'TEAM_MANAGEMENT'],
       limits: { staff: 0, whatsapp: 10000, deliveryRadius: 50 },
     },
 
@@ -156,7 +162,7 @@ export async function seedDemoPlans() {
       displayName: 'Hybrid Standard',
       description: 'Combined power of dine-in and inventory tracking.',
       price: 5999,
-      features: ['DIGITAL_MENU', 'QR_ORDERING', 'INVENTORY_SYNC'],
+      features: ['DIGITAL_MENU', 'QR_ORDERING', 'INVENTORY_SYNC', 'TEAM_MANAGEMENT'],
       limits: { menuItems: 500, staff: 20, whatsapp: 5000, posTable: 50 },
     },
 
@@ -167,17 +173,42 @@ export async function seedDemoPlans() {
       displayName: 'Platform Scaler',
       description: 'The definitive solution for hospitality chains.',
       price: 19999,
-      features: ['WHITE_LABEL', 'API_ACCESS', 'MULTI_VENDOR', 'CUSTOM_CONTRACTS'],
+      features: ['WHITE_LABEL', 'API_ACCESS', 'MULTI_VENDOR', 'CUSTOM_CONTRACTS', 'TEAM_MANAGEMENT'],
       limits: { menuItems: 0, staff: 0, whatsapp: 0, storage: 100, posTable: 0 },
     },
   ];
 
   try {
-    for (const plan of plans) {
+    for (const planData of plans) {
+      const { features, limits, ...baseData } = planData;
+      
       await (prisma as any).platformPlan.upsert({
-        where: { name: plan.name },
-        update: plan,
-        create: plan,
+        where: { name: baseData.name },
+        update: {
+          ...baseData,
+          features: {
+            set: features.map((f: string) => ({ key: f }))
+          },
+          limits: {
+            deleteMany: {},
+            create: Object.entries(limits).map(([key, value]) => ({
+              limitKey: key,
+              value: value as number
+            }))
+          }
+        },
+        create: {
+          ...baseData,
+          features: {
+            connect: features.map((f: string) => ({ key: f }))
+          },
+          limits: {
+            create: Object.entries(limits).map(([key, value]) => ({
+              limitKey: key,
+              value: value as number
+            }))
+          }
+        },
       });
     }
     revalidatePath('/admin/plans');

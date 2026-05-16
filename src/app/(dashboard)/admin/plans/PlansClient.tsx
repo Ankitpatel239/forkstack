@@ -94,7 +94,8 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
     description: '',
     price: 0,
     features: [] as string[],
-    limits: {} as Record<string, number>
+    limits: {} as Record<string, number>,
+    isPublic: true
   });
 
   const [featureForm, setFeatureForm] = useState({
@@ -127,8 +128,12 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
         displayName: plan.displayName,
         description: plan.description || '',
         price: plan.price,
-        features: plan.features,
-        limits: plan.limits || {}
+        features: (plan.features || []).map((f: any) => f.key),
+        limits: (plan.limits || []).reduce((acc: any, l: any) => ({ 
+          ...acc, 
+          [l.limitKey]: l.value 
+        }), {}),
+        isPublic: plan.isPublic !== false
       });
     } else {
       setEditingPlan(null);
@@ -141,7 +146,8 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
         description: '',
         price: 0,
         features: [],
-        limits: defaultLimits
+        limits: defaultLimits,
+        isPublic: true
       });
     }
     setIsPlanModalOpen(true);
@@ -398,7 +404,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
               await seedPlatformLimits();
               await seedPlatformFeatures();
               await seedDemoPlans();
-              toast.success('All platform masters and plans seeded');
+              toast.success('Successfully initialized all data');
               window.location.reload();
             } catch (e: any) {
               toast.error(e.message);
@@ -409,8 +415,20 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
           className="rounded-xl bg-white hover:bg-zinc-200 text-black font-black uppercase tracking-widest text-[10px] h-12 px-8 shadow-xl"
           disabled={loading}
         >
-          <Database className="w-4 h-4 mr-2" /> Seed All Masters & Plans
+          <Database className="w-4 h-4 mr-2" /> Initial Setup (Demo Data)
         </Button>
+      </div>
+
+      <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-3xl p-6 mb-8 flex items-start gap-4 shadow-2xl">
+        <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+          <ShieldCheck size={20} />
+        </div>
+        <div>
+          <h4 className="text-[10px] font-black text-emerald-500 uppercase tracking-widest italic mb-1">Architecture Guidance</h4>
+          <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-tight leading-relaxed">
+            Selecting <span className="text-white">Feature Nodes</span> (e.g. QR_ORDERING, TEAM_MANAGEMENT) during plan creation will <span className="text-emerald-500 italic">automatically</span> control the visibility of menus in the Vendor side-bar. Set <span className="text-white italic">Numerical Limits</span> to define the operational scale (0 = Unlimited).
+          </p>
+        </div>
       </div>
 
       <Tabs defaultValue="plans" className="w-full">
@@ -419,13 +437,13 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
             <LayoutGrid size={14} /> Subscription Plans
           </TabsTrigger>
           <TabsTrigger value="master" className="rounded-xl data-[state=active]:bg-zinc-900 data-[state=active]:text-blue-500 px-8 font-black uppercase tracking-widest text-[10px] h-full flex items-center gap-2">
-            <ListChecks size={14} /> Feature Master
+            <ListChecks size={14} /> Features
           </TabsTrigger>
           <TabsTrigger value="categories" className="rounded-xl data-[state=active]:bg-zinc-900 data-[state=active]:text-orange-500 px-8 font-black uppercase tracking-widest text-[10px] h-full flex items-center gap-2">
-            <Settings2 size={14} /> Category Master
+            <Settings2 size={14} /> Categories
           </TabsTrigger>
           <TabsTrigger value="limits" className="rounded-xl data-[state=active]:bg-zinc-900 data-[state=active]:text-purple-500 px-8 font-black uppercase tracking-widest text-[10px] h-full flex items-center gap-2">
-            <Infinity size={14} /> Limit Master
+            <Infinity size={14} /> Usage Limits
           </TabsTrigger>
         </TabsList>
 
@@ -447,7 +465,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
               className="rounded-xl border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-emerald-500 font-black uppercase tracking-widest text-[10px] h-12 px-8 shadow-xl"
               disabled={loading}
             >
-              <Database className="w-4 h-4 mr-2" /> Seed Demo Plans
+              <Zap className="w-4 h-4 mr-2" /> Add Demo Plans
             </Button>
             <Button 
               onClick={() => handleOpenPlanModal()}
@@ -473,53 +491,56 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800 text-white w-56 p-2 rounded-2xl">
                         <DropdownMenuItem onClick={() => handleOpenPlanModal(plan)} className="focus:bg-zinc-800 px-3 py-3 rounded-xl cursor-pointer text-[10px] font-black uppercase tracking-widest italic">
-                          <Edit className="w-4 h-4 mr-3" /> Edit Plan
+                          <Edit className="w-4 h-4 mr-3" /> Edit
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-zinc-800" />
                         <DropdownMenuItem disabled={deleting === plan.id} onClick={() => handleDeletePlan(plan)} className="focus:bg-red-500/10 px-3 py-3 rounded-xl cursor-pointer text-red-500 text-[10px] font-black uppercase tracking-widest italic">
-                          {deleting === plan.id ? <Loader2 size={16} className="animate-spin mr-3" /> : <Trash2 className="w-4 h-4 mr-3" />} Delete Plan
+                          {deleting === plan.id ? <Loader2 size={16} className="animate-spin mr-3" /> : <Trash2 className="w-4 h-4 mr-3" />} Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                   <div className="space-y-1">
-                    <Badge className="bg-zinc-950 text-zinc-500 border-zinc-800 text-[8px] font-black uppercase tracking-[0.2em] mb-2 px-3">{plan.categoryName} NODE</Badge>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Badge className="bg-zinc-950 text-zinc-600 border-zinc-800 text-[8px] px-2 py-0">{plan.categoryName} FEATURE</Badge>
+                      {!plan.isPublic && (
+                        <Badge className="bg-orange-500/10 text-orange-500 border-orange-500/20 text-[8px] px-2 py-0 uppercase font-black italic">Private</Badge>
+                      )}
+                    </div>
                     <h3 className="text-xl font-black text-white italic tracking-tighter uppercase leading-none">{plan.displayName}</h3>
                     <div className="flex items-baseline gap-1 pt-3">
                       <span className="text-3xl font-black text-white italic">₹{plan.price}</span>
-                      <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">/ Per Month</span>
+                      <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">/ Month</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="p-8 space-y-6">
                   <div className="space-y-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600">Included Features:</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600">Included:</p>
                     <div className="space-y-3">
-                      {plan.features.slice(0, 4).map((fKey: string) => {
-                        const feature = features.find(f => f.key === fKey);
+                      {(plan.features || []).slice(0, 4).map((feature: any) => {
                         return (
-                          <div key={fKey} className="flex items-center gap-3 text-[10px] font-bold text-zinc-400 uppercase tracking-tighter italic">
+                          <div key={feature.id} className="flex items-center gap-3 text-[10px] font-bold text-zinc-400 uppercase tracking-tighter italic">
                             <div className="h-5 w-5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
                               <Check size={12} strokeWidth={4} />
                             </div>
-                            {feature?.label || fKey}
+                            {feature.label}
                           </div>
                         );
                       })}
-                      {plan.features.length > 4 && (
-                        <p className="text-[10px] font-black text-zinc-600 pl-8">+{plan.features.length - 4} More Features</p>
+                      {(plan.features?.length || 0) > 4 && (
+                        <p className="text-[10px] font-black text-zinc-600 pl-8">+{(plan.features?.length || 0) - 4} More</p>
                       )}
                     </div>
                   </div>
 
                   <div className="pt-2 grid grid-cols-2 gap-4">
-                    {Object.entries(plan.limits || {}).slice(0, 4).map(([key, val]: [string, any]) => {
-                      const limit = limitsMaster.find(l => l.key === key);
+                    {(plan.limits || []).slice(0, 4).map((l: any) => {
                       return (
-                        <div key={key} className="bg-zinc-950/50 p-4 rounded-2xl border border-zinc-800/50">
-                           <p className="text-[9px] font-black text-zinc-600 uppercase mb-1 truncate">{limit?.label || key}</p>
-                           <p className="text-xs font-black text-white italic">{val === 0 ? '∞' : val}</p>
+                        <div key={l.id} className="bg-zinc-950/50 p-4 rounded-2xl border border-zinc-800/50">
+                           <p className="text-[9px] font-black text-zinc-600 uppercase mb-1 truncate">{l.limit?.label || l.limitKey}</p>
+                           <p className="text-xs font-black text-white italic">{l.value === 0 ? '∞' : l.value}</p>
                         </div>
                       );
                     })}
@@ -529,10 +550,10 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                 <div className="p-6 bg-zinc-950/40 border-t border-zinc-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Global Sync Active</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Active</span>
                   </div>
                   <div className="text-[10px] font-black text-zinc-700 uppercase tracking-tighter italic">
-                    {plan.vendorCount || 0} Entities Attached
+                    {plan.vendorCount || 0} Subscriptions
                   </div>
                 </div>
               </div>
@@ -548,7 +569,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                 const res = await seedPlatformFeatures();
                 setLoading(false);
                 if (res.success) {
-                  toast.success('Feature master seeded');
+                  toast.success('Features seeded');
                   window.location.reload();
                 } else {
                   toast.error(res.error);
@@ -572,9 +593,9 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-zinc-950/40 border-b border-zinc-800">
-                  <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Feature Name</th>
+                  <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Name</th>
                   <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Category</th>
-                  <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Feature ID</th>
+                  <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">ID</th>
                   <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-right">Actions</th>
                 </tr>
               </thead>
@@ -588,7 +609,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                           </div>
                           <div>
                              <p className="text-xs font-black text-white italic uppercase tracking-tighter leading-none mb-1">{feature.label}</p>
-                             <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest line-clamp-1">{feature.description || 'No description provided.'}</p>
+                             <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest line-clamp-1">{feature.description || 'No description.'}</p>
                           </div>
                        </div>
                     </td>
@@ -625,7 +646,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                 const res = await seedPlatformCategories();
                 setLoading(false);
                 if (res.success) {
-                  toast.success('Category master seeded');
+                  toast.success('Categories seeded');
                   window.location.reload();
                 } else {
                   toast.error(res.error);
@@ -649,7 +670,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-zinc-950/40 border-b border-zinc-800">
-                  <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Category Name</th>
+                  <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Name</th>
                   <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Description</th>
                   <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">System Name</th>
                   <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-right">Actions</th>
@@ -667,7 +688,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                        </div>
                     </td>
                     <td className="p-6">
-                       <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest line-clamp-1">{cat.description || 'Global service domain.'}</p>
+                       <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest line-clamp-1">{cat.description || 'Global domain.'}</p>
                     </td>
                     <td className="p-6">
                        <code className="bg-zinc-950 px-3 py-1 rounded-lg text-[10px] font-black text-orange-500/70 border border-orange-500/10 italic">
@@ -699,7 +720,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                 const res = await seedPlatformLimits();
                 setLoading(false);
                 if (res.success) {
-                  toast.success('Limit master seeded');
+                  toast.success('Limits seeded');
                   window.location.reload();
                 } else {
                   toast.error(res.error);
@@ -715,7 +736,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
               onClick={() => handleOpenLimitModal()}
               className="rounded-xl bg-purple-500 hover:bg-purple-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-12 px-8 shadow-xl shadow-purple-500/20"
             >
-              <Plus className="w-4 h-4 mr-2" /> Add Limit Key
+              <Plus className="w-4 h-4 mr-2" /> Add Limit
             </Button>
           </div>
 
@@ -723,7 +744,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-zinc-950/40 border-b border-zinc-800">
-                  <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Limit Label</th>
+                  <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Label</th>
                   <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Unit</th>
                   <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">System Key</th>
                   <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 italic text-right">Actions</th>
@@ -739,7 +760,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                           </div>
                           <div>
                              <p className="text-xs font-black text-white italic uppercase tracking-tighter leading-none mb-1">{limit.label}</p>
-                             <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest line-clamp-1">{limit.description || 'Core operational constraint.'}</p>
+                             <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest line-clamp-1">{limit.description || 'Constraint.'}</p>
                           </div>
                        </div>
                     </td>
@@ -769,7 +790,6 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
         </TabsContent>
       </Tabs>
 
-      {/* Plan Orchestration Modal */}
       <Dialog open={isPlanModalOpen} onOpenChange={setIsPlanModalOpen}>
         <DialogContent className="bg-zinc-900 border-zinc-800 text-white sm:max-w-[1000px] w-[95vw] rounded-[3rem] p-0 overflow-hidden shadow-2xl focus:outline-none">
            <div className="grid md:grid-cols-12 h-full">
@@ -783,12 +803,12 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                  
                  <DialogHeader className="p-0 text-left">
                     <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-white mb-4 leading-none">Plan<br/>Details</DialogTitle>
-                    <DialogDescription className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed mb-10 italic">Set the price and basic details for this subscription plan.</DialogDescription>
+                    <DialogDescription className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed mb-10 italic">Set the basic settings and pricing for this plan.</DialogDescription>
                  </DialogHeader>
                  
                  <div className="space-y-6">
                     <div className="bg-zinc-950/50 p-6 rounded-3xl border border-zinc-800/50 shadow-inner">
-                       <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-4 italic flex items-center gap-2"><Settings2 size={12} /> Domain Overview</p>
+                       <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-4 italic flex items-center gap-2"><Settings2 size={12} /> Categories</p>
                        <div className="space-y-4 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
                           {categories.map(c => (
                             <p key={c.id} className={planForm.categoryName === c.name ? 'text-white italic' : ''}>• {c.label}</p>
@@ -796,164 +816,252 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                        </div>
                     </div>
                  </div>
-              </div>
-
-              <div className="md:col-span-8 p-12 space-y-8 max-h-[85vh] overflow-y-auto custom-scrollbar bg-zinc-900/50">
-                 <div className="space-y-6">
-                    <div className="space-y-2">
-                       <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 italic">Service Category</Label>
-                       <Select 
-                        value={planForm.categoryName} 
-                        onValueChange={v => setPlanForm({...planForm, categoryName: v})}
-                       >
-                          <SelectTrigger className="bg-zinc-950 border-zinc-800 h-14 px-6 rounded-2xl font-black italic uppercase text-xs focus:ring-0">
-                             <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
-                             {categories.map(c => (
-                               <SelectItem key={c.id} value={c.name} className="focus:bg-zinc-800 uppercase font-black text-[10px] italic tracking-widest">
-                                 {c.label}
-                               </SelectItem>
-                             ))}
-                          </SelectContent>
-                       </Select>
-                    </div>
-                 </div>
-                 <div className="grid gap-8 md:grid-cols-2">
-                    <div className="space-y-2">
-                       <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 italic">Internal Identifier</Label>
-                       <Input 
-                        value={planForm.name}
-                        onChange={e => setPlanForm({...planForm, name: e.target.value.toUpperCase()})}
-                        placeholder="e.g., PLATINUM_V1"
-                        disabled={!!editingPlan}
-                        className="bg-zinc-950 border-zinc-800 h-14 px-6 font-black italic tracking-widest rounded-2xl uppercase text-[11px] shadow-inner"
-                       />
-                    </div>
-                 </div>
-
-                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 italic">Plan Name & Price</Label>
-                    <div className="grid grid-cols-12 gap-4">
-                       <div className="col-span-8">
-                          <Input 
-                           value={planForm.displayName}
-                           onChange={e => setPlanForm({...planForm, displayName: e.target.value})}
-                           className="bg-zinc-950 border-zinc-800 h-14 px-6 font-black italic text-xs rounded-2xl placeholder:text-zinc-700 shadow-inner"
-                           placeholder="e.g., Ultimate Plan"
-                          />
-                       </div>
-                       <div className="col-span-4 relative">
-                          <span className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-500 font-black italic">₹</span>
-                           <Input 
-                            type="number"
-                            value={isNaN(planForm.price) ? '' : planForm.price}
-                            onChange={e => setPlanForm({...planForm, price: e.target.value === '' ? 0 : parseFloat(e.target.value)})}
-                            className="bg-zinc-950 border-zinc-800 h-14 pl-10 pr-4 font-black italic text-lg rounded-2xl text-emerald-500 text-center shadow-inner"
-                           />
-                       </div>
-                    </div>
-                 </div>
-
-                 <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                       <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 italic">Capability selection master</Label>
-                       <Badge variant="outline" className="text-[8px] font-black border-zinc-800 text-zinc-500 uppercase">{planForm.features.length} Nodes Enabled</Badge>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 bg-zinc-950/50 p-6 rounded-[2.5rem] border border-zinc-800/50 shadow-inner max-h-[300px] overflow-y-auto custom-scrollbar">
-                       {features.map(f => (
-                          <div key={f.id} className="flex items-center space-x-4 group cursor-pointer p-2.5 hover:bg-zinc-900/50 rounded-xl transition-colors border border-transparent hover:border-zinc-800/50" onClick={() => handleFeatureToggle(f.key)}>
-                             <Checkbox 
-                               checked={planForm.features.includes(f.key)}
-                               onCheckedChange={() => handleFeatureToggle(f.key)}
-                               className="h-5 w-5 border-zinc-700 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 rounded-lg transition-all" 
-                             />
-                             <div className="space-y-0.5">
-                                <p className={`text-[10px] font-black uppercase tracking-tighter italic transition-colors ${planForm.features.includes(f.key) ? 'text-white' : 'text-zinc-600 group-hover:text-zinc-400'}`}>
-                                   {f.label}
-                                </p>
-                                <p className="text-[8px] font-bold text-zinc-700 uppercase tracking-widest">{f.categoryName}</p>
-                             </div>
-                          </div>
-                       ))}
-                    </div>
-                 </div>
-
-                 <div className="space-y-4">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 italic">Operational Constraints (0 = ∞)</Label>
-                    <div className="grid grid-cols-2 gap-6 bg-zinc-950/30 p-8 rounded-[2.5rem] border border-zinc-800/30 border-dashed shadow-inner max-h-[300px] overflow-y-auto custom-scrollbar">
-                       {limitsMaster.map((limit: any) => (
-                          <div key={limit.id} className="space-y-2 group">
-                             <div className="flex items-center gap-2 px-1">
-                                <Infinity size={10} className="text-zinc-600 group-hover:text-purple-400 transition-colors" />
-                                <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">{limit.label}</p>
-                             </div>
-                              <Input 
-                               type="number"
-                               value={isNaN(planForm.limits[limit.key]) ? '' : planForm.limits[limit.key]}
-                               onChange={e => setPlanForm({
-                                 ...planForm, 
-                                 limits: {
-                                   ...planForm.limits,
-                                   [limit.key]: e.target.value === '' ? 0 : parseInt(e.target.value)
-                                 }
-                               })}
-                               className="bg-zinc-950 border-zinc-800 h-12 px-5 font-black italic rounded-xl focus:border-purple-500/50 text-white shadow-inner"
-                               placeholder={`e.g., 50 ${limit.unit || 'Units'}`}
-                              />
-                          </div>
-                       ))}
-                    </div>
-                 </div>
-
-                 <div className="pt-8 flex justify-end gap-5 border-t border-zinc-800">
-                    <Button onClick={() => setIsPlanModalOpen(false)} variant="ghost" className="h-14 px-8 text-[10px] font-black uppercase tracking-[0.2em] italic text-zinc-600 hover:text-white transition-all">Abort Flow</Button>
-                    <Button 
-                      onClick={handlePlanSubmit}
-                      disabled={loading}
-                      className="h-14 px-12 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] rounded-[1.25rem] shadow-2xl shadow-emerald-500/20 min-w-[220px] transition-all active:scale-95"
-                    >
-                       {loading ? <Loader2 className="animate-spin mr-2" /> : (editingPlan ? 'Synchronize Tier' : 'Broadcast Infrastructure')}
-                    </Button>
+                 <div className="mt-auto bg-zinc-950 p-6 rounded-2xl border border-zinc-800 text-center">
+                    <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest italic mb-1">Plan Preview</p>
+                    <p className="text-xl font-black text-white italic uppercase tracking-tighter">{planForm.displayName || 'New Plan'}</p>
+                    <p className="text-emerald-500 font-black italic text-lg">₹{planForm.price.toLocaleString()}</p>
                  </div>
               </div>
+
+               <div className="md:col-span-8 p-0 flex flex-col h-[85vh] bg-zinc-900/50">
+                  <Tabs defaultValue="core" className="flex flex-col h-full">
+                     <div className="px-10 pt-10 pb-6 border-b border-zinc-800 bg-zinc-900">
+                        <TabsList className="bg-zinc-950 border border-zinc-800 h-12 p-1 rounded-2xl w-full">
+                           <TabsTrigger value="core" className="flex-1 rounded-xl data-[state=active]:bg-zinc-900 data-[state=active]:text-emerald-500 font-black uppercase tracking-widest text-[9px] italic">01. General Info</TabsTrigger>
+                           <TabsTrigger value="features" className="flex-1 rounded-xl data-[state=active]:bg-zinc-900 data-[state=active]:text-blue-500 font-black uppercase tracking-widest text-[9px] italic">02. Features</TabsTrigger>
+                           <TabsTrigger value="limits" className="flex-1 rounded-xl data-[state=active]:bg-zinc-900 data-[state=active]:text-purple-500 font-black uppercase tracking-widest text-[9px] italic">03. Usage Limits</TabsTrigger>
+                        </TabsList>
+                     </div>
+
+                     <div className="flex-1 overflow-y-auto custom-scrollbar p-10 space-y-8">
+                        <TabsContent value="core" className="space-y-8 mt-0 outline-none">
+                           <div className="space-y-6">
+                              <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-3xl p-6">
+                                 <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest italic mb-2">Guide</p>
+                                 <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase">Select category and set basic info.</p>
+                              </div>
+
+                              <div className="space-y-2">
+                                 <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 italic">Category</Label>
+                                 <Select 
+                                    value={planForm.categoryName} 
+                                    onValueChange={v => setPlanForm({...planForm, categoryName: v})}
+                                 >
+                                    <SelectTrigger className="bg-zinc-950 border-zinc-800 h-14 px-6 rounded-2xl font-black italic uppercase text-xs focus:ring-1 focus:ring-emerald-500/50">
+                                       <SelectValue placeholder="Select Category" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                                       {categories.map(cat => (
+                                          <SelectItem key={cat.id} value={cat.name} className="font-black italic uppercase text-[10px] tracking-widest">{cat.label}</SelectItem>
+                                       ))}
+                                    </SelectContent>
+                                 </Select>
+                              </div>
+
+                              <div className="grid gap-6 md:grid-cols-2">
+                                 <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 italic">Code Name</Label>
+                                    <Input 
+                                       value={planForm.name}
+                                       onChange={e => setPlanForm({...planForm, name: e.target.value.toUpperCase().replace(/\s+/g, '_')})}
+                                       placeholder="e.g., SILVER"
+                                       disabled={!!editingPlan}
+                                       className="bg-zinc-950 border-zinc-800 h-14 px-6 rounded-2xl font-black italic text-xs tracking-widest text-emerald-500 placeholder:text-zinc-800"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 italic">Price (INR)</Label>
+                                    <div className="relative group">
+                                       <div className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-emerald-500 transition-colors">₹</div>
+                                       <Input 
+                                          type="number"
+                                          value={planForm.price}
+                                          onChange={e => setPlanForm({...planForm, price: Number(e.target.value)})}
+                                          className="bg-zinc-950 border-zinc-800 h-14 pl-12 pr-6 rounded-2xl font-black italic text-xs tracking-widest text-white focus:ring-1 focus:ring-emerald-500/50"
+                                       />
+                                    </div>
+                                 </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                 <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 italic">Plan Display Name</Label>
+                                 <Input 
+                                    value={planForm.displayName}
+                                    onChange={e => setPlanForm({...planForm, displayName: e.target.value})}
+                                    placeholder="e.g., Starter"
+                                    className="bg-zinc-950 border-zinc-800 h-14 px-6 rounded-2xl font-black italic text-xs tracking-widest text-white placeholder:text-zinc-800"
+                                 />
+                              </div>
+
+                              <div className="flex items-center space-x-3 bg-zinc-950/50 p-6 rounded-3xl border border-zinc-800/50">
+                                <Checkbox 
+                                  id="isPublic" 
+                                  checked={planForm.isPublic}
+                                  onCheckedChange={(checked) => setPlanForm({...planForm, isPublic: checked === true})}
+                                  className="border-zinc-700 data-[state=checked]:bg-emerald-500 data-[state=checked]:text-zinc-950 rounded-md"
+                                />
+                                <div className="grid gap-1.5 leading-none">
+                                  <label
+                                    htmlFor="isPublic"
+                                    className="text-[10px] font-black uppercase tracking-widest text-white italic cursor-pointer"
+                                  >
+                                    Publicly Visible
+                                  </label>
+                                  <p className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">
+                                    If unchecked, only vendors you manually assign this plan to will see it.
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                 <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 italic">Description</Label>
+                                 <Textarea 
+                                    value={planForm.description}
+                                    onChange={e => setPlanForm({...planForm, description: e.target.value})}
+                                    placeholder="Describe..."
+                                    className="bg-zinc-950 border-zinc-800 min-h-[120px] p-6 rounded-3xl font-bold text-xs text-zinc-400 placeholder:text-zinc-800 resize-none"
+                                 />
+                              </div>
+                           </div>
+                        </TabsContent>
+
+                        <TabsContent value="features" className="space-y-8 mt-0 outline-none">
+                           <div className="bg-blue-500/5 border border-blue-500/10 rounded-3xl p-6 mb-8">
+                              <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest italic mb-2">Features</p>
+                              <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase">Enable features for this plan.</p>
+                           </div>
+
+                           <div className="space-y-10">
+                              {categories.map(cat => {
+                                 const catFeatures = features.filter(f => f.categoryName === cat.name);
+                                 if (catFeatures.length === 0) return null;
+
+                                 return (
+                                    <div key={cat.id} className="space-y-4">
+                                       <div className="flex items-center gap-4 px-2">
+                                          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 italic shrink-0">{cat.label}</span>
+                                          <div className="h-[1px] w-full bg-zinc-800" />
+                                       </div>
+                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                          {catFeatures.map(f => (
+                                             <div 
+                                                key={f.id} 
+                                                className={`flex items-center space-x-4 p-4 rounded-2xl border transition-all cursor-pointer group ${planForm.features.includes(f.key) ? 'bg-blue-500/10 border-blue-500/30' : 'bg-zinc-950/50 border-zinc-800/50 hover:border-zinc-700'}`}
+                                                onClick={() => handleFeatureToggle(f.key)}
+                                             >
+                                                <Checkbox 
+                                                   checked={planForm.features.includes(f.key)} 
+                                                   className="border-zinc-700 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                                                />
+                                                <div>
+                                                   <p className={`text-[11px] font-black uppercase italic tracking-tighter ${planForm.features.includes(f.key) ? 'text-blue-400' : 'text-zinc-400 group-hover:text-zinc-200'}`}>{f.label}</p>
+                                                   <p className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest line-clamp-1">{f.description || 'Feature'}</p>
+                                                </div>
+                                             </div>
+                                          ))}
+                                       </div>
+                                    </div>
+                                 );
+                              })}
+                           </div>
+                        </TabsContent>
+
+                        <TabsContent value="limits" className="space-y-8 mt-0 outline-none">
+                           <div className="bg-purple-500/5 border border-purple-500/10 rounded-3xl p-6 mb-8">
+                              <p className="text-[9px] font-black text-purple-500 uppercase tracking-widest italic mb-2">Usage Limits</p>
+                              <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase">Set quotas. <span className="text-white italic">0</span> = Unlimited.</p>
+                           </div>
+
+                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                              {limitsMaster.map((limit: any) => (
+                                 <div key={limit.id} className="bg-zinc-950/30 p-6 rounded-[2.5rem] border border-zinc-800/30 border-dashed space-y-4 hover:border-zinc-700 transition-colors">
+                                    <div className="flex items-center justify-between px-1">
+                                       <div className="flex items-center gap-2">
+                                          <div className="h-5 w-5 rounded-lg bg-zinc-900 flex items-center justify-center text-purple-500">
+                                             <Infinity size={12} />
+                                          </div>
+                                          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest italic">{limit.label}</p>
+                                       </div>
+                                       <Badge variant="outline" className="text-[7px] font-black border-zinc-800 text-zinc-600 uppercase italic h-4">{limit.unit}</Badge>
+                                    </div>
+                                    <div className="relative group">
+                                       <Input 
+                                          type="number"
+                                          value={planForm.limits[limit.key]}
+                                          onChange={e => setPlanForm({
+                                             ...planForm, 
+                                             limits: { ...planForm.limits, [limit.key]: Number(e.target.value) }
+                                          })}
+                                          className="bg-zinc-950 border-zinc-800 h-14 px-6 rounded-2xl font-black italic text-sm text-white focus:ring-1 focus:ring-purple-500/50 transition-all"
+                                       />
+                                       <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
+                                          {planForm.limits[limit.key] === 0 ? (
+                                             <Infinity size={14} className="text-emerald-500 animate-pulse" />
+                                          ) : (
+                                             <p className="text-[9px] font-black text-zinc-700 uppercase italic">Limited</p>
+                                          )}
+                                       </div>
+                                    </div>
+                                 </div>
+                              ))}
+                           </div>
+                        </TabsContent>
+                     </div>
+
+                     <div className="p-10 pt-6 border-t border-zinc-800 bg-zinc-900 flex flex-col sm:flex-row justify-end gap-4">
+                        <Button 
+                           onClick={() => setIsPlanModalOpen(false)} 
+                           variant="ghost" 
+                           className="h-14 px-8 text-[10px] font-black uppercase tracking-[0.2em] italic text-zinc-600 hover:text-white transition-all w-full sm:w-auto"
+                        >
+                           Cancel
+                        </Button>
+                        <Button 
+                           onClick={handlePlanSubmit}
+                           disabled={loading}
+                           className="h-14 px-12 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] rounded-[1.25rem] shadow-2xl shadow-emerald-500/20 w-full sm:min-w-[220px] transition-all active:scale-95"
+                        >
+                           {loading ? <Loader2 className="animate-spin" /> : 'Save'}
+                        </Button>
+                     </div>
+                  </Tabs>
+               </div>
            </div>
         </DialogContent>
       </Dialog>
 
-      {/* Feature Modal */}
       <Dialog open={isFeatureModalOpen} onOpenChange={setIsFeatureModalOpen}>
-         <DialogContent className="bg-zinc-900 border-zinc-800 text-white rounded-[2.5rem] p-10 max-w-[500px] focus:outline-none">
+         <DialogContent className="bg-zinc-900 border-zinc-800 text-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 w-[95vw] sm:max-w-[500px] focus:outline-none">
             <DialogHeader>
                <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-6">
                   <ListChecks size={24} />
                </div>
-               <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">Add New Feature</DialogTitle>
-               <DialogDescription className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Create a new feature to use in your subscription plans.</DialogDescription>
+               <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">Feature</DialogTitle>
+               <DialogDescription className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Register a new feature.</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-6 pt-6">
                <div className="grid gap-4">
                   <div className="space-y-2">
-                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Feature Name</Label>
+                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Name</Label>
                      <Input 
                       value={featureForm.label}
                       onChange={e => setFeatureForm({...featureForm, label: e.target.value})}
-                      placeholder="e.g., Live WhatsApp Tracking"
+                      placeholder="e.g., Live Tracking"
                       className="bg-zinc-950 border-zinc-800 h-12 px-5 font-bold text-sm rounded-xl"
                      />
                   </div>
                   <div className="space-y-2">
-                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Feature ID (Key)</Label>
+                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">ID</Label>
                      <Input 
                       value={featureForm.key}
                       onChange={e => setFeatureForm({...featureForm, key: e.target.value.toUpperCase().replace(/\s+/g, '_')})}
-                      placeholder="e.g., WHATSAPP_LIVE"
+                      placeholder="e.g., TRACKING"
                       className="bg-zinc-950 border-zinc-800 h-12 px-5 font-black italic text-xs rounded-xl text-blue-400"
                      />
                   </div>
                   <div className="space-y-2">
-                      <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Service Category</Label>
+                      <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Category</Label>
                       <Select 
                        value={featureForm.categoryName}
                        onValueChange={v => setFeatureForm({...featureForm, categoryName: v})}
@@ -982,38 +1090,37 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
             </div>
 
             <DialogFooter className="pt-10 flex gap-3">
-               <Button onClick={() => setIsFeatureModalOpen(false)} variant="ghost" className="h-12 px-6 text-[10px] font-black uppercase italic text-zinc-500">Abort</Button>
+               <Button onClick={() => setIsFeatureModalOpen(false)} variant="ghost" className="h-12 px-6 text-[10px] font-black uppercase italic text-zinc-500">Cancel</Button>
                <Button onClick={handleFeatureSubmit} disabled={loading} className="h-12 flex-1 bg-blue-500 hover:bg-blue-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] rounded-xl shadow-xl shadow-blue-500/10">
-                  {loading ? <Loader2 className="animate-spin" /> : (editingFeature ? 'Sync Capability' : 'Register Node')}
+                  {loading ? <Loader2 className="animate-spin" /> : 'Save'}
                </Button>
             </DialogFooter>
          </DialogContent>
       </Dialog>
 
-      {/* Category Modal */}
       <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
-         <DialogContent className="bg-zinc-900 border-zinc-800 text-white rounded-[2.5rem] p-10 max-w-[500px] focus:outline-none">
+         <DialogContent className="bg-zinc-900 border-zinc-800 text-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 w-[95vw] sm:max-w-[500px] focus:outline-none">
             <DialogHeader>
                <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 mb-6">
                   <Settings2 size={24} />
                </div>
-               <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">Category Orchestration</DialogTitle>
-               <DialogDescription className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Define a new service domain for the platform ecosystem.</DialogDescription>
+               <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">Category</DialogTitle>
+               <DialogDescription className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Register a category.</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-6 pt-6">
                <div className="grid gap-4">
                   <div className="space-y-2">
-                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Category Label</Label>
+                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Label</Label>
                      <Input 
                       value={categoryForm.label}
                       onChange={e => setCategoryForm({...categoryForm, label: e.target.value})}
-                      placeholder="e.g., Delivery Service"
+                      placeholder="e.g., Delivery"
                       className="bg-zinc-950 border-zinc-800 h-12 px-5 font-black italic text-xs rounded-xl"
                      />
                   </div>
                   <div className="space-y-2">
-                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">System Name (UPPERCASE)</Label>
+                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Name</Label>
                      <Input 
                       value={categoryForm.name}
                       onChange={e => setCategoryForm({...categoryForm, name: e.target.value.toUpperCase().replace(/\s+/g, '_')})}
@@ -1026,7 +1133,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                      <Textarea 
                       value={categoryForm.description}
                       onChange={e => setCategoryForm({...categoryForm, description: e.target.value})}
-                      placeholder="Describe the scope of this domain..."
+                      placeholder="Describe..."
                       className="bg-zinc-950 border-zinc-800 rounded-xl px-5 py-4 font-bold italic text-xs min-h-[100px]"
                      />
                   </div>
@@ -1039,50 +1146,49 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                     disabled={loading}
                     className="flex-1 bg-orange-500 hover:bg-orange-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] rounded-xl shadow-xl shadow-orange-500/20"
                   >
-                     {loading ? <Loader2 className="animate-spin" /> : (editingCategory ? 'Sync Domain' : 'Create Domain')}
+                     {loading ? <Loader2 className="animate-spin" /> : 'Save'}
                   </Button>
                </div>
             </div>
          </DialogContent>
       </Dialog>
 
-      {/* Limit Modal */}
       <Dialog open={isLimitModalOpen} onOpenChange={setIsLimitModalOpen}>
-         <DialogContent className="bg-zinc-900 border-zinc-800 text-white rounded-[2.5rem] p-10 max-w-[500px] focus:outline-none">
+         <DialogContent className="bg-zinc-900 border-zinc-800 text-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 w-[95vw] sm:max-w-[500px] focus:outline-none">
             <DialogHeader>
                <div className="h-12 w-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 mb-6">
                   <Infinity size={24} />
                </div>
-               <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">Limit Constraint Master</DialogTitle>
-               <DialogDescription className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Register a new operational boundary for platform usage.</DialogDescription>
+               <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">Usage Limit</DialogTitle>
+               <DialogDescription className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Register a limit.</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-6 pt-6">
                <div className="grid gap-4">
                   <div className="space-y-2">
-                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Limit Label</Label>
+                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Label</Label>
                      <Input 
                       value={limitForm.label}
                       onChange={e => setLimitForm({...limitForm, label: e.target.value})}
-                      placeholder="e.g., Monthly Orders"
+                      placeholder="e.g., Orders"
                       className="bg-zinc-950 border-zinc-800 h-12 px-5 font-black italic text-xs rounded-xl"
                      />
                   </div>
                   <div className="space-y-2">
-                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">System Key (UPPERCASE)</Label>
+                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Key</Label>
                      <Input 
                       value={limitForm.key}
                       onChange={e => setLimitForm({...limitForm, key: e.target.value.toUpperCase().replace(/\s+/g, '_')})}
-                      placeholder="e.g., MONTHLY_ORDERS"
+                      placeholder="e.g., ORDERS"
                       className="bg-zinc-950 border-zinc-800 h-12 px-5 font-black italic text-xs rounded-xl text-purple-400"
                      />
                   </div>
                   <div className="space-y-2">
-                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Unit of Measurement</Label>
+                     <Label className="text-[9px] font-black text-zinc-600 uppercase px-1">Unit</Label>
                      <Input 
                       value={limitForm.unit}
                       onChange={e => setLimitForm({...limitForm, unit: e.target.value})}
-                      placeholder="e.g., Orders, Items, Users"
+                      placeholder="e.g., Orders"
                       className="bg-zinc-950 border-zinc-800 h-12 px-5 font-bold text-xs rounded-xl"
                      />
                   </div>
@@ -1091,7 +1197,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                      <Textarea 
                       value={limitForm.description}
                       onChange={e => setLimitForm({...limitForm, description: e.target.value})}
-                      placeholder="What does this limit control?"
+                      placeholder="Description..."
                       className="bg-zinc-950 border-zinc-800 rounded-xl px-5 py-4 font-bold italic text-xs min-h-[80px]"
                      />
                   </div>
@@ -1104,7 +1210,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                     disabled={loading}
                     className="flex-1 bg-purple-500 hover:bg-purple-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] rounded-xl shadow-xl shadow-purple-500/20"
                   >
-                     {loading ? <Loader2 className="animate-spin" /> : (editingLimit ? 'Sync Constraint' : 'Create Constraint')}
+                     {loading ? <Loader2 className="animate-spin" /> : 'Save'}
                   </Button>
                </div>
             </div>

@@ -5,7 +5,8 @@ import { PlansClient } from './PlansClient';
 export default async function AdminPlansPage() {
   const [plans, features, categories, limits] = await Promise.all([
     (prisma as any).platformPlan.findMany({
-      orderBy: { price: 'asc' }
+      orderBy: { price: 'asc' },
+      include: { features: true, limits: true }
     }),
     (prisma as any).platformFeature.findMany({
       orderBy: { categoryName: 'asc' }

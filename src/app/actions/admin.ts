@@ -137,12 +137,37 @@ export async function upsertPlan(data: {
   price: number;
   features: string[];
   limits?: any;
+  isPublic?: boolean;
 }) {
   try {
+    const { features, limits, ...baseData } = data;
     const plan = await (prisma as any).platformPlan.upsert({
-      where: { name: data.name },
-      update: data,
-      create: data,
+      where: { name: baseData.name },
+      update: {
+        ...baseData,
+        features: {
+          set: features.map((f: string) => ({ key: f }))
+        },
+        limits: {
+          deleteMany: {},
+          create: Object.entries(limits || {}).map(([key, value]) => ({
+            limitKey: key,
+            value: value as number
+          }))
+        }
+      },
+      create: {
+        ...baseData,
+        features: {
+          connect: features.map((f: string) => ({ key: f }))
+        },
+        limits: {
+          create: Object.entries(limits || {}).map(([key, value]) => ({
+            limitKey: key,
+            value: value as number
+          }))
+        }
+      },
     });
     revalidatePath('/admin/plans');
     return { success: true, data: plan };

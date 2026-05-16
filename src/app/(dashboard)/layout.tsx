@@ -101,7 +101,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const vendorNavItems: NavItem[] = useMemo(() => [
     { name: 'Overview', href: '/vendor/dashboard', icon: LayoutDashboard },
-    { name: 'Orders', href: '/vendor/orders', icon: ShoppingBag },
+    { 
+      name: 'Orders', 
+      href: '/vendor/orders', 
+      icon: ShoppingBag,
+      requiredFeature: ['DIGITAL_MENU', 'QR_ORDERING', 'AUTO_RENEWAL', 'DIET_PREFERENCES']
+    },
     { 
       name: 'Menu Management', 
       href: '/vendor/menu/items', 
@@ -148,7 +153,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       icon: Store,
       requiredFeature: 'INVENTORY_SYNC'
     },
-    { name: 'Staff', href: '/vendor/staff', icon: Users },
+    { 
+      name: 'Staff', 
+      href: '/vendor/staff', 
+      icon: Users,
+      requiredFeature: 'TEAM_MANAGEMENT'
+    },
     { name: 'Payments & Fiscal', href: '/vendor/payments', icon: Wallet },
     { name: 'Settings', href: '/vendor/settings', icon: Settings },
     { name: 'Subscription & Plans', href: '/vendor/subscription', icon: CreditCard },

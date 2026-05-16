@@ -37,12 +37,37 @@ export async function getVendorSubscription() {
 }
 
 export async function getAvailablePlans() {
+  const session = await getServerSession(authOptions);
+  
   try {
+    let currentPlanName = '';
+    if (session?.user?.id) {
+       const vendorsRaw = await prisma.$queryRawUnsafe<any[]>(
+         `SELECT "subscriptionPlan" FROM "VendorProfile" WHERE "ownerId" = $1 LIMIT 1`,
+         session.user.id
+       );
+       if (vendorsRaw.length > 0) {
+         currentPlanName = vendorsRaw[0].subscriptionPlan;
+       }
+    }
+
     const plans = await (prisma as any).platformPlan.findMany({
-      where: { isActive: true },
+      where: { 
+        isActive: true,
+        OR: [
+          { isPublic: true },
+          { name: currentPlanName }
+        ]
+      },
       orderBy: { price: 'asc' },
       include: {
-        category: true
+        category: true,
+        features: true,
+        limits: {
+          include: {
+            limit: true
+          }
+        }
       }
     });
     
@@ -140,7 +165,13 @@ export async function getVendorFeatures() {
     const plan = await (prisma as any).platformPlan.findUnique({
       where: { name: vendor.subscriptionPlan },
       include: {
-        category: true
+        category: true,
+        features: true,
+        limits: {
+          include: {
+            limit: true
+          }
+        }
       }
     });
 
@@ -160,9 +191,12 @@ export async function getVendorFeatures() {
     return { 
       success: true, 
       data: { 
-        features: plan.features, 
+        features: plan.features.map((f: any) => f.key), 
         category: plan.categoryName,
-        limits: plan.limits,
+        limits: (plan.limits || []).reduce((acc: any, l: any) => ({ 
+          ...acc, 
+          [l.limitKey]: l.value 
+        }), {}),
         isLocked: vendor.isLocked || false
       } 
     };

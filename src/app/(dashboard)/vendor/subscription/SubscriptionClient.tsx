@@ -18,7 +18,8 @@ import {
   LayoutGrid,
   Sparkles,
   Infinity,
-  HelpCircle
+  HelpCircle,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -122,8 +123,8 @@ export function SubscriptionClient({
       <div className="grid gap-8 lg:grid-cols-3">
         {availablePlans.map((plan: any) => {
           const isCurrent = plan.name === currentVendor.subscriptionPlan;
-          const isPro = plan.name === 'PRO' || plan.displayName.toLowerCase().includes('pro');
-          const isEnterprise = plan.name === 'ENTERPRISE' || plan.displayName.toLowerCase().includes('enterprise');
+          const isPro = plan.name.includes('PRO') || plan.displayName.toLowerCase().includes('pro');
+          const isEnterprise = plan.name.includes('ENTERPRISE') || plan.displayName.toLowerCase().includes('enterprise');
 
           return (
             <div 
@@ -141,50 +142,71 @@ export function SubscriptionClient({
                     {isEnterprise ? <ShieldCheck size={28} /> : isPro ? <Sparkles size={28} /> : <Zap size={28} />}
                  </div>
                  
-                 <div className="space-y-1">
-                    <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase leading-none">{plan.displayName}</h3>
-                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest italic">{plan.category?.label || 'Global service domain'}</p>
+                 <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                       <Badge variant="outline" className="text-[7px] font-black uppercase tracking-tighter border-zinc-800 text-zinc-500 px-2 h-4 italic">Platform Node</Badge>
+                       <Badge variant="outline" className="text-[7px] font-black uppercase tracking-tighter border-zinc-800 text-emerald-500 px-2 h-4 italic">{plan.category?.label || 'Global'}</Badge>
+                    </div>
+                    <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">{plan.displayName}</h3>
+                    <p className="text-[10px] font-medium text-zinc-500 tracking-wide line-clamp-2">{plan.description || 'Essential infrastructure for your business node.'}</p>
                  </div>
 
                  <div className="mt-8 flex items-baseline gap-2">
                     <span className="text-4xl font-black text-white italic tracking-tighter">₹{plan.price}</span>
-                    <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">/ Month</span>
+                    <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest italic">/ Billing Cycle</span>
                  </div>
               </div>
 
-              <div className="p-10 space-y-8 flex-1">
-                 <div className="space-y-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 italic">Provisioned Capabilities</p>
-                    <div className="space-y-4">
-                       {plan.features.map((fKey: string) => {
-                         const feature = allFeatures.find(f => f.key === fKey);
-                         return (
-                           <div key={fKey} className="flex items-center gap-4 text-[11px] font-black text-zinc-400 uppercase tracking-tighter italic group/feature">
-                             <div className={`h-5 w-5 rounded-lg ${isCurrent ? 'bg-emerald-500' : 'bg-zinc-800'} flex items-center justify-center text-zinc-950 shrink-0 transition-colors group-hover/feature:bg-emerald-500`}>
-                               <Check size={12} strokeWidth={4} />
-                             </div>
-                             {feature?.label || fKey}
-                           </div>
-                         );
-                       })}
+              <div className="p-10 space-y-10 flex-1">
+                 <div className="space-y-5">
+                    <div className="flex items-center justify-between">
+                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 italic">Access Nodes</p>
+                       <Badge variant="ghost" className="text-[8px] font-black text-zinc-700 uppercase tracking-widest">{plan.features.length} Enabled</Badge>
+                    </div>
+                    <div className="space-y-5">
+                        {(plan.features || []).map((feature: any) => {
+                          return (
+                            <div key={feature.id} className="group/feature flex flex-col gap-1">
+                               <div className="flex items-center gap-4 text-[12px] font-black text-zinc-200 uppercase tracking-tighter italic group-hover/feature:text-white transition-colors">
+                                 <div className={`h-5 w-5 rounded-lg ${isCurrent ? 'bg-emerald-500' : 'bg-zinc-800'} flex items-center justify-center text-zinc-950 shrink-0 transition-colors group-hover/feature:bg-emerald-500`}>
+                                   <Check size={12} strokeWidth={4} />
+                                 </div>
+                                 {feature.label}
+                               </div>
+                               {feature.description && (
+                                 <p className="text-[9px] font-medium text-zinc-600 pl-9 line-clamp-1 group-hover/feature:text-zinc-500 transition-colors">{feature.description}</p>
+                               )}
+                            </div>
+                          );
+                        })}
                     </div>
                  </div>
 
-                 <div className="space-y-4 pt-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 italic">Operational Constraints</p>
+                 <div className="space-y-5">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 italic">Operational Logic</p>
                     <div className="grid grid-cols-2 gap-4">
-                       {Object.entries(plan.limits || {}).map(([key, val]: [string, any]) => {
-                         const limit = allLimits.find(l => l.key === key);
-                         return (
-                           <div key={key} className="bg-zinc-950/50 p-4 rounded-2xl border border-zinc-800/50 hover:border-zinc-700 transition-colors">
-                              <p className="text-[8px] font-black text-zinc-600 uppercase mb-1 tracking-widest">{limit?.label || key}</p>
-                              <div className="flex items-center gap-1">
-                                 {val === 0 ? <Infinity size={14} className="text-emerald-500" /> : <p className="text-sm font-black text-white italic">{val}</p>}
-                                 {limit?.unit && <span className="text-[8px] font-black text-zinc-700 uppercase">{limit.unit}</span>}
-                              </div>
-                           </div>
-                         );
-                       })}
+                        {(plan.limits || []).map((l: any) => {
+                          const limitKey = l.limitKey.toLowerCase();
+                          const Icon = limitKey.includes('staff') ? User2Icon : 
+                                       limitKey.includes('menu') ? LayoutGrid :
+                                       limitKey.includes('whatsapp') ? MessageSquare :
+                                       limitKey.includes('radius') ? Activity : Package;
+
+                          return (
+                            <div key={l.id} className="bg-zinc-950/50 p-4 rounded-3xl border border-zinc-800/50 hover:border-zinc-700 transition-colors group/limit">
+                               <div className="flex items-center gap-2 mb-2">
+                                  <div className="h-5 w-5 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-600 group-hover/limit:text-emerald-500 transition-colors">
+                                     <Icon size={10} />
+                                  </div>
+                                  <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{l.limit?.label || l.limitKey}</p>
+                               </div>
+                               <div className="flex items-end gap-1">
+                                  {l.value === 0 ? <Infinity size={18} className="text-emerald-500" /> : <p className="text-xl font-black text-white italic leading-none">{l.value}</p>}
+                                  {l.limit?.unit && <span className="text-[8px] font-black text-zinc-700 uppercase tracking-tighter mb-0.5">{l.limit.unit}</span>}
+                               </div>
+                            </div>
+                          );
+                        })}
                     </div>
                  </div>
               </div>
@@ -199,7 +221,7 @@ export function SubscriptionClient({
                        : 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xl shadow-emerald-500/20'
                    }`}
                  >
-                    {loading === plan.name ? <Loader2 className="animate-spin" /> : isCurrent ? 'Active Subscription' : 'Synchronize Node'}
+                    {loading === plan.name ? <Loader2 className="animate-spin" /> : isCurrent ? 'Active Subscription' : 'Upgrade Infrastructure'}
                  </Button>
               </div>
             </div>

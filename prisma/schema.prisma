@@ -15,12 +15,7 @@ enum ProductionStatus {
   DISPATCHED
 }
 
-enum SubscriptionPlan {
-  BASIC
-  PRO
-  ENTERPRISE
-  HYBRID_STANDARD @map("Hybrid Standard")
-}
+// Removed SubscriptionPlan enum to allow dynamic plans created by admin in PlatformPlan model
 
 enum RiderStatus {
   AVAILABLE
@@ -36,12 +31,7 @@ enum Role {
   CUSTOMER
 }
 
-enum PlanCategory {
-  MENU
-  TIFFIN
-  HYBRID
-  ENTERPRISE
-}
+// Removed PlanCategory enum. Use PlatformCategory model for dynamic categories.
 
 model PlatformCategory {
   id          String   @id @default(cuid())
@@ -60,6 +50,10 @@ model PlatformLimit {
   label       String   // e.g., "Menu Items"
   unit        String?  // e.g., "Items"
   description String?
+  
+  // Relation to plans
+  planLimits  PlatformPlanLimit[]
+  
   createdAt   DateTime @default(now())
 }
 
@@ -70,6 +64,10 @@ model PlatformFeature {
   categoryName String  // Reference to PlatformCategory.name
   category    PlatformCategory @relation(fields: [categoryName], references: [name])
   description String?
+  
+  // Relation to plans
+  plans       PlatformPlan[] @relation("PlanFeatures")
+  
   createdAt   DateTime @default(now())
 }
 
@@ -81,11 +79,28 @@ model PlatformPlan {
   displayName   String   // Display name e.g. "Standard Tiffin"
   description   String?
   price         Float
-  features      String[] // Array of PlatformFeature keys
-  limits        Json?    // { menuItems: 10, staff: 2, etc }
+  
+  // Dynamic Features
+  features      PlatformFeature[] @relation("PlanFeatures")
+  
+  // Dynamic Limits
+  limits        PlatformPlanLimit[]
+  
   isActive      Boolean  @default(true)
+  isPublic      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model PlatformPlanLimit {
+  id            String        @id @default(cuid())
+  planId        String
+  plan          PlatformPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+  limitKey      String        // References PlatformLimit.key
+  limit         PlatformLimit @relation(fields: [limitKey], references: [key])
+  value         Int           // The actual limit value (e.g., 50 for 50 items)
+  
+  @@unique([planId, limitKey])
 }
 
 
@@ -206,7 +221,7 @@ model VendorProfile {
   customDomain          String?            @unique   // e.g., "portal.sweetbakery.com"
   
   // Subscription
-  subscriptionPlan      SubscriptionPlan   @default(BASIC)
+  subscriptionPlan      String             @default("BASIC")
   subscriptionStatus    SubscriptionStatus @default(ACTIVE)
   subscriptionStart     DateTime           @default(now())
   subscriptionEnd       DateTime
@@ -818,7 +833,7 @@ model SubscriptionPayment {
   id         String           @id @default(cuid())
   vendorId   String
   amount     Float
-  plan       SubscriptionPlan
+  plan       String
   startDate  DateTime
   endDate    DateTime
   stripeId   String?
