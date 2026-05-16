@@ -3,12 +3,12 @@ import { NextResponse } from 'next/server';
 import { requireVendor } from '@/lib/vendor';
 
 export async function GET(req: Request) {
+  const { origin: baseUrl, searchParams } = new URL(req.url);
   try {
-    const { searchParams } = new URL(req.url);
     const state = searchParams.get('state') || '';
     
     const clientId = process.env.GOOGLE_CLIENT_ID;
-    const redirectUri = `${process.env.NEXTAUTH_URL}/api/vendor/drive/google/callback`;
+    const redirectUri = `${baseUrl}/api/vendor/drive/google/callback`;
     
     if (!clientId) {
       return NextResponse.json({ error: 'Google Client ID not configured' }, { status: 500 });

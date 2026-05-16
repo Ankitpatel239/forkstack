@@ -377,7 +377,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <p className="text-[10px] text-zinc-500 truncate font-medium uppercase tracking-wider">{session?.user?.role || 'VENDOR'}</p>
               </div>
               <button 
-                onClick={() => signOut({ callbackUrl: '/login' })}
+                onClick={() => signOut({ callbackUrl: window.location.origin + '/login' })}
                 className="text-muted-foreground hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-500/10"
                 title="Logout"
               >

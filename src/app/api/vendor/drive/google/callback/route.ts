@@ -4,13 +4,14 @@ import { prisma } from '@/lib/db';
 import { requireVendor } from '@/lib/vendor';
 
 export async function GET(req: Request) {
+  const { searchParams, origin: baseUrl } = new URL(req.url);
+
   try {
-    const { searchParams } = new URL(req.url);
     const code = searchParams.get('code');
     const stateStr = searchParams.get('state') || '{}';
     const state = JSON.parse(decodeURIComponent(stateStr));
     
-    if (!code) return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/vendor/settings?error=no_code`);
+    if (!code) return NextResponse.redirect(`${baseUrl}/vendor/settings?error=no_code`);
 
     const vendor = await requireVendor();
 
@@ -21,7 +22,7 @@ export async function GET(req: Request) {
         code,
         client_id: process.env.GOOGLE_CLIENT_ID!,
         client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-        redirect_uri: `${process.env.NEXTAUTH_URL}/api/vendor/drive/google/callback`,
+        redirect_uri: `${baseUrl}/api/vendor/drive/google/callback`,
         grant_type: 'authorization_code',
       }),
     });
@@ -30,7 +31,7 @@ export async function GET(req: Request) {
     
     if (tokens.error) {
       console.error('Token Exchange Error:', tokens);
-      return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/vendor/settings?error=token_exchange_failed`);
+      return NextResponse.redirect(`${baseUrl}/vendor/settings?error=token_exchange_failed`);
     }
 
     // Fetch user Gmail
@@ -54,9 +55,9 @@ export async function GET(req: Request) {
       }
     });
 
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/vendor/settings?success=drive_connected`);
+    return NextResponse.redirect(`${baseUrl}/vendor/settings?success=drive_connected`);
   } catch (error) {
     console.error('OAuth Callback Error:', error);
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/vendor/settings?error=callback_error`);
+    return NextResponse.redirect(`${baseUrl}/vendor/settings?error=callback_error`);
   }
 }
