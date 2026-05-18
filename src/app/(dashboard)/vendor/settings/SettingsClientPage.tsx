@@ -786,7 +786,7 @@ export function SettingsClientPage({
                             </div>
                          </div>
                          <div className="p-8 space-y-4">
-                            {plan.features.map((feature: string, i: number) => (
+                            {(plan.features || []).map((feature: string, i: number) => (
                                <div key={i} className="flex items-center gap-3 text-[11px] font-bold text-zinc-400">
                                   <Check size={14} className="text-emerald-500 shrink-0" />
                                   {feature}

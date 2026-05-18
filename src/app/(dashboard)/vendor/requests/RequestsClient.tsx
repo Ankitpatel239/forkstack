@@ -145,21 +145,21 @@ export function RequestsClient({ initialRequests }: { initialRequests: any[] }) 
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white sm:max-w-[600px] rounded-[2.5rem] p-0 overflow-hidden">
-          <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 p-10 border-b border-zinc-800 relative">
-             <div className="absolute top-0 right-0 p-10 opacity-5">
+        <DialogContent className="bg-zinc-900 border-zinc-800 text-white w-[95vw] sm:max-w-[600px] rounded-[2rem] md:rounded-[2.5rem] p-0 overflow-hidden max-h-[90vh] flex flex-col">
+          <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 p-6 md:p-10 border-b border-zinc-800 relative shrink-0">
+             <div className="absolute top-0 right-0 p-6 md:p-10 opacity-5 hidden sm:block">
                 <Send size={100} />
              </div>
              <DialogHeader className="relative z-10">
-               <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-6">
-                  <MessageSquare size={28} />
+               <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-4 md:mb-6">
+                  <MessageSquare size={24} className="md:w-7 md:h-7" />
                </div>
-               <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Broadcast Requirement</DialogTitle>
-               <DialogDescription className="text-zinc-500 font-bold text-xs uppercase tracking-widest">Transmit critical architectural needs directly to the platform team.</DialogDescription>
+               <DialogTitle className="text-xl md:text-2xl font-black italic uppercase tracking-tighter">Broadcast Requirement</DialogTitle>
+               <DialogDescription className="text-zinc-500 font-bold text-[10px] md:text-xs uppercase tracking-widest mt-2 leading-relaxed">Transmit critical architectural needs directly to the platform team.</DialogDescription>
              </DialogHeader>
           </div>
 
-          <div className="p-10 space-y-8">
+          <div className="p-6 md:p-10 space-y-6 md:space-y-8 overflow-y-auto custom-scrollbar flex-1">
              <div className="space-y-6">
                 <div className="grid gap-6 md:grid-cols-2">
                    <div className="space-y-2">
@@ -168,7 +168,7 @@ export function RequestsClient({ initialRequests }: { initialRequests: any[] }) 
                         value={formData.title}
                         onChange={e => setFormData({...formData, title: e.target.value})}
                         placeholder="e.g., Advanced SEO Nodes" 
-                        className="bg-zinc-950 border-zinc-800 h-14 px-6 font-bold text-sm rounded-2xl" 
+                        className="bg-zinc-950 border-zinc-800 h-12 md:h-14 px-4 md:px-6 font-bold text-xs md:text-sm rounded-xl md:rounded-2xl" 
                       />
                    </div>
                    <div className="space-y-2">
@@ -177,10 +177,10 @@ export function RequestsClient({ initialRequests }: { initialRequests: any[] }) 
                         value={formData.priority}
                         onValueChange={v => setFormData({...formData, priority: v})}
                       >
-                         <SelectTrigger className="bg-zinc-950 border-zinc-800 h-14 px-6 font-bold text-sm rounded-2xl text-white">
+                         <SelectTrigger className="bg-zinc-950 border-zinc-800 h-12 md:h-14 px-4 md:px-6 font-bold text-xs md:text-sm rounded-xl md:rounded-2xl text-white">
                             <SelectValue />
                          </SelectTrigger>
-                         <SelectContent className="bg-zinc-900 border-zinc-800 text-white font-bold text-xs">
+                         <SelectContent className="bg-zinc-900 border-zinc-800 text-white font-bold text-[10px] md:text-xs">
                             <SelectItem value="LOW">LOW</SelectItem>
                             <SelectItem value="NORMAL">NORMAL</SelectItem>
                             <SelectItem value="HIGH">HIGH</SelectItem>
@@ -196,24 +196,24 @@ export function RequestsClient({ initialRequests }: { initialRequests: any[] }) 
                      value={formData.description}
                      onChange={e => setFormData({...formData, description: e.target.value})}
                      placeholder="Explain the functional necessity and operational impact..." 
-                     className="bg-zinc-950 border-zinc-800 min-h-[150px] p-6 font-bold text-sm rounded-2xl resize-none" 
+                     className="bg-zinc-950 border-zinc-800 min-h-[120px] md:min-h-[150px] p-4 md:p-6 font-bold text-xs md:text-sm rounded-xl md:rounded-2xl resize-none" 
                    />
                 </div>
              </div>
           </div>
 
-          <div className="p-8 bg-zinc-950 border-t border-zinc-800 flex justify-end gap-4">
+          <div className="p-4 md:p-8 bg-zinc-950 border-t border-zinc-800 flex flex-col sm:flex-row justify-end gap-3 md:gap-4 shrink-0">
              <Button 
                onClick={() => setIsModalOpen(false)}
                variant="ghost" 
-               className="h-14 px-8 text-zinc-500 font-black uppercase tracking-widest text-[10px]"
+               className="h-12 md:h-14 w-full sm:w-auto px-8 text-zinc-500 font-black uppercase tracking-widest text-[10px]"
              >
                 Abort
              </Button>
              <Button 
                onClick={handleSubmit}
                disabled={loading}
-               className="h-14 px-10 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-emerald-500/10 min-w-[180px]"
+               className="h-12 md:h-14 w-full sm:w-auto px-10 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] rounded-xl md:rounded-2xl shadow-xl shadow-emerald-500/10 sm:min-w-[180px]"
              >
                 {loading ? <Loader2 className="animate-spin" /> : <><Send size={16} className="mr-2" /> Broadcast Sync</>}
              </Button>
