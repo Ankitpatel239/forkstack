@@ -4,8 +4,8 @@ import { prisma } from '@/lib/db';
 import { requireVendor } from '@/lib/vendor';
 
 export async function GET(req: Request) {
-  const { searchParams, origin: baseUrl } = new URL(req.url);
-
+  const { searchParams } = new URL(req.url);
+const baseUrl = process.env.NEXTAUTH_URL;
   try {
     const code = searchParams.get('code');
     const stateStr = searchParams.get('state') || '{}';

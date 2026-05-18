@@ -196,25 +196,25 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-background border-border text-foreground sm:max-w-[850px] rounded-[3rem] p-0 overflow-hidden shadow-[0_0_50px_-12px_rgba(16,185,129,0.15)] outline-none">
-        <div className="bg-gradient-to-br from-card to-background p-10 border-b border-border relative">
-           <div className="absolute top-0 right-0 p-10 opacity-5">
-              <ImageIcon size={120} />
+      <DialogContent className="bg-background border-border text-foreground w-[95vw] sm:max-w-[850px] rounded-[2rem] md:rounded-[3rem] p-0 overflow-hidden shadow-[0_0_50px_-12px_rgba(16,185,129,0.15)] outline-none flex flex-col max-h-[90vh]">
+        <div className="bg-gradient-to-br from-card to-background p-6 md:p-10 border-b border-border relative shrink-0">
+           <div className="absolute top-0 right-0 p-6 md:p-10 opacity-5">
+              <ImageIcon size={80} className="md:w-[120px] md:h-[120px]" />
            </div>
-           <DialogHeader className="relative z-10">
-             <div className="flex items-center gap-4 mb-6">
-                <div className="h-16 w-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 overflow-hidden">
+           <DialogHeader className="relative z-10 text-left">
+             <div className="flex items-center gap-4 mb-2 md:mb-6">
+                <div className="h-12 w-12 md:h-16 md:w-16 rounded-2xl md:rounded-3xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 overflow-hidden shrink-0">
                    {formData.media.find((m) => m.isMain && !m.delete)?.url ? (
-                     <img src={formData.media.find((m) => m.isMain && !m.delete)?.url} className="h-full w-full object-cover rounded-3xl" />
+                     <img src={formData.media.find((m) => m.isMain && !m.delete)?.url} className="h-full w-full object-cover rounded-3xl" alt="Main" />
                    ) : (
                      <ChefHat size={32} />
                    )}
                 </div>
-                <div>
-                   <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-foreground">
+                 <div>
+                   <DialogTitle className="text-xl md:text-3xl font-black italic uppercase tracking-tighter text-foreground leading-none">
                      {item ? 'Update Menu Item' : 'New Menu Item'}
                    </DialogTitle>
-                   <DialogDescription className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest mt-1">
+                   <DialogDescription className="text-muted-foreground font-bold text-[8px] md:text-[10px] uppercase tracking-widest mt-1">
                      Manage the details and photos for your menu item.
                    </DialogDescription>
                 </div>
@@ -222,18 +222,18 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
            </DialogHeader>
         </div>
         
-        <form onSubmit={handleSubmit}>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="px-10 py-4 bg-muted/30 border-b border-border">
-               <TabsList className="bg-transparent gap-8 h-auto p-0 border-none justify-start">
-                  <TabsTrigger value="general" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[10px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground">Basic Info</TabsTrigger>
-                  <TabsTrigger value="gallery" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[10px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground">Item Photos</TabsTrigger>
-                  <TabsTrigger value="nutrition" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[10px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground">Nutrition Info</TabsTrigger>
-                  <TabsTrigger value="dietary" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[10px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground">Dietary Details</TabsTrigger>
+        <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col overflow-hidden">
+            <div className="px-6 md:px-10 py-2 md:py-4 bg-muted/30 border-b border-border overflow-x-auto custom-scrollbar shrink-0">
+               <TabsList className="bg-transparent gap-6 md:gap-8 h-auto p-0 border-none justify-start min-w-max">
+                  <TabsTrigger value="general" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-8 md:h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground whitespace-nowrap">Basic Info</TabsTrigger>
+                  <TabsTrigger value="gallery" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-8 md:h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground whitespace-nowrap">Item Photos</TabsTrigger>
+                  <TabsTrigger value="nutrition" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-8 md:h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground whitespace-nowrap">Nutrition Info</TabsTrigger>
+                  <TabsTrigger value="dietary" className="data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 px-0 h-8 md:h-10 border-b-2 border-transparent data-[state=active]:border-emerald-500 rounded-none text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground whitespace-nowrap">Dietary Details</TabsTrigger>
                </TabsList>
             </div>
 
-            <div className="p-10 max-h-[50vh] overflow-y-auto custom-scrollbar">
+            <div className="p-6 md:p-10 overflow-y-auto custom-scrollbar flex-1">
                <TabsContent value="general" className="mt-0 space-y-8 animate-in fade-in slide-in-from-left-4 duration-300">
                   <div className="grid gap-8 md:grid-cols-2">
                      <div className="space-y-4">
@@ -338,17 +338,17 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                      </Label>
                   </div>
 
-                  <div className="grid gap-6">
+                  <div className="grid gap-4 md:gap-6">
                      {formData.media.filter((m: any) => !m.delete).map((med: any, idx: number) => ( med && (
-                       <div key={idx} className={`p-6 bg-muted/40 border-2 rounded-[2rem] transition-all flex flex-col md:flex-row gap-8 relative overflow-hidden group ${med.isMain ? 'border-emerald-500/50' : 'border-border hover:border-border/80'}`}>
-                          <div className="h-32 w-32 rounded-3xl overflow-hidden shrink-0 border-2 border-border relative">
-                             <img src={med.url} className="h-full w-full object-cover" />
+                       <div key={idx} className={`p-4 md:p-6 bg-muted/40 border-2 rounded-[2rem] transition-all flex flex-col md:flex-row gap-4 md:gap-8 relative overflow-hidden group ${med.isMain ? 'border-emerald-500/50' : 'border-border hover:border-border/80'}`}>
+                          <div className="h-24 w-24 md:h-32 md:w-32 rounded-2xl md:rounded-3xl overflow-hidden shrink-0 border-2 border-border relative mx-auto md:mx-0">
+                             <img src={med.url} className="h-full w-full object-cover" alt={med.alt || "Menu Item"} />
                              {med.isMain && (
                                 <div className="absolute top-2 left-2 px-2 py-0.5 bg-emerald-500 text-zinc-950 font-black text-[7px] uppercase tracking-widest rounded-full shadow-lg">Main</div>
                              )}
                           </div>
                           
-                          <div className="flex-1 space-y-4">
+                          <div className="flex-1 space-y-4 text-center md:text-left">
                              <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-1">
                                    <Label className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">Display Caption</Label>
@@ -356,7 +356,7 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                                       value={med.caption || ''} 
                                       onChange={e => updateMediaInfo(idx, { caption: e.target.value })}
                                       className="bg-background border-border h-10 px-4 text-xs font-bold rounded-xl text-foreground" 
-                                      placeholder="e.g., Crispy golden crust detail"
+                                      placeholder="e.g., Crispy golden crust"
                                    />
                                 </div>
                                 <div className="space-y-1">
@@ -365,12 +365,12 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
                                       value={med.alt || ''} 
                                       onChange={e => updateMediaInfo(idx, { alt: e.target.value })}
                                       className="bg-background border-border h-10 px-4 text-xs font-bold rounded-xl text-foreground" 
-                                      placeholder="Alt description for screen readers"
+                                      placeholder="Alt description"
                                    />
                                 </div>
                              </div>
                              
-                             <div className="flex items-center gap-4 pt-2">
+                             <div className="flex items-center justify-center md:justify-start gap-4 pt-2">
                                 {!med.isMain && (
                                   <Button 
                                     type="button" 
@@ -534,14 +534,14 @@ export function ItemDialog({ item, open, onOpenChange, categories }: ItemDialogP
             </div>
           </Tabs>
 
-          <DialogFooter className="p-10 bg-background/50 border-t border-border gap-4 flex-row items-center sm:justify-between">
+          <DialogFooter className="p-6 md:p-10 bg-background/50 border-t border-border gap-4 flex-col sm:flex-row items-center sm:justify-between shrink-0">
             <div className="hidden md:flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">
                <Info size={14} /> Menu Management
             </div>
             <Button 
                type="submit" 
                disabled={loading}
-               className="w-full sm:w-auto min-w-[220px] bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-14 rounded-[2rem] shadow-[0_10px_30px_-10px_rgba(16,185,129,0.3)] group transition-all active:scale-95"
+               className="w-full sm:w-auto min-w-[220px] bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-12 md:h-14 rounded-2xl md:rounded-[2rem] shadow-[0_10px_30px_-10px_rgba(16,185,129,0.3)] group transition-all active:scale-95"
             >
                {loading ? <Loader2 className="animate-spin" /> : (
                  <>
