@@ -134,19 +134,21 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-background border-border text-foreground sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden rounded-[2.5rem] shadow-2xl outline-none">
-        <div className="grid md:grid-cols-5 h-full">
+      <DialogContent className="bg-background border-border text-foreground w-[95vw] md:max-w-[750px] max-h-[90vh] md:max-h-[85vh] p-0 overflow-hidden rounded-[2rem] md:rounded-[2.5rem] shadow-2xl outline-none !grid !grid-cols-1 !gap-0">
+        <div className="grid md:grid-cols-5 h-[90vh] md:h-[85vh] overflow-y-auto md:overflow-hidden">
            {/* Sidebar Info */}
-           <div className="md:col-span-2 bg-muted/30 border-r border-border p-8 space-y-8 overflow-y-auto custom-scrollbar">
-              <div>
-                 <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 mb-4">
-                    <BarChart3 size={24} />
+           <div className="md:col-span-2 bg-muted/30 border-b md:border-b-0 md:border-r border-border p-6 md:p-8 space-y-6 md:space-y-8 md:h-full md:overflow-y-auto custom-scrollbar">
+              <div className="flex items-center md:items-start gap-4 md:flex-col pr-12 md:pr-0">
+                 <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0">
+                    <BarChart3 size={20} className="sm:w-6 sm:h-6" />
                  </div>
-                 <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none text-foreground">Portfolio<br />Intel Node</h2>
-                 <p className="text-[9px] text-muted-foreground/40 font-black uppercase tracking-widest mt-2 px-1">Global audit & velocity tracking</p>
+                 <div>
+                    <DialogTitle className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter leading-tight text-foreground">Portfolio<br className="hidden md:block" /> Intel Node</DialogTitle>
+                    <DialogDescription className="text-[9px] text-muted-foreground/40 font-black uppercase tracking-widest mt-1.5 px-0.5">Global audit & velocity tracking</DialogDescription>
+                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-1 gap-4">
                  <div className="p-4 rounded-2xl bg-card/50 border border-border/50 space-y-1">
                     <p className="text-[8px] font-black uppercase text-muted-foreground/60">Period Sales</p>
                     <div className="flex items-baseline gap-2">
@@ -170,7 +172,7 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
                  </div>
               </div>
 
-              <div className="pt-4 border-t border-border/50">
+              <div className="pt-4 border-t border-border/50 hidden md:block">
                  <div className="flex items-center gap-2 text-muted-foreground/40 hover:text-foreground transition-colors cursor-help">
                     <Flame size={14} className="text-emerald-500" />
                     <span className="text-[9px] font-black uppercase tracking-widest italic">Efficiency Index: 92.4%</span>
@@ -179,8 +181,8 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
            </div>
 
            {/* Main Content */}
-           <div className="md:col-span-3 flex flex-col h-full max-h-[95vh] overflow-hidden">
-              <div className="p-8 border-b border-border bg-card flex flex-col gap-4">
+           <div className="md:col-span-3 flex flex-col md:h-full md:overflow-hidden">
+              <div className="p-6 md:p-8 border-b border-border bg-card flex flex-col gap-4">
                  <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 flex items-center gap-2">
                        <CalendarIcon size={12} /> Temporal Range
@@ -204,7 +206,7 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
                     </Button>
                  </div>
 
-                 <div className="grid grid-cols-2 gap-2">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                        <label className="text-[7px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 px-1">Source Node Date</label>
                        <input 
@@ -226,13 +228,15 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
                  </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+              <div className="flex-1 p-6 md:p-8 space-y-6 md:space-y-8 md:overflow-y-auto custom-scrollbar">
                  <div className="space-y-4">
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 flex items-center gap-2">
                        <Activity size={12} /> Velocity Distribution
                     </p>
-                    <div className="bg-muted/40 border border-border/50 p-6 rounded-[2rem]">
-                       <SimpleBarChart data={metrics.dailyData} />
+                    <div className="bg-muted/40 border border-border/50 p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                       <div className="min-w-[320px] md:min-w-0">
+                          <SimpleBarChart data={metrics.dailyData} />
+                       </div>
                     </div>
                  </div>
 
@@ -279,7 +283,7 @@ export function GlobalAnalysisDialog({ open, onOpenChange }: GlobalAnalysisDialo
                  </div>
               </div>
 
-              <div className="p-8 bg-card border-t border-border">
+              <div className="p-6 md:p-8 bg-card border-t border-border mt-auto">
                  <Button 
                    onClick={() => onOpenChange(false)}
                    className="w-full bg-foreground text-background hover:bg-foreground/90 font-black uppercase tracking-[0.2em] text-[10px] h-14 rounded-2xl shadow-xl active:scale-95 transition-all"

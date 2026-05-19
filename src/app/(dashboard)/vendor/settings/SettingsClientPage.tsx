@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { 
   Store, 
   Zap, 
@@ -72,14 +73,27 @@ import { subscribeToPlan } from '@/app/actions/billing';
 export function SettingsClientPage({ 
   vendor, 
   initialDrives = [], 
-  plans = [] 
+  plans = [],
+  activeTabSlug = 'identity'
 }: { 
   vendor: any, 
   initialDrives: any[], 
-  plans: any[] 
+  plans: any[],
+  activeTabSlug?: string
 }) {
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState('Business Identity');
+
+  const tabs = [
+    { label: 'Business Identity', slug: 'identity', icon: Store, sub: 'Public profile & SEO' },
+    { label: 'Connected Drives', slug: 'drives', icon: Database, sub: 'Cloud & media storage' },
+    { label: 'Platform Config', slug: 'config', icon: Zap, sub: 'System parameters' },
+    { label: 'Notifications', slug: 'notifications', icon: Bell, sub: 'Alert nodes' },
+    { label: 'Security & Access', slug: 'security', icon: Lock, sub: 'Encryption & locks' },
+    { label: 'Inventory Catalog', slug: 'inventory', icon: Box, sub: 'Categories & Units' },
+    { label: 'Billing & Tiers', slug: 'billing', icon: CreditCard, sub: 'Fiscal cycles' },
+  ];
+
+  const activeTab = tabs.find(t => t.slug === activeTabSlug)?.label || 'Business Identity';
 
   useEffect(() => {
     const success = searchParams.get('success');
@@ -209,7 +223,7 @@ export function SettingsClientPage({
       .map((cat: any) => (
         <div key={cat.id} className="space-y-2">
           <div 
-            style={{ marginLeft: level * 20 }}
+            style={{ marginLeft: level * 16 }}
             className={`bg-zinc-950 border border-zinc-800 p-4 rounded-2xl flex items-center justify-between group hover:border-emerald-500/30 transition-all ${level > 0 ? 'bg-zinc-950/40 opacity-90' : ''}`}
           >
             <div className="flex items-center gap-3">
@@ -266,15 +280,7 @@ export function SettingsClientPage({
     }
   };
 
-  const tabs = [
-    { label: 'Business Identity', icon: Store, sub: 'Public profile & SEO' },
-    { label: 'Connected Drives', icon: Database, sub: 'Cloud & media storage' },
-    { label: 'Platform Config', icon: Zap, sub: 'System parameters' },
-    { label: 'Notifications', icon: Bell, sub: 'Alert nodes' },
-    { label: 'Security & Access', icon: Lock, sub: 'Encryption & locks' },
-    { label: 'Inventory Catalog', icon: Box, sub: 'Categories & Units' },
-    { label: 'Billing & Tiers', icon: CreditCard, sub: 'Fiscal cycles' },
-  ];
+  // Tabs are defined at the top to support URL dynamic routing
 
   const handleAddDrive = async () => {
     setDriveLoading(true);
@@ -312,45 +318,48 @@ export function SettingsClientPage({
   };
 
   return (
-    <div className="grid gap-10 lg:grid-cols-12">
+    <div className="grid gap-6 lg:gap-10 lg:grid-cols-12">
       {/* Sidebar Nav */}
-      <div className="lg:col-span-3 space-y-3">
-         {tabs.map((item: any, i: number) => (
-           <button 
-             key={i} 
-             onClick={() => setActiveTab(item.label)}
-             className={`w-full text-left group transition-all duration-300 ${activeTab === item.label ? 'scale-[1.02]' : ''}`}
-           >
-              <div className={`flex items-center justify-between px-5 py-4 rounded-2xl border transition-all ${
-                activeTab === item.label 
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-xl shadow-emerald-500/5' 
-                : 'bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:bg-zinc-900 hover:border-zinc-700 hover:text-white'
-              }`}>
-                <div className="flex items-center gap-4">
-                   <div className={`p-2 rounded-xl transition-all ${activeTab === item.label ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-950 text-zinc-600 group-hover:text-zinc-400'}`}>
-                      <item.icon size={18} />
-                   </div>
-                   <div>
-                      <span className="text-[11px] font-black uppercase tracking-widest leading-none block">{item.label}</span>
-                      <span className="text-[9px] font-bold text-zinc-600 block mt-1 uppercase tracking-tighter">{item.sub}</span>
-                   </div>
+      <div className="lg:col-span-3 flex flex-row overflow-x-auto lg:flex-col lg:overflow-x-visible gap-3 pb-4 lg:pb-0 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+         {tabs.map((item: any, i: number) => {
+           const isActive = activeTabSlug === item.slug;
+           return (
+             <Link 
+               key={i} 
+               href={`/vendor/settings/${item.slug}`}
+               className={`group transition-all duration-300 shrink-0 lg:w-full ${isActive ? 'scale-[1.02]' : ''}`}
+             >
+                <div className={`flex items-center justify-between px-4 py-3 lg:px-5 lg:py-4 rounded-xl lg:rounded-2xl border transition-all ${
+                  isActive 
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-xl shadow-emerald-500/5' 
+                  : 'bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:bg-zinc-900 hover:border-zinc-700 hover:text-white'
+                }`}>
+                  <div className="flex items-center gap-3 lg:gap-4">
+                     <div className={`p-1.5 lg:p-2 rounded-lg lg:rounded-xl transition-all ${isActive ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-950 text-zinc-600 group-hover:text-zinc-400'}`}>
+                        <item.icon size={16} className="lg:w-[18px] lg:h-[18px]" />
+                     </div>
+                     <div>
+                        <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-widest leading-none block">{item.label}</span>
+                        <span className="hidden lg:block text-[9px] font-bold text-zinc-600 mt-1 uppercase tracking-tighter">{item.sub}</span>
+                     </div>
+                  </div>
+                  {isActive && <ChevronRight size={14} className="hidden lg:block animate-pulse" />}
                 </div>
-                {activeTab === item.label && <ChevronRight size={14} className="animate-pulse" />}
-              </div>
-           </button>
-         ))}
+             </Link>
+           );
+         })}
       </div>
 
       {/* Form Area */}
       <div className="lg:col-span-9 space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
          {activeTab === 'Business Identity' && (
             <div className="bg-zinc-900 shadow-2xl border border-zinc-800 rounded-3xl overflow-hidden">
-               <div className="p-10 border-b border-zinc-800 bg-zinc-950/20">
-                  <h2 className="text-2xl font-black text-white italic uppercase tracking-tighter">Business Identity Node</h2>
+               <div className="p-6 md:p-10 border-b border-zinc-800 bg-zinc-950/20">
+                  <h2 className="text-xl md:text-2xl font-black text-white italic uppercase tracking-tighter">Business Identity Node</h2>
                   <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Configure your public-facing metadata and brand presence.</p>
                </div>
                
-               <div className="p-10 space-y-12">
+               <div className="p-6 md:p-10 space-y-8 md:space-y-12">
                   <div className="flex flex-col md:flex-row gap-12 items-start">
                      <div className="relative group self-center md:self-start">
                         <input 
@@ -473,17 +482,17 @@ export function SettingsClientPage({
                      </div>
                   </div>
 
-                  <div className="pt-10 border-t border-zinc-800/50 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                     <div className="flex items-center gap-4 text-emerald-500 bg-emerald-500/5 px-6 py-3 rounded-2xl border border-emerald-500/10">
-                        <ShieldCheck size={24} className="animate-pulse" />
+                  <div className="pt-8 md:pt-10 border-t border-zinc-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-6 sm:gap-8">
+                     <div className="flex items-center gap-4 text-emerald-500 bg-emerald-500/5 px-5 py-3 rounded-2xl border border-emerald-500/10 w-full sm:w-auto justify-center sm:justify-start">
+                        <ShieldCheck size={20} className="animate-pulse" />
                         <span className="text-[10px] font-black uppercase tracking-widest italic">Encrypted Connection Active</span>
                      </div>
                      <Button 
                        onClick={handleSave}
                        disabled={loading}
-                       className="rounded-[2rem] bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-xs h-16 px-12 shadow-2xl shadow-emerald-500/20 group transition-all active:scale-95"
+                       className="w-full sm:w-auto rounded-xl sm:rounded-[2rem] bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-xs h-14 sm:h-16 px-10 sm:px-12 shadow-2xl shadow-emerald-500/20 group transition-all active:scale-95"
                      >
-                        {loading ? <Loader2 className="animate-spin" /> : <><Save size={20} className="mr-3 group-hover:rotate-12 transition-transform" /> Sync Infrastructure</>}
+                        {loading ? <Loader2 className="animate-spin" /> : <><Save size={18} className="mr-2 sm:mr-3 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" /> Sync Infrastructure</>}
                      </Button>
                   </div>
                </div>
@@ -493,20 +502,20 @@ export function SettingsClientPage({
          {activeTab === 'Connected Drives' && (
             <div className="space-y-8">
                <div className="bg-zinc-900 shadow-2xl border border-zinc-800 rounded-3xl overflow-hidden">
-                  <div className="p-10 border-b border-zinc-800 bg-zinc-950/20 flex items-center justify-between">
+                  <div className="p-6 md:p-10 border-b border-zinc-800 bg-zinc-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                      <div>
-                        <h2 className="text-2xl font-black text-white italic uppercase tracking-tighter">Storage Infrastructure</h2>
+                        <h2 className="text-xl md:text-2xl font-black text-white italic uppercase tracking-tighter">Storage Infrastructure</h2>
                         <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Manage connected media drives and cloud storage endpoints.</p>
                      </div>
                      <Button 
                        onClick={() => setIsDriveModalOpen(true)}
-                       className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-12 px-6 rounded-2xl shadow-lg shadow-emerald-500/10"
+                       className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-11 sm:h-12 px-5 sm:px-6 rounded-xl sm:rounded-2xl shadow-lg shadow-emerald-500/10"
                      >
-                       <Plus size={18} className="mr-2" /> Connect Node
+                        <Plus size={16} className="mr-2 sm:w-[18px] sm:h-[18px]" /> Connect Node
                      </Button>
                   </div>
                   
-                  <div className="p-10">
+                  <div className="p-6 md:p-10">
                      <div className="grid gap-6 md:grid-cols-2">
                         {drives.length === 0 ? (
                           <div className="md:col-span-2 py-20 text-center border-2 border-dashed border-zinc-800 rounded-[2.5rem]">
@@ -565,21 +574,21 @@ export function SettingsClientPage({
                   </div>
                </div>
 
-               <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-3xl p-10 flex items-center gap-8">
+               <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-3xl p-6 md:p-10 flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-8">
                   <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
                      <Activity size={32} />
                   </div>
                   <div>
                      <h4 className="text-lg font-black text-white italic uppercase tracking-tighter">Automatic Load Balancing</h4>
-                     <p className="text-xs text-zinc-500 font-medium">ForkStack will automatically distribute your media across all active storage nodes to ensure optimal delivery speed.</p>
+                     <p className="text-xs text-zinc-500 font-medium leading-relaxed">ForkStack will automatically distribute your media across all active storage nodes to ensure optimal delivery speed.</p>
                   </div>
                </div>
             </div>
          )}
 
          {activeTab === 'Security & Access' && (
-            <div className="bg-zinc-900 shadow-2xl border border-zinc-800 rounded-3xl overflow-hidden p-10 space-y-10">
-               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-zinc-950/40 p-10 rounded-[2.5rem] border border-zinc-800/50 group hover:border-emerald-500/30 transition-all">
+            <div className="bg-zinc-900 shadow-2xl border border-zinc-800 rounded-3xl overflow-hidden p-6 md:p-10 space-y-8 md:space-y-10">
+               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-zinc-950/40 p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] border border-zinc-800/50 group hover:border-emerald-500/30 transition-all">
                   <div className="space-y-2">
                      <div className="flex items-center gap-4">
                         <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-500">
@@ -639,12 +648,12 @@ export function SettingsClientPage({
 
          {activeTab === 'Inventory Catalog' && (
             <div className="bg-zinc-900 shadow-2xl border border-zinc-800 rounded-3xl overflow-hidden">
-               <div className="p-10 border-b border-zinc-800 bg-zinc-950/20">
-                  <h2 className="text-2xl font-black text-white italic uppercase tracking-tighter">Inventory Taxonomy</h2>
+               <div className="p-6 md:p-10 border-b border-zinc-800 bg-zinc-950/20">
+                  <h2 className="text-xl md:text-2xl font-black text-white italic uppercase tracking-tighter">Inventory Taxonomy</h2>
                   <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Manage classifications for your batch integrity and stock portfolio.</p>
                </div>
                
-              <div className="bg-zinc-950/40 p-8 rounded-[2.5rem] border border-zinc-800/50 space-y-6">
+              <div className="bg-zinc-950/40 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-zinc-800/50 space-y-6">
                  <div className="grid gap-6 md:grid-cols-3">
                     <div className="space-y-2">
                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Category Label</Label>
@@ -693,12 +702,12 @@ export function SettingsClientPage({
                  </div>
 
                  <Button 
-                   onClick={handleAddCategory}
-                   disabled={catLoading}
-                   className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest rounded-2xl shadow-lg transition-all active:scale-95"
-                 >
-                   {catLoading ? <Loader2 className="animate-spin" /> : <><Plus size={20} className="mr-2" /> Bind Taxonomy Class</>}
-                 </Button>
+                    onClick={handleAddCategory}
+                    disabled={catLoading}
+                    className="w-full h-12 sm:h-14 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest rounded-xl sm:rounded-2xl shadow-lg transition-all active:scale-95 text-xs sm:text-sm"
+                  >
+                    {catLoading ? <Loader2 className="animate-spin" /> : <><Plus size={18} className="mr-2 sm:w-5 sm:h-5" /> Bind Taxonomy Class</>}
+                  </Button>
               </div>
 
               <div className="space-y-4">
@@ -734,19 +743,19 @@ export function SettingsClientPage({
           )}
 
          {activeTab === 'Billing & Tiers' && (
-            <div className="space-y-10">
-               <div className="bg-zinc-900 shadow-2xl border border-zinc-800 rounded-3xl overflow-hidden p-10">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
+            <div className="space-y-8 md:space-y-10">
+               <div className="bg-zinc-900 shadow-2xl border border-zinc-800 rounded-3xl overflow-hidden p-6 md:p-10">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-10">
                      <div className="space-y-2">
                         <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[10px] font-black uppercase tracking-widest mb-2">Current Lifecycle</Badge>
-                        <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">
+                        <h3 className="text-2xl md:text-3xl font-black text-white italic uppercase tracking-tighter">
                            {plans.find((p: any) => p.name === vendor.subscriptionPlan)?.displayName || vendor.subscriptionPlan} Tier
                         </h3>
                         <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">
                            Expires on {new Date(vendor.subscriptionEnd).toLocaleDateString()} • {vendor.subscriptionStatus}
                         </p>
                      </div>
-                     <div className="flex items-center gap-6">
+                     <div className="flex items-center gap-6 justify-between border-t border-zinc-800/50 pt-4 md:border-none md:pt-0">
                         <div className="text-right">
                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Renewal Node</p>
                            <p className="text-xl font-black text-white italic">Automatic</p>
@@ -760,11 +769,11 @@ export function SettingsClientPage({
                   </div>
                </div>
 
-               <div className="grid gap-8 md:grid-cols-3">
+               <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                   {plans.map((plan: any) => {
                     const isCurrent = vendor.subscriptionPlan === plan.name;
                     return (
-                      <div key={plan.id} className={`bg-zinc-900 border rounded-3xl overflow-hidden shadow-2xl relative transition-all duration-500 ${isCurrent ? 'border-emerald-500 scale-[1.05] z-10 shadow-emerald-500/10' : 'border-zinc-800 opacity-80 hover:opacity-100 hover:border-zinc-700'}`}>
+                      <div key={plan.id} className={`bg-zinc-900 border rounded-3xl overflow-hidden shadow-2xl relative transition-all duration-500 ${isCurrent ? 'border-emerald-500 lg:scale-[1.05] z-10 shadow-emerald-500/10' : 'border-zinc-800 opacity-80 hover:opacity-100 hover:border-zinc-700'}`}>
                          {isCurrent && (
                            <div className="absolute top-0 right-0 p-4">
                               <ShieldCheck className="text-emerald-500" size={24} />
@@ -808,12 +817,12 @@ export function SettingsClientPage({
                </div>
 
                <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl">
-                  <div className="p-10 border-b border-zinc-800 bg-zinc-950/20 flex items-center justify-between">
+                  <div className="p-6 md:p-10 border-b border-zinc-800 bg-zinc-950/20 flex items-center justify-between">
                      <div>
-                        <h4 className="text-xl font-black text-white italic uppercase leading-none">Global Ledger History</h4>
+                        <h4 className="text-lg md:text-xl font-black text-white italic uppercase leading-none">Global Ledger History</h4>
                         <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-2">Audit your platform subscription payments and fiscal cycles.</p>
                      </div>
-                     <div className="h-12 w-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-emerald-500">
+                     <div className="h-12 w-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-emerald-500 shrink-0">
                         <CreditCard size={20} />
                      </div>
                   </div>
@@ -828,10 +837,10 @@ export function SettingsClientPage({
                         </div>
                      ) : (
                         vendor.subscriptionPayments.map((p: any) => (
-                           <div key={p.id} className="p-8 flex items-center justify-between hover:bg-zinc-950/40 transition-all">
-                              <div className="flex items-center gap-6">
-                                 <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                                    <Check size={20} />
+                           <div key={p.id} className="p-6 md:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-zinc-950/40 transition-all">
+                              <div className="flex items-center gap-4 sm:gap-6">
+                                 <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                                    <Check size={18} className="sm:w-5 sm:h-5" />
                                  </div>
                                  <div>
                                     <p className="text-xs font-black text-white uppercase italic tracking-widest leading-none">{p.plan} Subscription</p>
@@ -840,8 +849,8 @@ export function SettingsClientPage({
                                     </p>
                                  </div>
                               </div>
-                              <div className="text-right">
-                                 <p className="text-lg font-black text-white italic">₹{p.amount}</p>
+                              <div className="text-left sm:text-right w-full sm:w-auto pl-15 sm:pl-0">
+                                 <p className="text-base sm:text-lg font-black text-white italic">₹{p.amount}</p>
                                  <div className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mt-1">SUCCESS</div>
                               </div>
                            </div>
@@ -870,7 +879,7 @@ export function SettingsClientPage({
       {/* Connect Drive Modal */}
       <Dialog open={isDriveModalOpen} onOpenChange={setIsDriveModalOpen}>
         <DialogContent className="bg-zinc-900 border-zinc-800 text-white sm:max-w-[550px] rounded-[2.5rem] p-0 overflow-hidden">
-          <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 p-10 border-b border-zinc-800 relative">
+          <div className="bg-linear-to-br from-zinc-900 to-zinc-950 p-10 border-b border-zinc-800 relative">
              <div className="absolute top-0 right-0 p-10 opacity-5">
                 <Database size={100} />
              </div>

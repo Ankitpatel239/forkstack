@@ -130,9 +130,9 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
   ).slice(0, 16);
 
   return (
-    <div className="flex h-[calc(100vh-100px)] gap-4 animate-in fade-in duration-500 max-w-[1700px] mx-auto pb-4">
+    <div className="flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-100px)] gap-4 animate-in fade-in duration-500 max-w-[1700px] mx-auto pb-10 lg:pb-4">
       {/* Selection Column */}
-      <div className="flex-1 flex flex-col gap-4">
+      <div className="flex-1 flex flex-col gap-4 min-h-[500px] lg:min-h-0">
         <div className="flex items-center justify-between">
            <Link href="/vendor/inventory" className="flex items-center gap-2 text-muted-foreground/40 hover:text-foreground transition-colors text-[9px] font-black uppercase tracking-[0.2em]">
               <ChevronLeft size={14} /> Back to Catalog
@@ -154,7 +154,7 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {filteredItems.map((item: any) => (
                 <button 
                   key={item.id}
@@ -187,7 +187,7 @@ export default function SellClientPage({ initialItems }: { initialItems: any[] }
       </div>
 
       {/* Basket Column */}
-      <div className="w-[380px] bg-card border border-border/50 rounded-[1.5rem] flex flex-col overflow-hidden shadow-2xl">
+      <div className="w-full lg:w-[380px] h-auto lg:h-full bg-card border border-border/50 rounded-[1.5rem] flex flex-col overflow-hidden shadow-2xl shrink-0">
          <div className="p-5 border-b border-border bg-muted/30">
             <div className="flex items-center justify-between">
                <h2 className="text-sm font-black italic tracking-tighter flex items-center gap-2">

@@ -369,16 +369,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <User size={64} />
             </div>
             <div className="flex items-center gap-3 relative z-10">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg">
-                 <span className="font-bold text-zinc-900 text-sm">{(session?.user?.name || session?.user?.email || 'U').charAt(0).toUpperCase()}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-white truncate leading-none mb-1">{session?.user?.name || 'Owner'}</p>
-                <p className="text-[10px] text-zinc-500 truncate font-medium uppercase tracking-wider">{session?.user?.role || 'VENDOR'}</p>
-              </div>
+              <Link 
+                href="/profile"
+                className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity cursor-pointer"
+              >
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shrink-0">
+                   <span className="font-bold text-zinc-900 text-sm">{(session?.user?.name || session?.user?.email || 'U').charAt(0).toUpperCase()}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-white truncate leading-none mb-1">{session?.user?.name || 'Owner'}</p>
+                  <p className="text-[10px] text-zinc-500 truncate font-medium uppercase tracking-wider">{session?.user?.role || 'VENDOR'}</p>
+                </div>
+              </Link>
               <button 
                 onClick={() => signOut({ callbackUrl: window.location.origin + '/login' })}
-                className="text-muted-foreground hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-500/10"
+                className="text-muted-foreground hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-500/10 shrink-0"
                 title="Logout"
               >
                 <LogOut size={18} />

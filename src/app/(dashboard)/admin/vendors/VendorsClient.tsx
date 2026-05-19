@@ -1,7 +1,7 @@
-
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
    Store,
    User,
@@ -17,7 +17,9 @@ import {
    Zap,
    Calendar,
    Loader2,
-   ChevronRight
+   ChevronRight,
+   Pencil,
+   Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,15 +50,24 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { updateVendorSubscription } from '@/app/actions/admin-vendors';
+import { updateVendorSubscription, suspendVendor, deleteVendor } from '@/app/actions/admin-vendors';
 
 export function VendorsClient({ initialVendors, availablePlans }: { initialVendors: any[], availablePlans: any[] }) {
+   const router = useRouter();
    const [vendors, setVendors] = useState(initialVendors);
    const [search, setSearch] = useState('');
    const [loading, setLoading] = useState<string | null>(null);
    const [selectedVendor, setSelectedVendor] = useState<any>(null);
    const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+   
+   // Add/Edit Modals state
    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+   const [editingVendor, setEditingVendor] = useState<any>(null);
+
+   // Delete modal state
+   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+   const [vendorToDelete, setVendorToDelete] = useState<any>(null);
 
    const [planForm, setPlanForm] = useState({
       plan: 'BASIC',
@@ -78,6 +89,16 @@ export function VendorsClient({ initialVendors, availablePlans }: { initialVendo
          expiryDate: new Date(vendor.subscriptionEnd).toISOString().split('T')[0]
       });
       setIsPlanModalOpen(true);
+   };
+
+   const handleOpenEditModal = (vendor: any) => {
+      setEditingVendor(vendor);
+      setIsEditModalOpen(true);
+   };
+
+   const handleOpenDeleteModal = (vendor: any) => {
+      setVendorToDelete(vendor);
+      setIsDeleteModalOpen(true);
    };
 
    const handleUpdatePlan = async () => {
@@ -103,6 +124,47 @@ export function VendorsClient({ initialVendors, availablePlans }: { initialVendo
          }
       } catch (e) {
          toast.error('Fatal synchronization error');
+      } finally {
+         setLoading(null);
+      }
+   };
+
+   const handleToggleSuspend = async (vendor: any) => {
+      const isSuspended = vendor.subscriptionStatus === 'SUSPENDED';
+      setLoading(vendor.id);
+      try {
+         const result = await suspendVendor(vendor.id, !isSuspended);
+         if (result.success) {
+            toast.success(isSuspended ? 'Account activated successfully' : 'Account suspended successfully');
+            setVendors(vendors.map(v => v.id === vendor.id ? {
+               ...v,
+               subscriptionStatus: isSuspended ? 'ACTIVE' : 'SUSPENDED'
+            } : v));
+         } else {
+            toast.error(result.error || 'Failed to toggle account suspension');
+         }
+      } catch (error) {
+         toast.error('Fatal network error');
+      } finally {
+         setLoading(null);
+      }
+   };
+
+   const handleDeleteVendor = async () => {
+      if (!vendorToDelete) return;
+      setLoading(vendorToDelete.id);
+      try {
+         const result = await deleteVendor(vendorToDelete.id);
+         if (result.success) {
+            toast.success('Vendor successfully deleted');
+            setVendors(vendors.filter(v => v.id !== vendorToDelete.id));
+            setIsDeleteModalOpen(false);
+            setVendorToDelete(null);
+         } else {
+            toast.error(result.error || 'Failed to delete vendor account');
+         }
+      } catch (error) {
+         toast.error('Fatal error during deletion');
       } finally {
          setLoading(null);
       }
@@ -175,10 +237,10 @@ export function VendorsClient({ initialVendors, availablePlans }: { initialVendo
                                  <div className="space-y-1.5">
                                     <div className="flex items-center gap-3">
                                        <p className="text-lg font-black text-white italic tracking-tighter uppercase">{vendor.businessName}</p>
-                                       <Badge className="bg-zinc-950 text-zinc-600 border-zinc-800 text-[8px] px-2 py-0">ID: {vendor.tenantSlug}</Badge>
+                                       <Badge className="bg-zinc-950 text-zinc-600 border-zinc-800 text-[8px] px-2 py-0">Slug: {vendor.tenantSlug}</Badge>
                                     </div>
                                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 flex items-center gap-2 italic">
-                                       <User size={12} className="text-emerald-500/50" /> {vendor.owner?.name || 'Unassigned'}
+                                       <User size={12} className="text-emerald-500/50" /> {vendor.owner?.name || 'Unassigned'} ({vendor.businessEmail})
                                     </p>
                                  </div>
                               </div>
@@ -226,15 +288,18 @@ export function VendorsClient({ initialVendors, availablePlans }: { initialVendo
                                  <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800 text-white w-64 p-3 rounded-2xl shadow-2xl">
                                     <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-3 py-2 leading-none italic">Manage Vendor</DropdownMenuLabel>
                                     <DropdownMenuSeparator className="bg-zinc-800" />
+                                    <DropdownMenuItem onClick={() => handleOpenEditModal(vendor)} className="focus:bg-zinc-800 px-3 py-3 rounded-xl cursor-pointer text-[10px] font-black uppercase tracking-widest italic">
+                                       <Pencil size={16} className="mr-3 text-blue-500" /> Edit Vendor Info
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleOpenPlanModal(vendor)} className="focus:bg-zinc-800 px-3 py-3 rounded-xl cursor-pointer text-[10px] font-black uppercase tracking-widest italic">
                                        <Zap size={16} className="mr-3 text-emerald-500" /> Update Subscription
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem className="focus:bg-zinc-800 px-3 py-3 rounded-xl cursor-pointer text-[10px] font-black uppercase tracking-widest italic">
-                                       <BadgeCheck className="w-4 h-4 mr-3 text-blue-500" /> Login as Vendor
+                                    <DropdownMenuItem onClick={() => handleToggleSuspend(vendor)} className="focus:bg-zinc-800 px-3 py-3 rounded-xl cursor-pointer text-[10px] font-black uppercase tracking-widest italic text-amber-500 focus:text-amber-500">
+                                       <ShieldAlert className="w-4 h-4 mr-3 text-amber-500" /> {vendor.subscriptionStatus === 'SUSPENDED' ? 'Activate Account' : 'Suspend Account'}
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator className="bg-zinc-800" />
-                                    <DropdownMenuItem className="focus:bg-red-500/10 px-3 py-3 rounded-xl cursor-pointer text-red-500 text-[10px] font-black uppercase tracking-widest italic">
-                                       <ShieldAlert className="w-4 h-4 mr-3" /> Suspend Account
+                                    <DropdownMenuItem onClick={() => handleOpenDeleteModal(vendor)} className="focus:bg-red-500/10 px-3 py-3 rounded-xl cursor-pointer text-red-500 text-[10px] font-black uppercase tracking-widest italic">
+                                       <Trash2 className="w-4 h-4 mr-3" /> Delete Account
                                     </DropdownMenuItem>
                                  </DropdownMenuContent>
                               </DropdownMenu>
@@ -322,10 +387,62 @@ export function VendorsClient({ initialVendors, availablePlans }: { initialVendo
             </DialogContent>
          </Dialog>
 
+         {/* Delete Confirmation Dialog */}
+         <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+            <DialogContent className="bg-zinc-900 border-zinc-800 text-white rounded-[2.5rem] max-w-[450px] p-8">
+               <DialogHeader className="text-left space-y-4">
+                  <div className="h-12 w-12 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500">
+                     <Trash2 size={24} />
+                  </div>
+                  <div>
+                     <DialogTitle className="text-xl font-black uppercase italic tracking-tighter mb-2 text-white">Delete Vendor Account?</DialogTitle>
+                     <DialogDescription className="text-xs font-bold text-zinc-500 leading-relaxed font-sans">
+                        Are you sure you want to delete <span className="text-white font-extrabold">{vendorToDelete?.businessName}</span>? This action is permanent and will delete all connected menus, items, orders, tables, and system assignments for this vendor.
+                     </DialogDescription>
+                  </div>
+               </DialogHeader>
+               <DialogFooter className="pt-6 flex gap-3">
+                  <Button 
+                     onClick={() => setIsDeleteModalOpen(false)} 
+                     variant="ghost" 
+                     className="flex-1 text-[10px] font-black uppercase tracking-widest italic text-zinc-500 hover:text-white"
+                  >
+                     Cancel
+                  </Button>
+                  <Button
+                     onClick={handleDeleteVendor}
+                     disabled={!!loading}
+                     className="flex-1 bg-red-500 hover:bg-red-400 text-white font-black uppercase tracking-widest text-[10px] rounded-xl h-12 shadow-xl shadow-red-500/20"
+                  >
+                     {loading ? <Loader2 className="animate-spin text-white" size={16} /> : 'Delete Vendor'}
+                  </Button>
+               </DialogFooter>
+            </DialogContent>
+         </Dialog>
+
+         {/* Add Vendor Form Modal */}
          <VendorFormModal 
             isOpen={isAddModalOpen} 
             onClose={() => setIsAddModalOpen(false)} 
             availablePlans={availablePlans}
+            onSuccess={() => {
+               router.refresh();
+            }}
+         />
+
+         {/* Edit Vendor Form Modal */}
+         <VendorFormModal 
+            isOpen={isEditModalOpen} 
+            onClose={() => {
+               setIsEditModalOpen(false);
+               setEditingVendor(null);
+            }} 
+            initialData={editingVendor}
+            availablePlans={availablePlans}
+            onSuccess={(updatedVendor) => {
+               setVendors(vendors.map(v => v.id === updatedVendor.id ? { ...v, ...updatedVendor } : v));
+               router.refresh();
+            }}
          />
       </div>
    );

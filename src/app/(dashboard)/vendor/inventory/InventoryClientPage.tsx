@@ -177,40 +177,40 @@ export default function InventoryClientPage({ initialItems, vendorId }: { initia
   return (
     <TooltipProvider>
     <div className="space-y-4 animate-in fade-in duration-500 max-w-[1600px] mx-auto pb-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">Stock Portfolio</h1>
           <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-widest">FIFO Multi-Batch Catalog</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
            <Button 
              variant="outline"
              onClick={handleSeed}
              disabled={isSeeding}
-             className="h-9 rounded-lg border-border bg-transparent text-muted-foreground text-[10px] font-bold px-4 hover:bg-muted"
+             className="h-9 rounded-lg border-border bg-transparent text-muted-foreground text-[10px] font-bold px-3 sm:px-4 hover:bg-muted flex-1 sm:flex-initial"
            >
              <Layers className="w-3 h-3 mr-2" />
              Sample Data
            </Button>
            <Button 
              variant="outline"
-              onClick={() => setIsGlobalAnalysisOpen(true)}
-             className="h-9 rounded-lg border-border bg-transparent text-muted-foreground text-[10px] font-black px-4 hover:bg-muted"
+             onClick={() => setIsGlobalAnalysisOpen(true)}
+             className="h-9 rounded-lg border-border bg-transparent text-muted-foreground text-[10px] font-black px-3 sm:px-4 hover:bg-muted flex-1 sm:flex-initial"
            >
              <BarChart3 className="w-3 h-3 mr-2 text-emerald-500" />
              Strategic Intel
            </Button>
-           <Link href="/vendor/inventory/sell">
+           <Link href="/vendor/inventory/sell" className="flex-1 sm:flex-initial">
              <Button 
                variant="outline"
-               className="h-9 rounded-lg border-emerald-500/20 bg-emerald-500/5 text-emerald-500 font-bold px-4 hover:bg-emerald-500/10 text-[10px]"
+               className="h-9 rounded-lg border-emerald-500/20 bg-emerald-500/5 text-emerald-500 font-bold px-3 sm:px-4 hover:bg-emerald-500/10 text-[10px] w-full"
              >
                <Scan className="w-3 h-3 mr-2" /> Quick Sell (POS)
              </Button>
            </Link>
            <Button 
              onClick={() => { setSelectedItem(null); setIsDialogOpen(true); }}
-             className="h-9 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-foreground font-bold px-4 shadow-lg text-[10px]"
+             className="h-9 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-foreground font-bold px-3 sm:px-4 shadow-lg text-[10px] flex-1 sm:flex-initial"
            >
              <Plus className="w-3 h-3 mr-2" /> Add Asset
            </Button>
@@ -266,10 +266,10 @@ export default function InventoryClientPage({ initialItems, vendorId }: { initia
                      className="border-border data-[state=checked]:bg-emerald-500 data-[state=checked]:text-foreground"
                    />
                 </th>
-                <th className="px-5 py-3">Product Profile</th>
-                <th className="px-5 py-3">Classification</th>
-                <th className="px-5 py-3">In-Stock Analysis</th>
-                <th className="px-5 py-3">Valuation (Cost)</th>
+                <th className="px-5 py-3 min-w-[180px]">Product Profile</th>
+                <th className="px-5 py-3 min-w-[120px]">Classification</th>
+                <th className="px-5 py-3 min-w-[180px]">In-Stock Analysis</th>
+                <th className="px-5 py-3 min-w-[140px]">Valuation (Cost)</th>
                 <th className="px-5 py-3 text-right">Ops</th>
               </tr>
             </thead>
@@ -387,12 +387,12 @@ export default function InventoryClientPage({ initialItems, vendorId }: { initia
         </div>
 
         {/* Pagination Controls */}
-         <div className="bg-card/50 backdrop-blur-md border-t border-border px-5 py-3 flex items-center justify-between">
-             <div className="flex items-center gap-4">
-               <span className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">
+         <div className="bg-card/50 backdrop-blur-md border-t border-border px-5 py-4 sm:py-3 flex flex-col sm:flex-row gap-4 sm:gap-0 items-center justify-between">
+             <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto justify-center sm:justify-start">
+               <span className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest text-center sm:text-left">
                  Node {currentPage} <span className="text-muted-foreground/20 mx-1">/</span> {totalPages || 1}
                </span>
-              <div className="flex gap-1">
+              <div className="flex gap-1 flex-wrap justify-center">
                 {Array.from({ length: Math.min(5, totalPages) }).map((_: any, i: any) => {
                   const pageNum = i + 1;
                   return (
@@ -411,12 +411,12 @@ export default function InventoryClientPage({ initialItems, vendorId }: { initia
                 })}
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
               <Button
                 variant="outline"
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(prev => prev - 1)}
-                className="h-8 border-border bg-transparent text-muted-foreground/60 text-[9px] font-bold px-3 hover:bg-muted"
+                className="h-8 border-border bg-transparent text-muted-foreground/60 text-[9px] font-bold px-3 hover:bg-muted flex-1 sm:flex-initial"
               >
                 Prev
               </Button>
@@ -424,7 +424,7 @@ export default function InventoryClientPage({ initialItems, vendorId }: { initia
                  variant="outline"
                  disabled={currentPage === totalPages || totalPages === 0}
                  onClick={() => setCurrentPage(prev => prev + 1)}
-                 className="h-8 border-border bg-transparent text-muted-foreground/60 text-[9px] font-bold px-3 hover:bg-muted"
+                 className="h-8 border-border bg-transparent text-muted-foreground/60 text-[9px] font-bold px-3 hover:bg-muted flex-1 sm:flex-initial"
                >
                  Next
                </Button>
@@ -496,23 +496,23 @@ export default function InventoryClientPage({ initialItems, vendorId }: { initia
       />
 
        {selectedIds.length > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 duration-500">
-           <div className="bg-card border border-border/50 rounded-2xl shadow-2xl p-2 flex items-center gap-4 min-w-[300px] border-emerald-500/20 backdrop-blur-xl">
-              <div className="flex flex-col px-4 border-r border-border/50">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 duration-500 max-w-[calc(100vw-2rem)]">
+           <div className="bg-card border border-border/50 rounded-2xl shadow-2xl p-2 flex items-center gap-3 sm:gap-4 border-emerald-500/20 backdrop-blur-xl">
+              <div className="flex flex-col px-3 sm:px-4 border-r border-border/50 shrink-0">
                  <span className="text-[10px] font-black italic text-emerald-500">{selectedIds.length} Assets</span>
-                 <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest">Selection Active</span>
+                 <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest">Selected</span>
               </div>
-              <div className="flex items-center gap-2 pr-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 pr-1.5">
                  <Button 
                    onClick={() => setIsBulkPrintOpen(true)}
-                   className="h-10 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-[10px] font-black uppercase tracking-widest px-6 rounded-xl shadow-lg shadow-emerald-500/10"
+                   className="h-9 sm:h-10 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-4 sm:px-6 rounded-xl shadow-lg shadow-emerald-500/10"
                  >
-                    <Tag className="w-3.5 h-3.5 mr-2" /> Print Bulk Tags
+                    <Tag className="w-3.5 h-3.5 mr-1.5 sm:mr-2" /> Print Bulk
                  </Button>
                  <Button 
                    variant="ghost"
                    onClick={() => setSelectedIds([])}
-                   className="h-10 text-zinc-500 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl"
+                   className="h-9 sm:h-10 text-zinc-500 hover:text-white text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl"
                  >
                     Clear
                  </Button>

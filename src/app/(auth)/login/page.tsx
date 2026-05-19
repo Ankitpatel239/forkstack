@@ -1,19 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { ChefHat, ArrowRight, Mail, Lock, Loader2, GitBranch } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    if (error === 'AccessDenied') {
+      toast.error('Unauthorized Account', {
+        description: 'This Google account is not registered in our system. Please use a registered email or contact your administrator.',
+        duration: 6000,
+      });
+    } else if (error) {
+      toast.error('Authentication Error', {
+        description: `There was a problem signing you in: ${error}`,
+      });
+    }
+  }, [error]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +48,16 @@ export default function LoginPage() {
     } else {
       toast.success('Welcome back!');
       router.push('/vendor/dashboard');
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    try {
+      await signIn('google', { callbackUrl: '/vendor/dashboard' });
+    } catch (err) {
+      toast.error('Google Sign-In Failed');
+      setGoogleLoading(false);
     }
   };
 
@@ -68,8 +95,19 @@ export default function LoginPage() {
                 <Button variant="outline" className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 h-11 text-xs font-bold uppercase tracking-widest text-zinc-400">
                   <GitBranch size={16} className="mr-2" /> Github
                 </Button>
-                <Button variant="outline" className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 h-11 text-xs font-bold uppercase tracking-widest text-zinc-400">
-                  <img src="https://www.google.com/favicon.ico" className="w-4 h-4 mr-2 grayscale opacity-50" /> Google
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  onClick={handleGoogleLogin}
+                  disabled={googleLoading || loading}
+                  className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 h-11 text-xs font-bold uppercase tracking-widest text-zinc-400 transition-all"
+                >
+                  {googleLoading ? (
+                    <Loader2 size={16} className="animate-spin mr-2" />
+                  ) : (
+                    <img src="https://www.google.com/favicon.ico" className="w-4 h-4 mr-2 grayscale opacity-50" />
+                  )}
+                  Google
                 </Button>
               </div>
 
@@ -106,7 +144,7 @@ export default function LoginPage() {
                     <label htmlFor="password" className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
                       Password
                     </label>
-                    <Link href="/forgot-password text-xs font-bold text-emerald-500/60 hover:text-emerald-500 transition-colors">
+                    <Link href="/forgot-password" className="text-xs font-bold text-emerald-500/60 hover:text-emerald-500 transition-colors">
                       Forgot?
                     </Link>
                   </div>
@@ -126,7 +164,7 @@ export default function LoginPage() {
 
                 <Button 
                   type="submit" 
-                  disabled={loading}
+                  disabled={loading || googleLoading}
                   className="w-full h-12 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-xs shadow-xl shadow-emerald-500/10 group mt-4 transition-all"
                 >
                   {loading ? (
@@ -166,5 +204,20 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-white font-sans">
+        <div className="flex flex-col items-center gap-3 animate-pulse">
+          <Loader2 className="animate-spin text-emerald-500" size={40} />
+          <span className="text-xs font-black uppercase tracking-[0.3em] text-zinc-500">Loading ForkStack...</span>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

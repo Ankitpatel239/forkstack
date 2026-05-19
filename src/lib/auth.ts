@@ -1,16 +1,19 @@
 import { NextAuthOptions, getServerSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcrypt';
-import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/db'; 
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
   session: {
     strategy: 'jwt',
     maxAge: 7 * 24 * 60 * 60, // 7 days
   },
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    }),
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -76,10 +79,38 @@ export const authOptions: NextAuthOptions = {
     error: '/login',
   },
   callbacks: {
-    async jwt({ token, user }: any) {
+    async signIn({ user, account }: any) {
+      if (account?.provider === 'google') {
+        if (!user.email) return false;
+        
+        // Match the Google email in the database
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email },
+        });
+
+        if (!dbUser) {
+          // Reject login if user email does not exist in backend
+          return false;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }: any) {
       if (user) {
-        token.role = user.role;
-        token.id = user.id;
+        if (account?.provider === 'google') {
+          // For Google logins, fetch the corresponding user role and id from the DB
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email },
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.id = dbUser.id;
+          }
+        } else {
+          // For Credentials, role and id are already on the returned user object
+          token.role = user.role;
+          token.id = user.id;
+        }
       }
       return token;
     },
@@ -104,4 +135,3 @@ export async function getCurrentUser() {
   const session = await getServerSession(authOptions);
   return session?.user;
 }
-
