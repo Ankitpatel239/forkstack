@@ -176,6 +176,21 @@ export async function seedDemoPlans() {
       features: ['WHITE_LABEL', 'API_ACCESS', 'MULTI_VENDOR', 'CUSTOM_CONTRACTS', 'TEAM_MANAGEMENT'],
       limits: { menuItems: 0, staff: 0, whatsapp: 0, storage: 100, posTable: 0 },
     },
+    // VENDOR ALL ACCESS
+    {
+      name: 'VENDOR_ALL_ACCESS',
+      categoryName: 'HYBRID',
+      displayName: 'Vendor All Access',
+      description: 'Supercharged master plan unlocking all digital menu, POS, tiffin, and hybrid backend services with absolutely zero limits.',
+      price: 0,
+      features: [
+        'QR_ORDERING', 'DIGITAL_MENU', 'BASIC_ANALYTICS', 
+        'AUTO_RENEWAL', 'DIET_PREFERENCES', 'DELIVERY_TRACKING', 
+        'INVENTORY_SYNC', 'ADVANCED_REPORTS', 'MULTI_VENDOR', 
+        'WHITE_LABEL', 'API_ACCESS', 'CUSTOM_CONTRACTS', 'TEAM_MANAGEMENT'
+      ],
+      limits: { menuItems: 0, staff: 0, whatsapp: 0, storage: 0, posTable: 0, deliveryRadius: 0 },
+    },
   ];
 
   try {

@@ -153,6 +153,25 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
     setIsPlanModalOpen(true);
   };
 
+  const handleOpenPlanModalWithTemplate = () => {
+    setEditingPlan(null);
+    const allFeatureKeys = features.map(f => f.key);
+    const unlimitedLimits: Record<string, number> = {};
+    limitsMaster.forEach(l => unlimitedLimits[l.key] = 0);
+    setPlanForm({
+      name: 'VENDOR_ALL_ACCESS',
+      categoryName: 'HYBRID',
+      displayName: 'Vendor All Access',
+      description: 'Supercharged master plan unlocking all digital menu, POS, tiffin, and hybrid backend services with absolutely zero limits.',
+      price: 0,
+      features: allFeatureKeys,
+      limits: unlimitedLimits,
+      isPublic: true
+    });
+    setIsPlanModalOpen(true);
+    toast.success('Loaded All-Access Plan Template!');
+  };
+
   const handleOpenFeatureModal = (feature?: any) => {
     if (feature) {
       setEditingFeature(feature);
@@ -466,6 +485,13 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
               disabled={loading}
             >
               <Zap className="w-4 h-4 mr-2" /> Add Demo Plans
+            </Button>
+            <Button 
+              onClick={() => handleOpenPlanModalWithTemplate()}
+              variant="outline"
+              className="rounded-xl border-emerald-500/20 bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500 hover:text-zinc-950 font-black uppercase tracking-widest text-[10px] h-12 px-8 shadow-xl"
+            >
+              <ShieldCheck className="w-4 h-4 mr-2" /> Use All-Access Template
             </Button>
             <Button 
               onClick={() => handleOpenPlanModal()}
@@ -791,9 +817,9 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
       </Tabs>
 
       <Dialog open={isPlanModalOpen} onOpenChange={setIsPlanModalOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white sm:max-w-[1000px] w-[95vw] rounded-[3rem] p-0 overflow-hidden shadow-2xl focus:outline-none">
-           <div className="grid md:grid-cols-12 h-full">
-              <div className="md:col-span-4 bg-gradient-to-br from-zinc-900 to-zinc-950 p-10 border-r border-zinc-800 relative hidden md:flex flex-col">
+        <DialogContent className="bg-zinc-900 border-zinc-800 text-white sm:max-w-[1000px] w-[95vw] h-[90vh] md:h-[85vh] max-h-[90vh] rounded-3xl p-0 overflow-hidden shadow-2xl focus:outline-none flex flex-col">
+           <div className="grid md:grid-cols-12 h-full flex-1 overflow-hidden">
+              <div className="md:col-span-4 bg-gradient-to-br from-zinc-900 to-zinc-950 p-10 border-r border-zinc-800 relative hidden md:flex flex-col h-full overflow-y-auto">
                  <div className="absolute top-0 left-0 p-10 opacity-5">
                     <ShieldCheck size={150} />
                  </div>
@@ -822,10 +848,9 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                     <p className="text-emerald-500 font-black italic text-lg">₹{planForm.price.toLocaleString()}</p>
                  </div>
               </div>
-
-               <div className="md:col-span-8 p-0 flex flex-col h-[85vh] bg-zinc-900/50">
-                  <Tabs defaultValue="core" className="flex flex-col h-full">
-                     <div className="px-10 pt-10 pb-6 border-b border-zinc-800 bg-zinc-900">
+              <div className="md:col-span-8 p-0 flex flex-col h-full bg-zinc-900/50 overflow-hidden">
+                  <Tabs defaultValue="core" className="flex flex-col h-full overflow-hidden">
+                     <div className="px-6 md:px-10 pt-6 md:pt-10 pb-4 md:pb-6 border-b border-zinc-800 bg-zinc-900">
                         <TabsList className="bg-zinc-950 border border-zinc-800 h-12 p-1 rounded-2xl w-full">
                            <TabsTrigger value="core" className="flex-1 rounded-xl data-[state=active]:bg-zinc-900 data-[state=active]:text-emerald-500 font-black uppercase tracking-widest text-[9px] italic">01. General Info</TabsTrigger>
                            <TabsTrigger value="features" className="flex-1 rounded-xl data-[state=active]:bg-zinc-900 data-[state=active]:text-blue-500 font-black uppercase tracking-widest text-[9px] italic">02. Features</TabsTrigger>
@@ -833,12 +858,36 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                         </TabsList>
                      </div>
 
-                     <div className="flex-1 overflow-y-auto custom-scrollbar p-10 space-y-8">
+                     <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10 space-y-8">
                         <TabsContent value="core" className="space-y-8 mt-0 outline-none">
                            <div className="space-y-6">
-                              <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-3xl p-6">
-                                 <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest italic mb-2">Guide</p>
-                                 <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase">Select category and set basic info.</p>
+                              <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                 <div>
+                                    <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest italic mb-1">Guide & Templates</p>
+                                    <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase">Select a category or pre-load a pre-configured template.</p>
+                                 </div>
+                                 <Button
+                                    type="button"
+                                    onClick={() => {
+                                       const allFeatureKeys = features.map((f: any) => f.key);
+                                       const unlimitedLimits: Record<string, number> = {};
+                                       limitsMaster.forEach((l: any) => { unlimitedLimits[l.key] = 0; });
+                                       setPlanForm({
+                                          ...planForm,
+                                          name: 'VENDOR_ALL_ACCESS',
+                                          categoryName: 'HYBRID',
+                                          displayName: 'Vendor All Access',
+                                          description: 'Supercharged master plan unlocking all digital menu, POS, tiffin, and hybrid backend services with absolutely zero limits.',
+                                          price: 0,
+                                          features: allFeatureKeys,
+                                          limits: unlimitedLimits
+                                       });
+                                       toast.success('Populated form with All-Access settings!');
+                                    }}
+                                    className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 font-black uppercase text-[9px] px-4 h-9 rounded-xl border border-emerald-500/20 shrink-0"
+                                 >
+                                    Load All-Access Template
+                                 </Button>
                               </div>
 
                               <div className="space-y-2">
@@ -1008,7 +1057,7 @@ export function PlansClient({ initialPlans, initialFeatures, initialCategories, 
                         </TabsContent>
                      </div>
 
-                     <div className="p-10 pt-6 border-t border-zinc-800 bg-zinc-900 flex flex-col sm:flex-row justify-end gap-4">
+                     <div className="p-6 md:p-10 pt-4 md:pt-6 border-t border-zinc-800 bg-zinc-900 flex flex-col sm:flex-row justify-end gap-4">
                         <Button 
                            onClick={() => setIsPlanModalOpen(false)} 
                            variant="ghost" 

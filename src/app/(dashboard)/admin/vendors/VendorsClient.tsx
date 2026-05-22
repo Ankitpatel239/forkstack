@@ -247,10 +247,11 @@ export function VendorsClient({ initialVendors, availablePlans }: { initialVendo
                            </td>
                            <td className="px-8 py-8">
                               <div className="space-y-2">
-                                 <Badge className={`px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] border-none italic rounded-lg ${vendor.subscriptionPlan === 'ENTERPRISE' ? 'bg-purple-500/10 text-purple-500' :
+                                 <Badge className={`px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] border-none italic rounded-lg ${vendor.subscriptionPlan === 'VENDOR_ALL_ACCESS' ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20 animate-pulse' :
+                                       vendor.subscriptionPlan === 'ENTERPRISE' ? 'bg-purple-500/10 text-purple-500' :
                                        vendor.subscriptionPlan === 'PRO' ? 'bg-blue-500/10 text-blue-500' : 'bg-emerald-500/10 text-emerald-500'
                                     }`}>
-                                    {vendor.subscriptionPlan} Plan
+                                    {vendor.subscriptionPlan === 'VENDOR_ALL_ACCESS' ? 'ALL ACCESS' : vendor.subscriptionPlan} Plan
                                  </Badge>
                                  <p suppressHydrationWarning className="text-[10px] font-black text-zinc-700 uppercase tracking-tighter italic flex items-center gap-2">
                                     <Calendar size={12} /> Expiry: {new Date(vendor.subscriptionEnd).toLocaleDateString()}
@@ -258,15 +259,30 @@ export function VendorsClient({ initialVendors, availablePlans }: { initialVendo
                               </div>
                            </td>
                            <td className="px-8 py-8">
-                              <div className="flex items-center gap-10">
-                                 <div className="text-center group/stat">
-                                    <p className="text-xl font-black text-white italic leading-none group-hover/stat:text-emerald-500 transition-colors">{vendor._count.menuItems}</p>
-                                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700 mt-2 italic">Items</p>
+                              <div className="flex items-center gap-6">
+                                 <div className="text-center group/stat shrink-0">
+                                    <p className="text-lg font-black text-white italic leading-none group-hover/stat:text-emerald-500 transition-colors">{vendor._count.menuItems}</p>
+                                    <p className="text-[8px] font-black uppercase tracking-widest text-zinc-700 mt-2 italic">Items</p>
                                  </div>
-                                 <div className="h-10 w-[1px] bg-zinc-800" />
-                                 <div className="text-center group/stat">
-                                    <p className="text-xl font-black text-white italic leading-none group-hover/stat:text-emerald-500 transition-colors">{vendor._count.orders}</p>
-                                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700 mt-2 italic">Orders</p>
+                                 <div className="h-8 w-[1px] bg-zinc-800 shrink-0" />
+                                 <div className="text-center group/stat shrink-0">
+                                    <p className="text-lg font-black text-white italic leading-none group-hover/stat:text-emerald-500 transition-colors">{vendor._count.orders}</p>
+                                    <p className="text-[8px] font-black uppercase tracking-widest text-zinc-700 mt-2 italic">Orders</p>
+                                 </div>
+                                 <div className="h-8 w-[1px] bg-zinc-800 shrink-0" />
+                                 <div className="text-center group/stat shrink-0">
+                                    <p className="text-lg font-black text-white italic leading-none group-hover/stat:text-emerald-500 transition-colors">{vendor._count.staff || 0}</p>
+                                    <p className="text-[8px] font-black uppercase tracking-widest text-zinc-700 mt-2 italic">Staff</p>
+                                 </div>
+                                 <div className="h-8 w-[1px] bg-zinc-800 shrink-0" />
+                                 <div className="text-center group/stat shrink-0">
+                                    <p className="text-lg font-black text-white italic leading-none group-hover/stat:text-emerald-500 transition-colors">{vendor._count.tables || 0}</p>
+                                    <p className="text-[8px] font-black uppercase tracking-widest text-zinc-700 mt-2 italic">Tables</p>
+                                 </div>
+                                 <div className="h-8 w-[1px] bg-zinc-800 shrink-0" />
+                                 <div className="text-center group/stat shrink-0">
+                                    <p className="text-lg font-black text-white italic leading-none group-hover/stat:text-emerald-500 transition-colors">{vendor._count.tiffin || 0}</p>
+                                    <p className="text-[8px] font-black uppercase tracking-widest text-zinc-700 mt-2 italic">Tiffin</p>
                                  </div>
                               </div>
                            </td>

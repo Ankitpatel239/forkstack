@@ -11,7 +11,10 @@ export default async function AdminVendorsPage() {
       u.name as "owner_name",
       u.email as "owner_email",
       (SELECT COUNT(*)::int FROM "MenuItem" WHERE "vendorId" = v.id) as "menuItems_count",
-      (SELECT COUNT(*)::int FROM "Order" WHERE "vendorId" = v.id) as "orders_count"
+      (SELECT COUNT(*)::int FROM "Order" WHERE "vendorId" = v.id) as "orders_count",
+      (SELECT COUNT(*)::int FROM "UserVendorAssignment" WHERE "vendorId" = v.id) as "staff_count",
+      (SELECT COUNT(*)::int FROM "Table" WHERE "vendorId" = v.id) as "tables_count",
+      (SELECT COUNT(*)::int FROM "TiffinSubscription" WHERE "vendorId" = v.id) as "tiffin_count"
     FROM "VendorProfile" v
     LEFT JOIN "User" u ON v."ownerId" = u.id
     ORDER BY v."createdAt" DESC
@@ -20,7 +23,13 @@ export default async function AdminVendorsPage() {
   const vendors = vendorsRaw.map(v => ({
     ...v,
     owner: v.owner_id ? { id: v.owner_id, name: v.owner_name, email: v.owner_email } : null,
-    _count: { menuItems: v.menuItems_count, orders: v.orders_count }
+    _count: { 
+      menuItems: v.menuItems_count, 
+      orders: v.orders_count, 
+      staff: v.staff_count, 
+      tables: v.tables_count,
+      tiffin: v.tiffin_count 
+    }
   }));
 
   const availablePlans = await (prisma as any).platformPlan.findMany({

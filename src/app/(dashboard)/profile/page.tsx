@@ -3,15 +3,15 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
-import { 
-  User as UserIcon, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  Shield, 
-  Store, 
-  Globe, 
-  MapPin, 
+import {
+  User as UserIcon,
+  Mail,
+  Phone,
+  Calendar,
+  Shield,
+  Store,
+  Globe,
+  MapPin,
   ExternalLink,
   Edit,
   Sliders,
@@ -93,7 +93,7 @@ export default async function ProfilePage() {
               <Sparkles size={16} className="animate-pulse" />
             </div>
           </div>
-          
+
           <div className="text-center md:text-left flex-1 space-y-2">
             <div className="flex flex-col md:flex-row md:items-center gap-3 justify-center md:justify-start">
               <h1 className="text-2xl md:text-4xl font-black text-white italic uppercase tracking-tighter">{user.name || 'Anonymous User'}</h1>
@@ -101,8 +101,8 @@ export default async function ProfilePage() {
                 {user.role}
               </span>
             </div>
-            <p className="text-xs md:text-sm text-zinc-400 font-bold uppercase tracking-widest flex items-center justify-center md:justify-start gap-2">
-              <Mail size={14} className="text-emerald-500" /> {user.email}
+            <p className="text-xs md:text-sm text-zinc-400 font-bold uppercase tracking-widest flex flex-col sm:flex-row items-center justify-center md:justify-start gap-2 break-all sm:break-normal text-center sm:text-left">
+              <Mail size={14} className="text-emerald-500 shrink-0" /> <span>{user.email}</span>
             </p>
             <p className="text-[10px] md:text-xs text-zinc-500 font-bold uppercase tracking-widest">
               Security Node Registered Since {joinDateFormatted}
@@ -110,8 +110,8 @@ export default async function ProfilePage() {
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto justify-center">
-            <Link 
-              href={user.role === 'ADMIN' ? '/admin/settings' : '/vendor/settings'} 
+            <Link
+              href={user.role === 'ADMIN' ? '/admin/settings' : '/vendor/settings'}
               className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 hover:bg-zinc-900 transition-all font-black text-[10px] uppercase tracking-widest"
             >
               <Edit size={14} /> Update Info
@@ -129,7 +129,7 @@ export default async function ProfilePage() {
                 <Shield size={16} className="text-emerald-500" /> Account Security Credentials
               </h3>
             </div>
-            
+
             <div className="p-6 space-y-5">
               <div className="space-y-1">
                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Full Name</span>
@@ -140,9 +140,9 @@ export default async function ProfilePage() {
 
               <div className="space-y-1">
                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Linked Email Address</span>
-                <p className="text-sm font-bold text-white bg-zinc-950 border border-zinc-800/80 px-4 py-3 rounded-xl flex items-center justify-between">
-                  <span>{user.email}</span>
-                  <Badge variant="outline" className="border-emerald-500/20 text-emerald-500 bg-emerald-500/5 text-[9px] font-bold uppercase py-0.5 px-2">Verified</Badge>
+                <p className="text-sm font-bold text-white bg-zinc-950 border border-zinc-800/80 px-4 py-3 rounded-xl flex items-center justify-between gap-3">
+                  <span className="truncate">{user.email}</span>
+                  <Badge variant="outline" className="border-emerald-500/20 text-emerald-500 bg-emerald-500/5 text-[9px] font-bold uppercase py-0.5 px-2 shrink-0">Verified</Badge>
                 </p>
               </div>
 
@@ -186,12 +186,12 @@ export default async function ProfilePage() {
               </div>
 
               <div className="p-6 space-y-6">
-                <div className="grid gap-4 grid-cols-3">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
                   <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl text-center">
                     <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Live Partners</p>
                     <p className="text-2xl font-black text-emerald-500 italic">{systemStats.vendorCount}</p>
                   </div>
-                  
+
                   <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl text-center">
                     <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Total Users</p>
                     <p className="text-2xl font-black text-white italic">{systemStats.userCount}</p>
@@ -213,14 +213,14 @@ export default async function ProfilePage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <Link 
-                    href="/admin/dashboard" 
+                  <Link
+                    href="/admin/dashboard"
                     className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-emerald-500 text-zinc-950 hover:bg-emerald-400 transition-all font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/10"
                   >
                     Platform Command <ArrowRight size={14} />
                   </Link>
-                  <Link 
-                    href="/admin/vendors" 
+                  <Link
+                    href="/admin/vendors"
                     className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-all font-black text-xs uppercase tracking-widest"
                   >
                     Partner Registry
@@ -247,9 +247,9 @@ export default async function ProfilePage() {
                   <div className="p-6 space-y-6">
                     <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80">
                       {user.ownedVendor.logoUrl ? (
-                        <img 
-                          src={user.ownedVendor.logoUrl} 
-                          alt="Vendor Logo" 
+                        <img
+                          src={user.ownedVendor.logoUrl}
+                          alt="Vendor Logo"
                           className="h-16 w-16 rounded-xl object-cover border border-zinc-800"
                         />
                       ) : (
@@ -263,7 +263,7 @@ export default async function ProfilePage() {
                           <Globe size={12} className="text-zinc-600" /> forkstack.com/{user.ownedVendor.tenantSlug}
                         </p>
                       </div>
-                      <Link 
+                      <Link
                         href={`/vendor/settings/identity`}
                         className="text-zinc-500 hover:text-white p-2 rounded-xl transition-all"
                         title="Edit Business Identity"
@@ -282,8 +282,8 @@ export default async function ProfilePage() {
 
                       <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl space-y-1">
                         <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Business Email</span>
-                        <p className="text-xs font-bold text-zinc-300 flex items-center gap-2 truncate">
-                          <Mail size={12} className="text-emerald-500" /> {user.ownedVendor.businessEmail || 'No business email'}
+                        <p className="text-xs font-bold text-zinc-300 flex items-center gap-2">
+                          <Mail size={12} className="text-emerald-500 shrink-0" /> <span className="truncate">{user.ownedVendor.businessEmail || 'No business email'}</span>
                         </p>
                       </div>
                     </div>
@@ -314,8 +314,8 @@ export default async function ProfilePage() {
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                      <Link 
-                        href="/vendor/dashboard" 
+                      <Link
+                        href="/vendor/dashboard"
                         className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-emerald-500 text-zinc-950 hover:bg-emerald-400 transition-all font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/10"
                       >
                         Enter Shop Dashboard <ArrowRight size={14} />
@@ -334,7 +334,7 @@ export default async function ProfilePage() {
                       You are authenticated as a Vendor Owner, but no store profile has been bound to your user record.
                     </p>
                   </div>
-                  <Link 
+                  <Link
                     href="/vendor/settings/identity"
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-500 text-zinc-950 hover:bg-emerald-400 transition-all font-black text-xs uppercase tracking-widest"
                   >
