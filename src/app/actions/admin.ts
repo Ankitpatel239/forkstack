@@ -129,6 +129,81 @@ export async function deleteUser(userId: string) {
 
 // ========== PLAN ACTIONS ==========
 
+export async function adminAssignUserToVendor(userId: string, vendorId: string, roleName: string) {
+  try {
+    const existing = await prisma.userVendorAssignment.findUnique({
+      where: {
+        userId_vendorId: {
+          userId,
+          vendorId
+        }
+      }
+    });
+
+    if (existing) {
+      await prisma.userVendorAssignment.update({
+        where: { id: existing.id },
+        data: { roleInVendor: roleName.toUpperCase(), isActive: true }
+      });
+    } else {
+      await prisma.userVendorAssignment.create({
+        data: {
+          userId,
+          vendorId,
+          roleInVendor: roleName.toUpperCase(),
+          isActive: true
+        }
+      });
+    }
+    revalidatePath('/admin/team');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+export async function adminRemoveUserFromVendor(userId: string, vendorId: string) {
+  try {
+    await prisma.userVendorAssignment.delete({
+      where: {
+        userId_vendorId: {
+          userId,
+          vendorId
+        }
+      }
+    });
+    revalidatePath('/admin/team');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function adminAssignOwnerToVendor(userId: string, vendorId: string) {
+  try {
+    await prisma.vendorProfile.update({
+      where: { id: vendorId },
+      data: { ownerId: userId }
+    });
+    revalidatePath('/admin/team');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function adminRemoveOwnerFromVendor(vendorId: string) {
+  try {
+    await prisma.vendorProfile.update({
+      where: { id: vendorId },
+      data: { ownerId: null }
+    });
+    revalidatePath('/admin/team');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 export async function upsertPlan(data: {
   name: string;
   categoryName: string;

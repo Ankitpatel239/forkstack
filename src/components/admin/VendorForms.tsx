@@ -94,7 +94,7 @@ export function VendorFormModal({
       }
 
       if (result.success) {
-        toast.success(initialData ? "Vendor details updated successfully" : "Vendor provisioned successfully");
+        toast.success(initialData ? "Vendor details updated successfully" : "Vendor created successfully");
         if (onSuccess) {
           onSuccess({ ...initialData, ...data });
         }
@@ -112,49 +112,49 @@ export function VendorFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white sm:max-w-[600px] rounded-[2.5rem] p-8">
+      <DialogContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white w-[95vw] max-w-lg sm:max-w-[600px] rounded-[2.5rem] p-6 sm:p-8 overflow-y-auto max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-white">
-            {initialData ? 'Update Vendor Account' : 'Provision Partner Account'}
+          <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-zinc-900 dark:text-white">
+            {initialData ? 'Update Vendor Account' : 'Add New Vendor'}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 px-1">Business Name</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600 px-1">Business Name</Label>
               <Input 
                 {...register("businessName")} 
-                className="bg-zinc-950 border-zinc-800 h-12 rounded-xl text-xs font-bold text-white placeholder-zinc-700" 
+                className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 h-12 rounded-xl text-xs font-bold text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 focus:border-emerald-500/50" 
                 placeholder="e.g. Skyline Cafe" 
               />
               {errors.businessName && <p className="text-[10px] text-red-500 font-bold uppercase px-1">{errors.businessName.message as string}</p>}
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 px-1">Tenant Slug</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600 px-1">Tenant Slug</Label>
               <Input 
                 {...register("tenantSlug")} 
-                className="bg-zinc-950 border-zinc-800 h-12 rounded-xl text-xs font-bold text-white placeholder-zinc-700" 
+                className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 h-12 rounded-xl text-xs font-bold text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 focus:border-emerald-500/50" 
                 placeholder="skyline-cafe" 
               />
               {errors.tenantSlug && <p className="text-[10px] text-red-500 font-bold uppercase px-1">{errors.tenantSlug.message as string}</p>}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 px-1">Contact Email</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600 px-1">Contact Email</Label>
               <Input 
                 {...register("businessEmail")} 
-                className="bg-zinc-950 border-zinc-800 h-12 rounded-xl text-xs font-bold text-white placeholder-zinc-700" 
+                className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 h-12 rounded-xl text-xs font-bold text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 focus:border-emerald-500/50" 
                 placeholder="owner@brand.com" 
               />
               {errors.businessEmail && <p className="text-[10px] text-red-500 font-bold uppercase px-1">{errors.businessEmail.message as string}</p>}
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 px-1">Support Phone</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600 px-1">Support Phone</Label>
               <Input 
                 {...register("businessPhone")} 
-                className="bg-zinc-950 border-zinc-800 h-12 rounded-xl text-xs font-bold text-white placeholder-zinc-700" 
+                className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 h-12 rounded-xl text-xs font-bold text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 focus:border-emerald-500/50" 
                 placeholder="+1 234..." 
               />
               {errors.businessPhone && <p className="text-[10px] text-red-500 font-bold uppercase px-1">{errors.businessPhone.message as string}</p>}
@@ -162,26 +162,26 @@ export function VendorFormModal({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 px-1">Subscription Tier</Label>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600 px-1">Subscription Tier</Label>
             <Select 
               value={selectedPlan} 
               onValueChange={(v) => setValue("subscriptionPlan", v)}
             >
-              <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 h-12 rounded-xl text-xs font-bold text-white uppercase tracking-widest">
+              <SelectTrigger className="w-full bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 h-12 rounded-xl text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-widest focus:ring-0 focus:border-emerald-500/50">
                 <SelectValue placeholder="Select Plan" />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-950 border-zinc-800 text-white rounded-xl">
+              <SelectContent className="bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white rounded-xl">
                 {availablePlans && availablePlans.length > 0 ? (
                   availablePlans.map((plan) => (
-                    <SelectItem key={plan.id} value={plan.name} className="focus:bg-zinc-800 uppercase font-black text-[10px] italic tracking-widest">
+                    <SelectItem key={plan.id} value={plan.name} className="focus:bg-zinc-100 dark:focus:bg-zinc-800 uppercase font-black text-[10px] italic tracking-widest">
                       {plan.displayName}
                     </SelectItem>
                   ))
                 ) : (
                   <>
-                    <SelectItem value="BASIC" className="focus:bg-zinc-800 uppercase font-black text-[10px] italic tracking-widest">Basic Node</SelectItem>
-                    <SelectItem value="PRO" className="focus:bg-zinc-800 uppercase font-black text-[10px] italic tracking-widest">Professional Relay</SelectItem>
-                    <SelectItem value="ENTERPRISE" className="focus:bg-zinc-800 uppercase font-black text-[10px] italic tracking-widest">Enterprise Grade</SelectItem>
+                    <SelectItem value="BASIC" className="focus:bg-zinc-100 dark:focus:bg-zinc-800 uppercase font-black text-[10px] italic tracking-widest">Basic Node</SelectItem>
+                    <SelectItem value="PRO" className="focus:bg-zinc-100 dark:focus:bg-zinc-800 uppercase font-black text-[10px] italic tracking-widest">Professional Relay</SelectItem>
+                    <SelectItem value="ENTERPRISE" className="focus:bg-zinc-100 dark:focus:bg-zinc-800 uppercase font-black text-[10px] italic tracking-widest">Enterprise Grade</SelectItem>
                   </>
                 )}
               </SelectContent>
@@ -189,30 +189,30 @@ export function VendorFormModal({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 px-1">Physical Venue HQ</Label>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600 px-1">Physical Venue HQ</Label>
             <Input 
               {...register("address")} 
-              className="bg-zinc-950 border-zinc-800 h-12 rounded-xl text-xs font-bold text-white placeholder-zinc-700" 
+              className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 h-12 rounded-xl text-xs font-bold text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 focus:border-emerald-500/50" 
               placeholder="Enter full address..." 
             />
             {errors.address && <p className="text-[10px] text-red-500 font-bold uppercase px-1">{errors.address.message as string}</p>}
           </div>
 
-          <DialogFooter className="pt-4 flex gap-3">
+          <DialogFooter className="pt-4 flex flex-col-reverse sm:flex-row gap-3">
             <Button
               type="button"
               variant="ghost"
               onClick={onClose}
-              className="flex-1 text-[10px] font-black uppercase tracking-widest italic text-zinc-500 hover:text-white"
+              className="flex-1 text-[10px] font-black uppercase tracking-widest italic text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-xs h-12 rounded-xl shadow-xl shadow-emerald-500/10"
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white font-black uppercase tracking-widest text-xs h-12 rounded-xl shadow-xl shadow-emerald-500/10"
             >
-              {loading ? <Loader2 className="animate-spin text-zinc-950" size={18} /> : (initialData ? 'Update Vendor' : 'Provision Vendor')}
+              {loading ? <Loader2 className="animate-spin text-white" size={18} /> : (initialData ? 'Update Vendor' : 'Add New Vendor')}
             </Button>
           </DialogFooter>
         </form>

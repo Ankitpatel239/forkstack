@@ -7,7 +7,6 @@ import {
   TrendingUp, 
   Users, 
   DollarSign, 
-  ArrowUpRight, 
   Clock, 
   CheckCircle2, 
   AlertCircle,
@@ -20,20 +19,40 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { getVendorFeatures } from '@/app/actions/vendor-subscription';
+import { getVendorDashboardStats } from '@/app/actions/vendor-dashboard';
 
 export default function VendorDashboard() {
   const [features, setFeatures] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [greeting, setGreeting] = useState('Welcome');
+  
+  const [dashboardStats, setDashboardStats] = useState<any>(null);
+  const [liveOrders, setLiveOrders] = useState<any[]>([]);
 
   useEffect(() => {
-    async function loadFeatures() {
-      const result = await getVendorFeatures();
-      if (result.success && result.data) {
-        setFeatures(result.data.features || []);
+    const currentHour = new Date().getHours();
+    if (currentHour >= 5 && currentHour < 12) setGreeting('Morning');
+    else if (currentHour >= 12 && currentHour < 17) setGreeting('Afternoon');
+    else setGreeting('Evening');
+
+    async function loadData() {
+      const [featResult, statsResult] = await Promise.all([
+        getVendorFeatures(),
+        getVendorDashboardStats()
+      ]);
+      
+      if (featResult.success && featResult.data) {
+        setFeatures(featResult.data.features || []);
       }
+      
+      if (statsResult.success && statsResult.data) {
+        setDashboardStats(statsResult.data.stats);
+        setLiveOrders(statsResult.data.liveOrders);
+      }
+      
       setLoading(false);
     }
-    loadFeatures();
+    loadData();
   }, []);
 
   if (loading) {
@@ -50,17 +69,17 @@ export default function VendorDashboard() {
   const hasInventory = features.includes('INVENTORY_SYNC');
 
   const stats = [
-    { title: 'Gross Revenue', value: '$12,482.00', change: '+14%', icon: DollarSign, color: 'emerald', show: true },
-    { title: 'Total Orders', value: '842', change: '+22%', icon: ShoppingBag, color: 'blue', show: hasOrders },
-    { title: 'Avg. Ticket', value: '$14.80', change: '+5%', icon: Zap, color: 'orange', show: hasOrders },
-    { title: 'New Customers', value: '124', change: '+18%', icon: Users, color: 'purple', show: true },
+    { title: 'Gross Revenue', value: dashboardStats?.revenue?.value || '₹0.00', change: dashboardStats?.revenue?.change || '0%', icon: DollarSign, color: 'emerald', show: true },
+    { title: 'Total Orders', value: dashboardStats?.orders?.value || '0', change: dashboardStats?.orders?.change || '0%', icon: ShoppingBag, color: 'blue', show: hasOrders },
+    { title: 'Avg. Ticket', value: dashboardStats?.avgTicket?.value || '₹0.00', change: dashboardStats?.avgTicket?.change || '0%', icon: Zap, color: 'orange', show: hasOrders },
+    { title: 'New Customers', value: dashboardStats?.newCustomers?.value || '0', change: dashboardStats?.newCustomers?.change || '0%', icon: Users, color: 'purple', show: true },
   ].filter(s => s.show);
 
   return (
     <div className="space-y-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground mb-2 italic uppercase">Morning, Chef!</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground mb-2 italic uppercase">{greeting}, Chef!</h1>
           <p className="text-muted-foreground font-medium flex items-center gap-2 text-xs uppercase tracking-wider">
             <Calendar size={14} className="text-emerald-500" /> Here's what's happening at your venue today.
           </p>
@@ -136,27 +155,24 @@ export default function VendorDashboard() {
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                   <CardTitle className="text-lg font-black uppercase italic tracking-tighter">Live Orders</CardTitle>
                 </div>
-                <Badge variant="outline" className="text-[9px] font-black border-border text-muted-foreground px-3 uppercase tracking-widest italic">8 Active</Badge>
+                <Badge variant="outline" className="text-[9px] font-black border-border text-muted-foreground px-3 uppercase tracking-widest italic">{liveOrders.length} Active</Badge>
               </div>
             </CardHeader>
             <CardContent className="p-0 flex-1 overflow-auto custom-scrollbar max-h-[400px]">
               <div className="divide-y divide-border">
-                {[
-                  { table: '04', items: 3, time: '2m', status: 'preparing', price: '₹1,240' },
-                  { table: '12', items: 5, time: '5m', status: 'ready', price: '₹4,890' },
-                  { table: '08', items: 2, time: '8m', status: 'preparing', price: '₹850' },
-                  { table: '02', items: 1, time: '12m', status: 'preparing', price: '₹420' },
-                  { table: '15', items: 4, time: '15m', status: 'preparing', price: '₹2,640' },
-                ].map((order, i) => (
+                {liveOrders.length === 0 && (
+                  <div className="p-10 text-center text-muted-foreground text-sm font-medium italic">No active orders right now.</div>
+                )}
+                {liveOrders.map((order, i) => (
                   <div key={i} className="px-10 py-5 hover:bg-muted/50 transition-colors flex items-center justify-between group cursor-pointer">
                     <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center font-black text-xs text-foreground italic shadow-inner">
+                      <div className="h-12 w-12 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center font-black text-xs text-foreground italic shadow-inner">
                         T{order.table}
                       </div>
                       <div>
                         <h6 className="text-sm font-black text-foreground italic uppercase">{order.items} Items</h6>
                         <p className="text-[9px] text-muted-foreground font-bold flex items-center gap-1 uppercase tracking-widest mt-1">
-                          <Clock size={10} className="text-zinc-600" /> {order.time} ago • <span className={order.status === 'ready' ? 'text-emerald-500 font-black' : 'text-orange-500 animate-pulse font-black'}>{order.status}</span>
+                          <Clock size={10} className="text-zinc-500 dark:text-zinc-600" /> {order.time} ago • <span className={order.status === 'ready' ? 'text-emerald-500 font-black' : 'text-orange-500 animate-pulse font-black'}>{order.status}</span>
                         </p>
                       </div>
                     </div>
@@ -177,13 +193,13 @@ export default function VendorDashboard() {
             </div>
           </Card>
         ) : (
-          <Card className="lg:col-span-4 bg-zinc-900/30 border-border border-dashed shadow-xl rounded-[2.5rem] flex flex-col items-center justify-center p-12 text-center group">
-            <div className="h-16 w-16 rounded-[2rem] bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-700 mb-6 group-hover:scale-110 transition-transform">
+          <Card className="lg:col-span-4 bg-zinc-50 dark:bg-zinc-900/30 border-border border-dashed shadow-xl rounded-[2.5rem] flex flex-col items-center justify-center p-12 text-center group">
+            <div className="h-16 w-16 rounded-[2rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-700 mb-6 group-hover:scale-110 transition-transform">
                <Zap size={32} />
             </div>
-            <h4 className="text-lg font-black text-white italic uppercase tracking-tighter mb-2">Order Node Offline</h4>
-            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest italic max-w-[200px]">Upgrade your subscription to activate live order orchestration.</p>
-            <Button variant="outline" className="mt-8 h-12 px-8 rounded-xl border-zinc-800 text-zinc-500 hover:text-emerald-500 font-black uppercase text-[10px] tracking-widest italic">
+            <h4 className="text-lg font-black text-zinc-900 dark:text-white italic uppercase tracking-tighter mb-2">Order Node Offline</h4>
+            <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-600 uppercase tracking-widest italic max-w-[200px]">Upgrade your subscription to activate live order orchestration.</p>
+            <Button variant="outline" className="mt-8 h-12 px-8 rounded-xl border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-500 hover:text-emerald-500 font-black uppercase text-[10px] tracking-widest italic">
               View Plans
             </Button>
           </Card>
@@ -256,14 +272,14 @@ export default function VendorDashboard() {
                 { name: 'Classic Mojito', orders: 85, revenue: '₹12,750', trend: '-5%' },
                 { name: 'Belgian Chocolate Waffle', orders: 114, revenue: '₹17,100', trend: '+15%' },
               ].map((item, i) => (
-                <div key={i} className="p-6 rounded-[2rem] bg-zinc-950/50 border border-border group hover:bg-emerald-500/5 transition-all cursor-pointer">
+                <div key={i} className="p-6 rounded-[2rem] bg-zinc-50 dark:bg-zinc-950/50 border border-border group hover:bg-emerald-500/5 transition-all cursor-pointer">
                   <p className="text-[8px] font-black uppercase text-muted-foreground tracking-[0.2em] mb-2">Performance Node</p>
                   <h5 className="font-black text-sm mb-4 truncate text-foreground italic uppercase tracking-tighter">{item.name}</h5>
                   <div className="flex items-center justify-between">
-                    <div className="text-[10px] font-black text-foreground italic uppercase tracking-widest">{item.orders} Sold</div>
-                    <Badge variant="ghost" className={`text-[10px] font-black italic ${item.trend.startsWith('+') ? 'text-emerald-500' : 'text-red-500'}`}>
-                      {item.trend}
-                    </Badge>
+                     <div className="text-[10px] font-black text-foreground italic uppercase tracking-widest">{item.orders} Sold</div>
+                     <Badge variant="ghost" className={`text-[10px] font-black italic ${item.trend.startsWith('+') ? 'text-emerald-500' : 'text-red-500'}`}>
+                       {item.trend}
+                     </Badge>
                   </div>
                 </div>
               ))}

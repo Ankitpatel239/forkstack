@@ -43,6 +43,21 @@ export function StaffDetailsDialog({ staffMember, open, onOpenChange }: any) {
   const [deductions, setDeductions] = useState('0');
   const [bonus, setBonus] = useState('0');
 
+  const handleSetCurrentTime = (setter: React.Dispatch<React.SetStateAction<string>>) => {
+    const now = new Date();
+    setter(`${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`);
+  };
+
+  const format12Hour = (timeStr: string) => {
+    if (!timeStr) return '';
+    const [h, m] = timeStr.split(':');
+    let hour = parseInt(h, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12;
+    if (hour === 0) hour = 12;
+    return `${hour.toString().padStart(2, '0')}:${m} ${ampm}`;
+  };
+
   const handleAttSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -84,64 +99,74 @@ export function StaffDetailsDialog({ staffMember, open, onOpenChange }: any) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-950 border-zinc-800 text-white sm:max-w-[650px] p-0 overflow-hidden rounded-3xl">
+      <DialogContent className="bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white w-[95vw] sm:max-w-[650px] max-h-[90vh] p-0 overflow-y-auto custom-scrollbar rounded-3xl">
         <DialogHeader className="sr-only">
           <DialogTitle>{staffMember.user.name}</DialogTitle>
           <DialogDescription>Workforce management node for {staffMember.user.name}</DialogDescription>
         </DialogHeader>
 
-        <div className="bg-zinc-900 p-8 border-b border-zinc-800 relative">
-           <div className="absolute top-0 right-0 p-8 opacity-5">
+        <div className="bg-zinc-50 dark:bg-zinc-900 p-8 border-b border-zinc-200 dark:border-zinc-800 relative">
+           <div className="absolute top-0 right-0 p-8 opacity-5 text-zinc-900 dark:text-white">
               <Fingerprint size={120} />
            </div>
            <div className="flex items-center gap-6 text-left">
-              <div className="h-16 w-16 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-3xl font-black text-emerald-500 italic">
+              <div className="h-16 w-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-3xl font-black text-emerald-500 italic">
                  {staffMember.user.name.charAt(0)}
               </div>
               <div className="space-y-1">
-                <h2 className="text-2xl font-black text-white italic uppercase tracking-tighter">{staffMember.user.name}</h2>
+                <h2 className="text-2xl font-black text-zinc-900 dark:text-white italic uppercase tracking-tighter">{staffMember.user.name}</h2>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-emerald-500/10 text-emerald-500 border-none font-black text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border-none font-black text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full">
                     {staffMember.roleInVendor}
                   </Badge>
-                  <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">{staffMember.user.email}</span>
+                  <span className="text-[10px] text-zinc-500 dark:text-zinc-600 font-bold uppercase tracking-widest">{staffMember.user.email}</span>
                 </div>
               </div>
            </div>
         </div>
 
         <Tabs defaultValue="attendance" className="p-8">
-          <TabsList className="bg-zinc-900 border border-zinc-800 h-11 mb-8 p-1">
-            <TabsTrigger value="attendance" className="text-[10px] font-black uppercase tracking-widest px-6 data-[state=active]:bg-zinc-800">
-               <Clock size={14} className="mr-2" /> Daily Log
+          <TabsList className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 h-11 mb-8 p-1 w-full sm:w-auto overflow-x-auto justify-start flex-nowrap custom-scrollbar">
+            <TabsTrigger value="attendance" className="text-[10px] font-black uppercase tracking-widest px-6 data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white whitespace-nowrap">
+               <Clock size={14} className="mr-2 hidden sm:block" /> Daily Log
             </TabsTrigger>
-            <TabsTrigger value="payroll" className="text-[10px] font-black uppercase tracking-widest px-6 data-[state=active]:bg-zinc-800">
-               <Banknote size={14} className="mr-2" /> Salary Node
+            <TabsTrigger value="payroll" className="text-[10px] font-black uppercase tracking-widest px-6 data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white whitespace-nowrap">
+               <Banknote size={14} className="mr-2 hidden sm:block" /> Salary Node
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="text-[10px] font-black uppercase tracking-widest px-6 data-[state=active]:bg-zinc-800">
-               <CalendarIcon size={14} className="mr-2" /> Lifecycle
+            <TabsTrigger value="calendar" className="text-[10px] font-black uppercase tracking-widest px-6 data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white whitespace-nowrap">
+               <CalendarIcon size={14} className="mr-2 hidden sm:block" /> Lifecycle
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="attendance">
              <form onSubmit={handleAttSubmit} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Entry Time (Clock In)</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600">
+                          Entry Time (Clock In) {checkIn && <span className="ml-2 text-emerald-500">{format12Hour(checkIn)}</span>}
+                        </Label>
+                        <button type="button" onClick={() => handleSetCurrentTime(setCheckIn)} className="text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors">Set Now</button>
+                      </div>
                       <Input 
                         type="time" 
                         value={checkIn}
                         onChange={e => setCheckIn(e.target.value)}
-                        className="bg-zinc-900 border-zinc-800 h-12 font-bold" 
+                        className="bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 h-12 font-bold text-zinc-900 dark:text-white" 
                       />
                    </div>
                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Exit Time (Clock Out)</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600">
+                          Exit Time (Clock Out) {checkOut && <span className="ml-2 text-orange-500">{format12Hour(checkOut)}</span>}
+                        </Label>
+                        <button type="button" onClick={() => handleSetCurrentTime(setCheckOut)} className="text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors">Set Now</button>
+                      </div>
                       <Input 
                         type="time" 
                         value={checkOut}
                         onChange={e => setCheckOut(e.target.value)}
-                        className="bg-zinc-900 border-zinc-800 h-12 font-bold" 
+                        className="bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 h-12 font-bold text-zinc-900 dark:text-white" 
                       />
                    </div>
                 </div>
@@ -152,14 +177,14 @@ export function StaffDetailsDialog({ staffMember, open, onOpenChange }: any) {
                        type="button"
                        onClick={() => setAttStatus(s)}
                        className={`h-12 rounded-xl border font-black text-[10px] uppercase tracking-widest transition-all ${
-                         attStatus === s ? 'bg-emerald-500 border-emerald-500 text-zinc-950 shadow-lg shadow-emerald-500/20' : 'bg-transparent border-zinc-800 text-zinc-600 hover:border-zinc-700'
+                         attStatus === s ? 'bg-emerald-500 border-emerald-500 text-white dark:text-zinc-950 shadow-lg shadow-emerald-500/20' : 'bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-600 hover:border-zinc-300 dark:hover:border-zinc-700'
                        }`}
                      >
                        {s}
                      </button>
                    ))}
                 </div>
-                <Button disabled={loading} className="w-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 h-12 font-black uppercase tracking-widest text-[10px] text-white rounded-xl">
+                <Button disabled={loading} className="w-full bg-zinc-900 dark:bg-zinc-900 border border-zinc-800 dark:border-zinc-800 hover:bg-zinc-800 dark:hover:bg-zinc-800 h-12 font-black uppercase tracking-widest text-[10px] text-white rounded-xl">
                    Synchronize Attendance
                 </Button>
              </form>
@@ -168,15 +193,15 @@ export function StaffDetailsDialog({ staffMember, open, onOpenChange }: any) {
           <TabsContent value="payroll">
              <form onSubmit={handleSalarySubmit} className="space-y-6">
                 <div className="space-y-2">
-                   <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Base Allocated Salary (₹)</Label>
+                   <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600">Base Allocated Salary (₹)</Label>
                    <Input 
                      type="number" 
                      value={baseSalary}
                      onChange={e => setBaseSalary(e.target.value)}
-                     className="bg-zinc-900 border-zinc-800 h-14 text-lg font-black italic tracking-tighter" 
+                     className="bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 h-14 text-lg font-black italic tracking-tighter text-zinc-900 dark:text-white" 
                    />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                    <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase tracking-widest text-red-500 flex items-center gap-2">
                          <TrendingDown size={12} /> Deductions (₹)
@@ -185,7 +210,7 @@ export function StaffDetailsDialog({ staffMember, open, onOpenChange }: any) {
                         type="number" 
                         value={deductions}
                         onChange={e => setDeductions(e.target.value)}
-                        className="bg-zinc-900 border-zinc-800 h-12 font-bold text-red-500" 
+                        className="bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 h-12 font-bold text-red-500" 
                       />
                    </div>
                    <div className="space-y-2">
@@ -196,15 +221,15 @@ export function StaffDetailsDialog({ staffMember, open, onOpenChange }: any) {
                         type="number" 
                         value={bonus}
                         onChange={e => setBonus(e.target.value)}
-                        className="bg-zinc-900 border-zinc-800 h-12 font-bold text-emerald-500" 
+                        className="bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 h-12 font-bold text-emerald-500" 
                       />
                    </div>
                 </div>
-                <div className="bg-zinc-900/50 p-6 rounded-2xl border border-zinc-900 flex items-center justify-between">
-                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600">Predicted Net Payout</p>
-                   <h4 className="text-2xl font-black text-white italic tracking-widest">₹{(parseFloat(baseSalary) + parseFloat(bonus) - parseFloat(deductions)).toLocaleString()}</h4>
+                <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-900 flex items-center justify-between">
+                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-600">Predicted Net Payout</p>
+                   <h4 className="text-2xl font-black text-zinc-900 dark:text-white italic tracking-widest">₹{(parseFloat(baseSalary) + parseFloat(bonus) - parseFloat(deductions)).toLocaleString()}</h4>
                 </div>
-                <Button disabled={loading} className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-14 rounded-2xl shadow-xl shadow-emerald-500/10">
+                <Button disabled={loading} className="w-full bg-emerald-500 hover:bg-emerald-600 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 font-black uppercase tracking-widest text-[10px] h-14 rounded-2xl shadow-xl shadow-emerald-500/10">
                    Generate & Commit Payroll Node
                 </Button>
              </form>
@@ -214,13 +239,13 @@ export function StaffDetailsDialog({ staffMember, open, onOpenChange }: any) {
              <div className="space-y-6">
                 <div className="grid grid-cols-7 gap-1">
                    {[...Array(31)].map((_: any, i: number) => (
-                     <div key={i} className={`aspect-square rounded-lg border border-zinc-900 flex flex-col items-center justify-center gap-1 ${i < 5 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-zinc-950'}`}>
-                        <span className="text-[8px] font-bold text-zinc-700">{i + 1}</span>
+                     <div key={i} className={`aspect-square rounded-lg border border-zinc-200 dark:border-zinc-900 flex flex-col items-center justify-center gap-1 ${i < 5 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-zinc-50 dark:bg-zinc-950'}`}>
+                        <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-700">{i + 1}</span>
                         {i < 5 && <CheckCircle2 size={10} className="text-emerald-500" />}
                      </div>
                    ))}
                 </div>
-                <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-zinc-600 italic">
+                <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600 italic">
                    <div className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-emerald-500" /> Present </div>
                    <div className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-red-500" /> Absent </div>
                    <div className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-orange-500" /> Leave </div>

@@ -86,9 +86,9 @@ export function RecruitStaffDialog({ open, onOpenChange }: { open: boolean, onOp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white sm:max-w-[450px] rounded-3xl p-8">
+      <DialogContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white w-[95vw] sm:max-w-[450px] rounded-3xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
         <DialogHeader className="mb-6">
-          <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-4">
+          <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-500 mb-4">
              <UserPlus size={24} />
           </div>
           <DialogTitle className="text-xl font-black italic uppercase tracking-tight">Add New Staff Member</DialogTitle>
@@ -99,45 +99,47 @@ export function RecruitStaffDialog({ open, onOpenChange }: { open: boolean, onOp
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Staff Email Address</Label>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600 px-1">Staff Email Address</Label>
             <Input 
               type="email"
               value={formData.email}
               onChange={e => setFormData({...formData, email: e.target.value})}
               placeholder="staff@example.com" 
-              className="bg-zinc-950 border-zinc-800 h-12 px-4 font-bold text-sm" 
+              className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 h-12 px-4 font-bold text-sm text-zinc-900 dark:text-white" 
               required 
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Role</Label>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600 px-1">Role</Label>
             
             {isCreatingRole ? (
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Input 
                   value={newRoleName}
                   onChange={e => setNewRoleName(e.target.value)}
                   placeholder="e.g., HEAD CHEF" 
-                  className="bg-zinc-950 border-zinc-800 h-12 px-4 font-bold text-sm flex-1" 
+                  className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 h-12 px-4 font-bold text-sm w-full text-zinc-900 dark:text-white" 
                   autoFocus
                 />
-                <Button 
-                  type="button"
-                  onClick={handleCreateRole}
-                  disabled={rolesLoading || !newRoleName}
-                  className="h-12 w-12 shrink-0 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl"
-                >
-                  {rolesLoading ? <Loader2 className="animate-spin" size={16} /> : <Plus size={20} />}
-                </Button>
-                <Button 
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreatingRole(false)}
-                  className="h-12 bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white rounded-xl text-xs font-bold uppercase"
-                >
-                  Cancel
-                </Button>
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button 
+                    type="button"
+                    onClick={handleCreateRole}
+                    disabled={rolesLoading || !newRoleName}
+                    className="h-12 flex-1 sm:flex-none sm:w-12 shrink-0 bg-emerald-500 hover:bg-emerald-600 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 rounded-xl"
+                  >
+                    {rolesLoading ? <Loader2 className="animate-spin" size={16} /> : <Plus size={20} />}
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCreatingRole(false)}
+                    className="h-12 flex-1 sm:flex-none bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-xl text-xs font-bold uppercase"
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
             ) : (
               <>
@@ -145,10 +147,10 @@ export function RecruitStaffDialog({ open, onOpenChange }: { open: boolean, onOp
                   value={formData.role} 
                   onValueChange={v => setFormData({...formData, role: v})}
                 >
-                  <SelectTrigger className="bg-zinc-950 border-zinc-800 h-12 text-sm font-bold">
+                  <SelectTrigger className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 h-12 text-sm font-bold text-zinc-900 dark:text-white">
                     <SelectValue placeholder="Select Designation" />
                   </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-800 text-white font-bold">
+                  <SelectContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white font-bold">
                     {vendorRoles.map(r => (
                       <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>
                     ))}
@@ -157,7 +159,7 @@ export function RecruitStaffDialog({ open, onOpenChange }: { open: boolean, onOp
                 <button 
                   type="button"
                   onClick={() => setIsCreatingRole(true)}
-                  className="text-[10px] font-black text-emerald-500 hover:text-emerald-400 uppercase tracking-widest mt-2 px-1 flex items-center gap-1 transition-colors"
+                  className="text-[10px] font-black text-emerald-600 dark:text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 uppercase tracking-widest mt-2 px-1 flex items-center gap-1 transition-colors"
                 >
                   <Plus size={12} /> Create Custom Role
                 </button>
@@ -168,7 +170,7 @@ export function RecruitStaffDialog({ open, onOpenChange }: { open: boolean, onOp
           <DialogFooter className="pt-4">
             <Button 
               disabled={loading}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-14 rounded-2xl shadow-xl shadow-emerald-500/10"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 font-black uppercase tracking-widest text-[10px] h-14 rounded-2xl shadow-xl shadow-emerald-500/10"
             >
               {loading ? <Loader2 className="animate-spin" /> : 'Add Staff Member'}
             </Button>
