@@ -1,29 +1,20 @@
 
 import { prisma } from '@/lib/db';
 import { requireVendor } from '@/lib/vendor';
-import { 
-  Users, 
-  Clock, 
-  Calendar, 
-  Banknote, 
-  UserPlus, 
-  ArrowUpRight,
-  UserCheck,
-  UserMinus,
-  Timer
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { getVendorMasters } from '@/app/actions/workforce';
 import { StaffClientPage } from '@/app/(dashboard)/vendor/staff/StaffClientPage';
 
 export default async function WorkforcePage() {
   const vendor = await requireVendor();
 
+  const masters = await getVendorMasters();
+
   // Fetch staff assigned to this vendor
   const staff = await prisma.userVendorAssignment.findMany({
     where: { vendorId: vendor.id },
     include: {
-      user: true
+      user: true,
+      salaryLevel: true
     }
   });
 
@@ -35,6 +26,11 @@ export default async function WorkforcePage() {
     where: {
       userId: { in: staff.map((s: any) => s.userId) },
       date: { gte: today }
+    },
+    include: {
+      punches: {
+        orderBy: { timestamp: 'asc' }
+      }
     }
   });
 
@@ -53,6 +49,7 @@ export default async function WorkforcePage() {
         staff={staff} 
         attendance={attendance} 
         salaries={salaries} 
+        masters={masters}
       />
     </div>
   );

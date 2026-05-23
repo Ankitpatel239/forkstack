@@ -18,7 +18,9 @@ import {
   UserPlus,
   UserCheck,
   UserMinus,
-  Timer
+  Timer,
+  Filter,
+  Settings
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -33,12 +35,19 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { StaffDetailsDialog } from '@/app/(dashboard)/vendor/staff/StaffDetailsDialog';
 import { RecruitStaffDialog } from '@/app/(dashboard)/vendor/staff/RecruitStaffDialog';
+import { HRSettingsDialog } from '@/app/(dashboard)/vendor/staff/HRSettingsDialog';
 
-export function StaffClientPage({ staff, attendance, salaries }: any) {
+export function StaffClientPage({ staff, attendance, salaries, masters }: any) {
   const [activeTab, setActiveTab] = useState('roster');
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isRecruitOpen, setIsRecruitOpen] = useState(false);
+  const [isHROpen, setIsHROpen] = useState(false);
+  const [roleFilter, setRoleFilter] = useState<string>('ALL');
+  
+  const uniqueRoles = Array.from(new Set(staff.map((s: any) => s.roleInVendor)));
+  
+  const filteredStaff = staff.filter((s: any) => roleFilter === 'ALL' || s.roleInVendor === roleFilter);
 
   const manageStaff = (member: any) => {
     setSelectedStaff(member);
@@ -61,6 +70,13 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
         </div>
         <div className="flex items-center gap-3">
           <Button 
+            onClick={() => setIsHROpen(true)}
+            variant="outline"
+            className="rounded-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-black uppercase tracking-widest text-xs h-11 px-4 shadow-sm"
+          >
+            <Settings className="w-4 h-4 mr-2" /> HR Masters
+          </Button>
+          <Button 
             onClick={() => setIsRecruitOpen(true)}
             className="rounded-xl bg-emerald-500 hover:bg-emerald-600 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 font-black uppercase tracking-widest text-xs h-11 px-6 shadow-lg shadow-emerald-500/20"
           >
@@ -69,16 +85,18 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
         </div>
       </div>
 
-      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {stats.map((s: any, i: number) => (
-          <div key={i} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 group relative overflow-hidden shadow-xl">
-            <div className={`absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-${s.color}-500`}>
-              <s.icon size={60} />
+          <div key={i} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 group relative overflow-hidden shadow-sm flex items-center gap-4">
+            <div className={`p-3 rounded-xl bg-${s.color}-500/10 text-${s.color}-500`}>
+              <s.icon size={20} />
             </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600 mb-2">{s.label}</p>
-            <div className="flex items-baseline gap-2">
-              <h3 className="text-3xl font-black text-zinc-900 dark:text-white italic tracking-tighter">{s.val}</h3>
-              <p className="text-[9px] font-bold text-zinc-500 uppercase">{s.sub}</p>
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 mb-0.5">{s.label}</p>
+              <div className="flex items-baseline gap-2">
+                <h3 className="text-xl font-black text-zinc-900 dark:text-white italic tracking-tighter">{s.val}</h3>
+                <p className="text-[8px] font-bold text-zinc-400 uppercase hidden sm:block">{s.sub}</p>
+              </div>
             </div>
           </div>
         ))}
@@ -98,13 +116,27 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
           </TabsTrigger>
         </TabsList>
 
-        <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-xl px-4 h-11 text-zinc-500 dark:text-zinc-600 focus-within:border-emerald-500/50 transition-all w-full sm:w-auto">
-          <Search size={16} />
-          <input 
-            type="text" 
-            placeholder="Search team members..." 
-            className="bg-transparent border-none focus:ring-0 text-xs font-bold outline-none text-zinc-900 dark:text-white w-full sm:w-48"
-          />
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <DropdownMenu>
+             <DropdownMenuTrigger className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-xl px-4 h-11 text-zinc-500 dark:text-zinc-600 font-bold uppercase tracking-widest text-[10px] hover:border-emerald-500/50 transition-all outline-none">
+                <Filter size={14} /> {roleFilter === 'ALL' ? 'All Roles' : roleFilter}
+             </DropdownMenuTrigger>
+             <DropdownMenuContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-xl">
+                <DropdownMenuItem onClick={() => setRoleFilter('ALL')} className="font-bold text-[10px] uppercase cursor-pointer">All Roles</DropdownMenuItem>
+                {uniqueRoles.map((role: any) => (
+                  <DropdownMenuItem key={role} onClick={() => setRoleFilter(role)} className="font-bold text-[10px] uppercase cursor-pointer">{role}</DropdownMenuItem>
+                ))}
+             </DropdownMenuContent>
+          </DropdownMenu>
+
+          <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-xl px-4 h-11 text-zinc-500 dark:text-zinc-600 focus-within:border-emerald-500/50 transition-all flex-1 sm:flex-none">
+            <Search size={16} />
+            <input 
+              type="text" 
+              placeholder="Search team members..." 
+              className="bg-transparent border-none focus:ring-0 text-xs font-bold outline-none text-zinc-900 dark:text-white w-full sm:w-48"
+            />
+          </div>
         </div>
       </div>
 
@@ -122,7 +154,7 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
-                {staff.map((s: any) => (
+                {filteredStaff.map((s: any) => (
                   <tr key={s.id} onClick={() => manageStaff(s)} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/20 transition-all group cursor-pointer">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
@@ -175,7 +207,28 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
                 <h2 className="text-lg font-black text-zinc-900 dark:text-white italic uppercase tracking-[0.1em]">Daily Attendance Log</h2>
                 <p className="text-[10px] text-zinc-500 dark:text-zinc-600 font-bold uppercase tracking-widest">Current status of your staff for {new Date().toDateString()}</p>
               </div>
-              <Button variant="outline" className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 h-10 px-4 rounded-xl font-bold uppercase tracking-widest text-[9px] text-zinc-500 dark:text-zinc-400">
+              <Button 
+                variant="outline" 
+                className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 h-10 px-4 rounded-xl font-bold uppercase tracking-widest text-[9px] text-zinc-500 dark:text-zinc-400"
+                onClick={() => {
+                  let csv = 'Team Member,Check In,Check Out,Hours,Status\n';
+                  filteredStaff.forEach((s: any) => {
+                    const att = attendance.find((a: any) => a.userId === s.userId);
+                    const name = s.user.name || 'Unknown';
+                    const checkIn = att?.checkIn ? new Date(att.checkIn).toLocaleTimeString() : '-';
+                    const checkOut = att?.checkOut ? new Date(att.checkOut).toLocaleTimeString() : '-';
+                    const hours = att?.hoursWorked?.toFixed(2) || '0.00';
+                    const status = att?.status || 'N/A';
+                    csv += `"${name}","${checkIn}","${checkOut}","${hours}","${status}"\n`;
+                  });
+                  const blob = new Blob([csv], { type: 'text/csv' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.setAttribute('href', url);
+                  a.setAttribute('download', `attendance_log_${new Date().toISOString().split('T')[0]}.csv`);
+                  a.click();
+                }}
+              >
                 <Download size={14} className="mr-2" /> Download Log
               </Button>
            </div>
@@ -191,7 +244,7 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
-                {staff.map((s: any) => {
+                {filteredStaff.map((s: any) => {
                   const att = attendance.find((a: any) => a.userId === s.userId);
                   return (
                     <tr key={s.id} onClick={() => manageStaff(s)} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/20 transition-all cursor-pointer">
@@ -284,11 +337,19 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
         staffMember={selectedStaff} 
         open={isDetailsOpen} 
         onOpenChange={setIsDetailsOpen} 
+        masters={masters}
+        attendanceLog={attendance.find((a: any) => a.userId === selectedStaff?.userId)}
       />
 
       <RecruitStaffDialog 
         open={isRecruitOpen}
         onOpenChange={setIsRecruitOpen}
+      />
+
+      <HRSettingsDialog
+        open={isHROpen}
+        onOpenChange={setIsHROpen}
+        masters={masters}
       />
     </Tabs>
     </div>

@@ -283,6 +283,13 @@ model VendorProfile {
   deliveryAgents        DeliveryAgent[]
   stockAlerts           StockAlert[]
   vendorRoles           VendorRole[]
+
+  // HR & Payroll Masters
+  salaryLevelMasters    SalaryLevelMaster[]
+  deductionMasters      DeductionMaster[]
+  bonusMasters          BonusMaster[]
+  salaryTypeMasters     SalaryTypeMaster[]
+  advanceSalaries       AdvanceSalary[]
 }
 
 model InventoryCategory {
@@ -358,8 +365,17 @@ model UserVendorAssignment {
   isActive      Boolean  @default(true)
   assignedAt    DateTime @default(now())
   
+  // Payroll Config
+  salaryTypeId  Int?
+  salaryLevelId Int?
+  baseWage      Float?
+  shiftStartTime String?
+  shiftEndTime   String?
+
   user          User          @relation(fields: [userId], references: [id])
   vendor        VendorProfile @relation(fields: [vendorId], references: [id])
+  salaryType    SalaryTypeMaster? @relation(fields: [salaryTypeId], references: [id])
+  salaryLevel   SalaryLevelMaster? @relation(fields: [salaryLevelId], references: [id])
   
   @@unique([userId, vendorId])
 }
@@ -810,6 +826,16 @@ model Attendance {
   notes       String?
 
   user        User             @relation(fields: [userId], references: [id])
+  punches     AttendancePunch[]
+}
+
+model AttendancePunch {
+  id           String     @id @default(cuid())
+  attendanceId String
+  type         String     // "IN" or "OUT"
+  timestamp    DateTime   @default(now())
+
+  attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
 }
 
 // ========== SALARY RECORDS ==========
@@ -822,6 +848,7 @@ model SalaryRecord {
   bonus      Float    @default(0)
   deductions Float    @default(0)
   netSalary  Float
+  breakdown  Json?    // Detailed calculation breakdown
   paid       Boolean  @default(false)
   paidAt     DateTime?
   createdAt  DateTime @default(now())
@@ -1303,4 +1330,66 @@ model SystemSetting {
   group       String   @default("GENERAL") // GENERAL, CONNECTIVITY, INFRASTRUCTURE, etc.
   description String?  @db.Text
   updatedAt   DateTime @updatedAt
+}
+
+// ========== HR MASTER MODELS ==========
+
+model SalaryLevelMaster {
+  id          Int      @id @default(autoincrement())
+  vendorId    String
+  levelName   String
+  baseSalary  Float
+  isActive    Boolean  @default(true)
+  
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  assignments UserVendorAssignment[]
+
+  @@unique([vendorId, levelName])
+}
+
+model DeductionMaster {
+  id          Int      @id @default(autoincrement())
+  vendorId    String
+  name        String
+  isActive    Boolean  @default(true)
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([vendorId, name])
+}
+
+model BonusMaster {
+  id          Int      @id @default(autoincrement())
+  vendorId    String
+  name        String
+  isActive    Boolean  @default(true)
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([vendorId, name])
+}
+
+model SalaryTypeMaster {
+  id          Int      @id @default(autoincrement())
+  vendorId    String
+  name        String
+  isActive    Boolean  @default(true)
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  assignments UserVendorAssignment[]
+
+  @@unique([vendorId, name])
+}
+
+model AdvanceSalary {
+  id           Int      @id @default(autoincrement())
+  userId       String
+  vendorId     String
+  amount       Float
+  date         DateTime @default(now())
+  repaidAmount Float    @default(0)
+  status       String   @default("PENDING") // PENDING, REPAID
+  notes        String?
+
+  vendor       VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 }
