@@ -18,6 +18,7 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
 
   useEffect(() => {
     if (error === 'AccessDenied') {
@@ -61,6 +62,16 @@ function LoginForm() {
     }
   };
 
+  const handleGithubLogin = async () => {
+    setGithubLoading(true);
+    try {
+      await signIn('github', { callbackUrl: '/vendor/dashboard' });
+    } catch (err) {
+      toast.error('GitHub Sign-In Failed');
+      setGithubLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 flex relative overflow-hidden font-sans">
       {/* Background Decor */}
@@ -92,14 +103,25 @@ function LoginForm() {
           <div className="mt-8">
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 h-11 text-xs font-bold uppercase tracking-widest text-zinc-400">
-                  <GitBranch size={16} className="mr-2" /> Github
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  onClick={handleGithubLogin}
+                  disabled={githubLoading || loading || googleLoading}
+                  className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 h-11 text-xs font-bold uppercase tracking-widest text-zinc-400 transition-all"
+                >
+                  {githubLoading ? (
+                    <Loader2 size={16} className="animate-spin mr-2" />
+                  ) : (
+                    <GitBranch size={16} className="mr-2" />
+                  )}
+                  Github
                 </Button>
                 <Button 
                   type="button"
                   variant="outline" 
                   onClick={handleGoogleLogin}
-                  disabled={googleLoading || loading}
+                  disabled={googleLoading || loading || githubLoading}
                   className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 h-11 text-xs font-bold uppercase tracking-widest text-zinc-400 transition-all"
                 >
                   {googleLoading ? (
@@ -164,7 +186,7 @@ function LoginForm() {
 
                 <Button 
                   type="submit" 
-                  disabled={loading || googleLoading}
+                  disabled={loading || googleLoading || githubLoading}
                   className="w-full h-12 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-xs shadow-xl shadow-emerald-500/10 group mt-4 transition-all"
                 >
                   {loading ? (

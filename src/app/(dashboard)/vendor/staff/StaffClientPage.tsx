@@ -20,7 +20,8 @@ import {
   UserMinus,
   Timer,
   Filter,
-  Settings
+  Settings,
+  History
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +37,7 @@ import {
 import { StaffDetailsDialog } from '@/app/(dashboard)/vendor/staff/StaffDetailsDialog';
 import { RecruitStaffDialog } from '@/app/(dashboard)/vendor/staff/RecruitStaffDialog';
 import { HRSettingsDialog } from '@/app/(dashboard)/vendor/staff/HRSettingsDialog';
+import { AddPastAttendanceDialog } from '@/app/(dashboard)/vendor/staff/AddPastAttendanceDialog';
 
 export function StaffClientPage({ staff, attendance, salaries, masters }: any) {
   const [activeTab, setActiveTab] = useState('roster');
@@ -43,6 +45,7 @@ export function StaffClientPage({ staff, attendance, salaries, masters }: any) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isRecruitOpen, setIsRecruitOpen] = useState(false);
   const [isHROpen, setIsHROpen] = useState(false);
+  const [isPastAttendanceOpen, setIsPastAttendanceOpen] = useState(false);
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
   
   const uniqueRoles = Array.from(new Set(staff.map((s: any) => s.roleInVendor)));
@@ -207,10 +210,18 @@ export function StaffClientPage({ staff, attendance, salaries, masters }: any) {
                 <h2 className="text-lg font-black text-zinc-900 dark:text-white italic uppercase tracking-[0.1em]">Daily Attendance Log</h2>
                 <p className="text-[10px] text-zinc-500 dark:text-zinc-600 font-bold uppercase tracking-widest">Current status of your staff for {new Date().toDateString()}</p>
               </div>
-              <Button 
-                variant="outline" 
-                className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 h-10 px-4 rounded-xl font-bold uppercase tracking-widest text-[9px] text-zinc-500 dark:text-zinc-400"
-                onClick={() => {
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <Button 
+                  variant="outline"
+                  className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 h-10 px-4 rounded-xl font-bold uppercase tracking-widest text-[9px] text-zinc-500 dark:text-zinc-400 w-full md:w-auto"
+                  onClick={() => setIsPastAttendanceOpen(true)}
+                >
+                  <History size={14} className="mr-2" /> Add Past Record
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 h-10 px-4 rounded-xl font-bold uppercase tracking-widest text-[9px] text-zinc-500 dark:text-zinc-400 w-full md:w-auto"
+                  onClick={() => {
                   let csv = 'Team Member,Check In,Check Out,Hours,Status\n';
                   filteredStaff.forEach((s: any) => {
                     const att = attendance.find((a: any) => a.userId === s.userId);
@@ -231,6 +242,7 @@ export function StaffClientPage({ staff, attendance, salaries, masters }: any) {
               >
                 <Download size={14} className="mr-2" /> Download Log
               </Button>
+              </div>
            </div>
            <div className="overflow-x-auto custom-scrollbar">
              <table className="w-full text-left text-sm min-w-[800px]">
@@ -350,6 +362,12 @@ export function StaffClientPage({ staff, attendance, salaries, masters }: any) {
         open={isHROpen}
         onOpenChange={setIsHROpen}
         masters={masters}
+      />
+
+      <AddPastAttendanceDialog
+        open={isPastAttendanceOpen}
+        onOpenChange={setIsPastAttendanceOpen}
+        staff={staff}
       />
     </Tabs>
     </div>

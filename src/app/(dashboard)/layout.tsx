@@ -276,13 +276,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <span className="font-bold text-xl tracking-tighter text-foreground">ForkStack</span>
           </Link>
-          <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-zinc-400 hover:text-white">
+          <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-muted-foreground hover:text-foreground">
             <X size={20} />
           </button>
         </div>
         
         <nav className="flex-1 py-8 px-4 space-y-2 overflow-y-auto custom-scrollbar">
-          <div className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-4 px-4">
+          <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-4 px-4">
             Management
           </div>
           {navItems.map((item: any) => {
@@ -377,8 +377,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                    <span className="font-bold text-zinc-900 text-sm">{(session?.user?.name || session?.user?.email || 'U').charAt(0).toUpperCase()}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-white truncate leading-none mb-1">{session?.user?.name || 'Owner'}</p>
-                  <p className="text-[10px] text-zinc-500 truncate font-medium uppercase tracking-wider">{session?.user?.role || 'VENDOR'}</p>
+                  <p className="text-sm font-bold text-foreground truncate leading-none mb-1">{session?.user?.name || 'Owner'}</p>
+                  <p className="text-[10px] text-muted-foreground truncate font-medium uppercase tracking-wider">{session?.user?.role || 'VENDOR'}</p>
                 </div>
               </Link>
               <button 

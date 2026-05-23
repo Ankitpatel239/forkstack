@@ -272,6 +272,32 @@ export async function logAttendanceStatus(userId: string, status: 'PRESENT' | 'A
   revalidatePath('/vendor/staff');
 }
 
+export async function logPastAttendance(userId: string, dateStr: string, status: 'PRESENT' | 'ABSENT' | 'LEAVE') {
+  const vendor = await requireVendor();
+  
+  // Verify assignment
+  const assignment = await prisma.userVendorAssignment.findFirst({
+    where: { userId, vendorId: vendor.id }
+  });
+  if (!assignment) throw new Error('Unauthorized');
+
+  const targetDate = new Date(dateStr);
+  targetDate.setHours(0, 0, 0, 0);
+
+  const existing = await prisma.attendance.findFirst({ where: { userId, date: targetDate } });
+  if (existing) {
+    await prisma.attendance.update({
+      where: { id: existing.id },
+      data: { status }
+    });
+  } else {
+    await prisma.attendance.create({
+      data: { userId, date: targetDate, status }
+    });
+  }
+  revalidatePath('/vendor/staff');
+}
+
 // ========== PAYROLL & SALARY ==========
 
 export async function generateSalaryRecord(userId: string, data: {

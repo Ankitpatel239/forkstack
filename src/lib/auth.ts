@@ -1,6 +1,7 @@
 import { NextAuthOptions, getServerSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
+import GithubProvider from 'next-auth/providers/github';
 import bcrypt from 'bcrypt';
 import { prisma } from '@/lib/db'; 
 
@@ -13,6 +14,10 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    }),
+    GithubProvider({
+      clientId: process.env.GITHUB_ID || '',
+      clientSecret: process.env.GITHUB_SECRET || '',
     }),
     CredentialsProvider({
       name: 'Credentials',
@@ -80,10 +85,10 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account }: any) {
-      if (account?.provider === 'google') {
+      if (account?.provider === 'google' || account?.provider === 'github') {
         if (!user.email) return false;
         
-        // Match the Google email in the database
+        // Match the email in the database
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email },
         });
@@ -97,8 +102,8 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user, account }: any) {
       if (user) {
-        if (account?.provider === 'google') {
-          // For Google logins, fetch the corresponding user role and id from the DB
+        if (account?.provider === 'google' || account?.provider === 'github') {
+          // For OAuth logins, fetch the corresponding user role and id from the DB
           const dbUser = await prisma.user.findUnique({
             where: { email: user.email },
           });
