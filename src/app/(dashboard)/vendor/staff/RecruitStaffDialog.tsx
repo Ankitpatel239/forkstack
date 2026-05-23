@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Dialog, 
   DialogContent, 
@@ -14,23 +14,67 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, UserPlus } from 'lucide-react';
+import { Loader2, UserPlus, Plus } from 'lucide-react';
 import { recruitStaff } from '@/app/actions/workforce';
+import { getVendorRoles, createVendorRole } from '@/app/actions/roles';
 import { toast } from 'sonner';
 
 export function RecruitStaffDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
   const [loading, setLoading] = useState(false);
+  const [rolesLoading, setRolesLoading] = useState(false);
+  const [vendorRoles, setVendorRoles] = useState<any[]>([]);
+  const [isCreatingRole, setIsCreatingRole] = useState(false);
+  const [newRoleName, setNewRoleName] = useState('');
+  
   const [formData, setFormData] = useState({
     email: '',
-    role: 'WAITER'
+    role: ''
   });
+
+  const loadRoles = async () => {
+    try {
+      const roles = await getVendorRoles();
+      setVendorRoles(roles);
+      if (roles.length > 0 && !formData.role) {
+        setFormData(prev => ({ ...prev, role: roles[0].name }));
+      }
+    } catch (e) {
+      toast.error('Failed to load roles');
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      loadRoles();
+    } else {
+      setIsCreatingRole(false);
+      setNewRoleName('');
+    }
+  }, [open]);
+
+  const handleCreateRole = async () => {
+    if (!newRoleName.trim()) return;
+    setRolesLoading(true);
+    try {
+      const role = await createVendorRole(newRoleName, 'Custom role created during onboarding');
+      toast.success('Custom role created');
+      setVendorRoles(prev => [...prev, role]);
+      setFormData(prev => ({ ...prev, role: role.name }));
+      setIsCreatingRole(false);
+      setNewRoleName('');
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to create role');
+    } finally {
+      setRolesLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       await recruitStaff(formData.email, formData.role);
-      toast.success('Staff member onboarded to workforce');
+      toast.success('Staff member added successfully');
       setFormData({ email: '', role: 'WAITER' });
       onOpenChange(false);
     } catch (error: any) {
@@ -47,42 +91,78 @@ export function RecruitStaffDialog({ open, onOpenChange }: { open: boolean, onOp
           <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-4">
              <UserPlus size={24} />
           </div>
-          <DialogTitle className="text-xl font-black italic uppercase tracking-tight">Onboard New Operator</DialogTitle>
+          <DialogTitle className="text-xl font-black italic uppercase tracking-tight">Add New Staff Member</DialogTitle>
           <DialogDescription className="text-zinc-500 font-medium font-sans">
-            Connect a registered user to your workforce command node.
+            Add a registered user to your team.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Registered Email Address</Label>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Staff Email Address</Label>
             <Input 
               type="email"
               value={formData.email}
               onChange={e => setFormData({...formData, email: e.target.value})}
-              placeholder="operator@forkstack.com" 
+              placeholder="staff@example.com" 
               className="bg-zinc-950 border-zinc-800 h-12 px-4 font-bold text-sm" 
               required 
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Designation / Role</Label>
-            <Select 
-              value={formData.role} 
-              onValueChange={v => setFormData({...formData, role: v})}
-            >
-              <SelectTrigger className="bg-zinc-950 border-zinc-800 h-12 text-sm font-bold">
-                <SelectValue placeholder="Select Designation" />
-              </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-800 text-white font-bold">
-                <SelectItem value="MANAGER">MANAGER</SelectItem>
-                <SelectItem value="KITCHEN">KITCHEN</SelectItem>
-                <SelectItem value="CASHIER">CASHIER</SelectItem>
-                <SelectItem value="WAITER">WAITER</SelectItem>
-                <SelectItem value="DELIVERY">DELIVERY</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Role</Label>
+            
+            {isCreatingRole ? (
+              <div className="flex gap-2">
+                <Input 
+                  value={newRoleName}
+                  onChange={e => setNewRoleName(e.target.value)}
+                  placeholder="e.g., HEAD CHEF" 
+                  className="bg-zinc-950 border-zinc-800 h-12 px-4 font-bold text-sm flex-1" 
+                  autoFocus
+                />
+                <Button 
+                  type="button"
+                  onClick={handleCreateRole}
+                  disabled={rolesLoading || !newRoleName}
+                  className="h-12 w-12 shrink-0 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl"
+                >
+                  {rolesLoading ? <Loader2 className="animate-spin" size={16} /> : <Plus size={20} />}
+                </Button>
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCreatingRole(false)}
+                  className="h-12 bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white rounded-xl text-xs font-bold uppercase"
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Select 
+                  value={formData.role} 
+                  onValueChange={v => setFormData({...formData, role: v})}
+                >
+                  <SelectTrigger className="bg-zinc-950 border-zinc-800 h-12 text-sm font-bold">
+                    <SelectValue placeholder="Select Designation" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800 text-white font-bold">
+                    {vendorRoles.map(r => (
+                      <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <button 
+                  type="button"
+                  onClick={() => setIsCreatingRole(true)}
+                  className="text-[10px] font-black text-emerald-500 hover:text-emerald-400 uppercase tracking-widest mt-2 px-1 flex items-center gap-1 transition-colors"
+                >
+                  <Plus size={12} /> Create Custom Role
+                </button>
+              </>
+            )}
           </div>
 
           <DialogFooter className="pt-4">
@@ -90,7 +170,7 @@ export function RecruitStaffDialog({ open, onOpenChange }: { open: boolean, onOp
               disabled={loading}
               className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-14 rounded-2xl shadow-xl shadow-emerald-500/10"
             >
-              {loading ? <Loader2 className="animate-spin" /> : 'Authorize Onboarding'}
+              {loading ? <Loader2 className="animate-spin" /> : 'Add Staff Member'}
             </Button>
           </DialogFooter>
         </form>

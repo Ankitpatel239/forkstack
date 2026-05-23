@@ -69,6 +69,7 @@ import {
 } from '@/app/actions/inventory';
 
 import { subscribeToPlan } from '@/app/actions/billing';
+import { getVendorRoles, createVendorRole, deleteVendorRole } from '@/app/actions/roles';
 
 export function SettingsClientPage({ 
   vendor, 
@@ -154,6 +155,52 @@ export function SettingsClientPage({
   const [newCatName, setNewCatName] = useState('');
   const [catLoading, setCatLoading] = useState(false);
   const [selectedMasterId, setSelectedMasterId] = useState<string | 'NONE'>('NONE');
+
+  const [vendorRoles, setVendorRoles] = useState<any[]>([]);
+  const [rolesLoading, setRolesLoading] = useState(false);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [newRoleDesc, setNewRoleDesc] = useState('');
+
+  const loadRoles = async () => {
+    try {
+      const roles = await getVendorRoles();
+      setVendorRoles(roles);
+    } catch (e) {
+      toast.error('Failed to load roles');
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'Security & Access') {
+      loadRoles();
+    }
+  }, [activeTab]);
+
+  const handleCreateRole = async () => {
+    if (!newRoleName.trim()) return;
+    setRolesLoading(true);
+    try {
+      await createVendorRole(newRoleName, newRoleDesc);
+      toast.success('Custom operator role activated');
+      setNewRoleName('');
+      setNewRoleDesc('');
+      loadRoles();
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to create role');
+    } finally {
+      setRolesLoading(false);
+    }
+  };
+
+  const handleDeleteRole = async (id: string) => {
+    try {
+      await deleteVendorRole(id);
+      toast.success('Role purged');
+      loadRoles();
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to delete role');
+    }
+  };
 
   useEffect(() => {
     if (activeTab === 'Inventory Catalog') {
@@ -642,6 +689,71 @@ export function SettingsClientPage({
                   >
                      {loading ? <Loader2 className="animate-spin" /> : 'Commit Security Node'}
                   </Button>
+               </div>
+               <div className="pt-8 border-t border-zinc-800/50 space-y-6">
+                  <div className="flex items-center justify-between">
+                     <div>
+                        <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">Role Master / Access Nodes</h3>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Define custom designations for your workforce.</p>
+                     </div>
+                  </div>
+
+                  <div className="bg-zinc-950/40 p-6 rounded-[2rem] border border-zinc-800/50 space-y-4">
+                     <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                           <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Role Designation</Label>
+                           <Input 
+                             value={newRoleName}
+                             onChange={e => setNewRoleName(e.target.value)}
+                             placeholder="e.g., HEAD CHEF" 
+                             className="bg-zinc-950 border-zinc-800 h-12 px-4 font-bold text-sm rounded-xl focus:border-emerald-500/50" 
+                           />
+                        </div>
+                        <div className="space-y-2">
+                           <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Clearance Description</Label>
+                           <div className="flex gap-2">
+                              <Input 
+                                value={newRoleDesc}
+                                onChange={e => setNewRoleDesc(e.target.value)}
+                                placeholder="Access capabilities..." 
+                                className="bg-zinc-950 border-zinc-800 h-12 px-4 font-bold text-sm rounded-xl focus:border-emerald-500/50 flex-1" 
+                              />
+                              <Button 
+                                onClick={handleCreateRole}
+                                disabled={rolesLoading || !newRoleName}
+                                className="h-12 w-12 shrink-0 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl"
+                              >
+                                 {rolesLoading ? <Loader2 className="animate-spin" size={16} /> : <Plus size={20} />}
+                              </Button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                     {vendorRoles.map(role => (
+                        <div key={role.id} className="bg-zinc-950 border border-zinc-800 p-5 rounded-2xl flex flex-col justify-between group hover:border-emerald-500/30 transition-all">
+                           <div>
+                              <div className="flex items-center justify-between mb-2">
+                                 <Badge className="bg-zinc-900 text-emerald-500 border-none text-[8px] font-black uppercase tracking-widest">
+                                    ID: {role.id.slice(-6).toUpperCase()}
+                                 </Badge>
+                                 <button 
+                                   onClick={() => handleDeleteRole(role.id)}
+                                   className="text-zinc-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                   title="Decommission Role"
+                                 >
+                                    <Trash2 size={14} />
+                                 </button>
+                              </div>
+                              <h4 className="text-sm font-black text-white italic uppercase tracking-wider">{role.name}</h4>
+                              {role.description && (
+                                <p className="text-[10px] text-zinc-500 font-bold mt-1 line-clamp-2">{role.description}</p>
+                              )}
+                           </div>
+                        </div>
+                     ))}
+                  </div>
                </div>
             </div>
          )}

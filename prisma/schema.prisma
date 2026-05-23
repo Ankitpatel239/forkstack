@@ -282,6 +282,7 @@ model VendorProfile {
   productionPlans       ProductionPlan[]
   deliveryAgents        DeliveryAgent[]
   stockAlerts           StockAlert[]
+  vendorRoles           VendorRole[]
 }
 
 model InventoryCategory {
@@ -361,6 +362,19 @@ model UserVendorAssignment {
   vendor        VendorProfile @relation(fields: [vendorId], references: [id])
   
   @@unique([userId, vendorId])
+}
+
+model VendorRole {
+  id          String   @id @default(cuid())
+  vendorId    String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([vendorId, name])
 }
 
 // ========== TABLE & QR CODE ==========

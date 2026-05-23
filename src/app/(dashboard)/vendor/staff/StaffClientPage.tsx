@@ -46,18 +46,18 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
   };
 
   const stats = [
-    { label: 'Active Force', val: staff.length, icon: Users, color: 'emerald', sub: 'Nodes Online' },
-    { label: 'On-Duty Now', val: attendance.filter((a: any) => a.status === 'PRESENT' && !a.checkOut).length, icon: UserCheck, color: 'blue', sub: 'Clocked In' },
-    { label: 'Absent/Leave', val: attendance.filter((a: any) => a.status === 'ABSENT' || a.status === 'LEAVE').length, icon: UserMinus, color: 'red', sub: 'Today' },
-    { label: 'Avg Shift', val: '8.4h', icon: Timer, color: 'orange', sub: 'Daily average' },
+    { label: 'Total Staff', val: staff.length, icon: Users, color: 'emerald', sub: 'Active Members' },
+    { label: 'Present Today', val: attendance.filter((a: any) => a.status === 'PRESENT' && !a.checkOut).length, icon: UserCheck, color: 'blue', sub: 'Clocked In' },
+    { label: 'Absent/On Leave', val: attendance.filter((a: any) => a.status === 'ABSENT' || a.status === 'LEAVE').length, icon: UserMinus, color: 'red', sub: 'Today' },
+    { label: 'Avg Working Hours', val: '8.4h', icon: Timer, color: 'orange', sub: 'Daily average' },
   ];
 
   return (
     <div className="space-y-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2 italic uppercase">Workforce Command</h1>
-          <p className="text-zinc-500 font-medium">Coordinate your team, payroll, and real-time attendance tracking.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2 italic uppercase">Staff Management</h1>
+          <p className="text-zinc-500 font-medium">Manage your team's attendance and payroll.</p>
         </div>
         <div className="flex items-center gap-3">
           <Button 
@@ -113,9 +113,9 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
           <table className="w-full text-left text-sm">
             <thead className="bg-zinc-950/50 text-[10px] uppercase font-black tracking-[0.2em] text-zinc-600 border-b border-zinc-800">
               <tr>
-                <th className="px-8 py-6">Operator Details</th>
-                <th className="px-8 py-6">Designation</th>
-                <th className="px-8 py-6">Contact Node</th>
+                <th className="px-8 py-6">Staff Details</th>
+                <th className="px-8 py-6">Role</th>
+                <th className="px-8 py-6">Email</th>
                 <th className="px-8 py-6">Status</th>
                 <th className="px-8 py-6 text-right">Actions</th>
               </tr>
@@ -151,11 +151,11 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
                         <MoreVertical size={18} />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800 text-white w-48 p-2 rounded-xl shadow-2xl">
-                        <DropdownMenuLabel className="text-[10px] font-black uppercase text-zinc-600 px-3 py-2">Profile Actions</DropdownMenuLabel>
+                        <DropdownMenuLabel className="text-[10px] font-black uppercase text-zinc-600 px-3 py-2">Staff Actions</DropdownMenuLabel>
                         <DropdownMenuItem className="focus:bg-zinc-800 cursor-pointer text-[11px] font-black uppercase tracking-widest py-3 px-3 rounded-lg"><Edit size={14} className="mr-3" /> Edit Profile</DropdownMenuItem>
                         <DropdownMenuItem className="focus:bg-zinc-800 cursor-pointer text-[11px] font-black uppercase tracking-widest py-3 px-3 rounded-lg"><Calendar size={14} className="mr-3" /> Leave Records</DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-zinc-800 my-1 mx-2" />
-                        <DropdownMenuItem className="focus:bg-red-500/10 cursor-pointer text-red-500 text-[11px] font-black uppercase tracking-widest py-3 px-3 rounded-lg"><Trash2 size={14} className="mr-3" /> Suspend Access</DropdownMenuItem>
+                        <DropdownMenuItem className="focus:bg-red-500/10 cursor-pointer text-red-500 text-[11px] font-black uppercase tracking-widest py-3 px-3 rounded-lg"><Trash2 size={14} className="mr-3" /> Remove Staff</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </td>
@@ -170,11 +170,11 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl">
            <div className="p-8 border-b border-zinc-800 bg-zinc-950/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h2 className="text-lg font-black text-white italic uppercase tracking-[0.1em]">Daily Attendance Matrix</h2>
-                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">Real-time status of all active operators for {new Date().toDateString()}</p>
+                <h2 className="text-lg font-black text-white italic uppercase tracking-[0.1em]">Daily Attendance Log</h2>
+                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">Current status of your staff for {new Date().toDateString()}</p>
               </div>
               <Button variant="outline" className="border-zinc-800 bg-zinc-900 h-10 px-4 rounded-xl font-bold uppercase tracking-widest text-[9px] text-zinc-400">
-                <Download size={14} className="mr-2" /> Export Log
+                <Download size={14} className="mr-2" /> Download Log
               </Button>
            </div>
            <table className="w-full text-left text-sm">
@@ -184,7 +184,7 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
                 <th className="px-8 py-6">Check In</th>
                 <th className="px-8 py-6">Check Out</th>
                 <th className="px-8 py-6">Hours</th>
-                <th className="px-8 py-6 text-right">Verification</th>
+                <th className="px-8 py-6 text-right">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
@@ -214,7 +214,7 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
                          </div>
                        ) : (
                          <div className="flex items-center justify-end gap-2 text-zinc-700">
-                            <span className="text-[9px] font-black uppercase tracking-widest">Awaiting Log</span>
+                            <span className="text-[9px] font-black uppercase tracking-widest">Pending</span>
                             <Clock3 size={16} />
                          </div>
                        )}
@@ -231,21 +231,21 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl">
            <div className="p-8 border-b border-zinc-800 bg-zinc-950/20 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-black text-white italic uppercase tracking-[0.1em]">Payroll Ledger</h2>
-                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">Financial distribution and deduction records</p>
+                <h2 className="text-lg font-black text-white italic uppercase tracking-[0.1em]">Payroll System</h2>
+                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">Manage staff salaries and deductions</p>
               </div>
               <Button className="bg-orange-500 hover:bg-orange-400 text-zinc-950 font-black uppercase tracking-widest text-[9px] h-10 px-6 rounded-xl">
-                 Generate Monthly Payroll
+                 Process Payroll
               </Button>
            </div>
            <table className="w-full text-left text-sm">
             <thead className="bg-zinc-950/50 text-[10px] uppercase font-black tracking-[0.2em] text-zinc-600 border-b border-zinc-800">
               <tr>
-                <th className="px-8 py-6">Recipient</th>
-                <th className="px-8 py-6">Cycle</th>
-                <th className="px-8 py-6">Base Units</th>
+                <th className="px-8 py-6">Staff Name</th>
+                <th className="px-8 py-6">Month/Year</th>
+                <th className="px-8 py-6">Base Salary</th>
                 <th className="px-8 py-6">Deductions</th>
-                <th className="px-8 py-6 text-right">Net Payout</th>
+                <th className="px-8 py-6 text-right">Final Salary</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
@@ -254,7 +254,7 @@ export function StaffClientPage({ staff, attendance, salaries }: any) {
                    <td colSpan={5} className="py-24 text-center">
                       <div className="flex flex-col items-center gap-4 text-zinc-700">
                         <Banknote size={48} className="opacity-20" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">No payroll cycles registered in this node.</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">No payroll records found.</p>
                       </div>
                    </td>
                 </tr>
