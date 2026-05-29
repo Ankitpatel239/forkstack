@@ -30,7 +30,8 @@ import {
   Banknote,
   Palette,
   QrCode,
-  ChevronDown
+  ChevronDown,
+  Megaphone
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import { useState, useEffect, useMemo } from 'react';
@@ -161,6 +162,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     },
     { name: 'Payments & Fiscal', href: '/vendor/payments', icon: Wallet },
     { name: 'Settings', href: '/vendor/settings', icon: Settings },
+    { name: 'Marketing & Social', href: '/vendor/marketing', icon: Megaphone },
     { name: 'Subscription & Plans', href: '/vendor/subscription', icon: CreditCard },
     { name: 'Feature Requests', href: '/vendor/requests', icon: MessageSquare },
   ], []);

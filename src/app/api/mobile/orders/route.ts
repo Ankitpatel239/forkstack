@@ -1,37 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'fallback_secret_key_123';
+import { verifyMobileAuth } from '@/lib/mobile-auth';
 
 export async function GET(req: Request) {
   try {
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await verifyMobileAuth(req);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
-    
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    
-    if (!decoded || !decoded.id) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
-    const vendor = await prisma.vendorProfile.findFirst({
-      where: {
-        OR: [
-          { ownerId: decoded.id },
-          { staffAssignments: { some: { userId: decoded.id } } }
-        ]
-      }
-    });
-
-    const vendorId = vendor?.id;
-
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor profile not found' }, { status: 403 });
-    }
+    const vendorId = auth.vendor!.id;
 
     const orders = await prisma.order.findMany({
       where: { vendorId },
@@ -52,6 +29,70 @@ export async function GET(req: Request) {
     return NextResponse.json({ orders });
   } catch (error) {
     console.error('Mobile Orders API Error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const auth = await verifyMobileAuth(req);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+    const vendorId = auth.vendor!.id;
+
+    const body = await req.json();
+    const { customerName, customerPhone, items, totalAmount, paymentMethod } = body;
+
+    // items should be [{ menuItemId: string, quantity: number, unitPrice: number }]
+    const orderNumber = `ORD-${Math.random().toString(36).toUpperCase().substring(2, 8)}`;
+
+    const order = await prisma.order.create({
+      data: {
+        orderNumber,
+        vendorId: vendorId,
+        customerName: customerName || null,
+        customerPhone: customerPhone || null,
+        orderSource: 'VENDOR_DASHBOARD',
+        totalAmount,
+        finalAmount: totalAmount,
+        status: 'PENDING',
+        items: {
+          create: items.map((item: any) => ({
+            menuItemId: item.menuItemId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.unitPrice * item.quantity
+          }))
+        },
+        payment: {
+          create: {
+            vendorId: vendorId,
+            amount: totalAmount,
+            method: paymentMethod || 'CASH',
+            status: 'PENDING',
+          }
+        }
+      },
+      include: {
+        items: {
+          include: { menuItem: true }
+        },
+        payment: true
+      }
+    });
+
+    // Emit real-time update
+    try {
+      const { emitNewOrder } = await import('@/lib/socket-server');
+      emitNewOrder(vendorId, order);
+    } catch (e) {
+      console.error('Failed to emit socket event:', e);
+    }
+
+    return NextResponse.json({ success: true, order });
+  } catch (error) {
+    console.error('Mobile Orders POST API Error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

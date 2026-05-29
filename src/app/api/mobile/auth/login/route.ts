@@ -36,6 +36,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
+    // Find the vendor profile to get the vendorId
+    const vendor = await prisma.vendorProfile.findFirst({
+      where: {
+        OR: [
+          { ownerId: user.id },
+          { staffAssignments: { some: { userId: user.id } } }
+        ]
+      }
+    });
+
     // Create a JWT token for the mobile app session
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
@@ -51,6 +61,7 @@ export async function POST(req: Request) {
         email: user.email,
         name: user.name || user.email.split('@')[0],
         role: user.role,
+        vendorId: vendor?.id || null,
       }
     });
 

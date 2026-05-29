@@ -290,6 +290,10 @@ model VendorProfile {
   bonusMasters          BonusMaster[]
   salaryTypeMasters     SalaryTypeMaster[]
   advanceSalaries       AdvanceSalary[]
+
+  // Marketing & Social
+  socialAccounts        SocialAccount[]
+  marketingPosts        MarketingPost[]
 }
 
 model InventoryCategory {
@@ -1392,4 +1396,44 @@ model AdvanceSalary {
   notes        String?
 
   vendor       VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+}
+
+// ========== MARKETING & SOCIAL ==========
+
+model SocialAccount {
+  id              String   @id @default(cuid())
+  vendorId        String
+  platform        String   // "FACEBOOK", "INSTAGRAM"
+  accountId       String   // Page ID or Instagram User ID
+  accountName     String?  // Display name of the account
+  accessToken     String   @db.Text // Long-lived access token
+  profileImageUrl String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  vendor          VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([vendorId, platform, accountId])
+}
+
+model MarketingPost {
+  id              String   @id @default(cuid())
+  vendorId        String
+  content         String?  @db.Text
+  mediaUrls       String[] // Array of URLs (images/videos)
+  mediaType       String   // "IMAGE", "VIDEO", "CAROUSEL"
+  platforms       String[] // e.g., ["FACEBOOK", "INSTAGRAM"]
+  status          String   @default("DRAFT") // "DRAFT", "SCHEDULED", "PUBLISHED", "FAILED"
+  scheduledFor    DateTime?
+  publishedAt     DateTime?
+  metaPostId      String?  // ID returned from Meta API after publishing
+  errorMessage    String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  vendor          VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@index([status])
 }
