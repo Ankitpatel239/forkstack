@@ -14,3 +14,12 @@ export const emitNewOrder = (vendorId: string, order: any) => {
     console.warn("Socket.io not initialized");
   }
 };
+
+export const emitOrderUpdate = (vendorId: string, order: any) => {
+  if (global.io) {
+    global.io.to(`vendor-${vendorId}`).emit("order-update", order);
+    console.log(`Order update emitted to vendor-${vendorId}`);
+  } else {
+    console.warn("Socket.io not initialized");
+  }
+};

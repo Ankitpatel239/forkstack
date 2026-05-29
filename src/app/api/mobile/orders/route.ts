@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     const vendorId = auth.vendor!.id;
 
     const body = await req.json();
-    const { customerName, customerPhone, items, totalAmount, paymentMethod } = body;
+    const { customerName, customerPhone, items, totalAmount, paymentMethod, tableId } = body;
 
     // items should be [{ menuItemId: string, quantity: number, unitPrice: number }]
     const orderNumber = `ORD-${Math.random().toString(36).toUpperCase().substring(2, 8)}`;
@@ -50,7 +50,8 @@ export async function POST(req: Request) {
     const order = await prisma.order.create({
       data: {
         orderNumber,
-        vendorId: vendorId,
+        vendor: { connect: { id: vendorId } },
+        ...(tableId ? { table: { connect: { id: tableId } } } : {}),
         customerName: customerName || null,
         customerPhone: customerPhone || null,
         orderSource: 'VENDOR_DASHBOARD',
@@ -65,14 +66,14 @@ export async function POST(req: Request) {
             totalPrice: item.unitPrice * item.quantity
           }))
         },
-        payment: {
-          create: {
-            vendorId: vendorId,
-            amount: totalAmount,
-            method: paymentMethod || 'CASH',
-            status: 'PENDING',
+          payment: {
+            create: {
+              vendor: { connect: { id: vendorId } },
+              amount: totalAmount,
+              method: paymentMethod || 'CASH',
+              status: 'PENDING',
+            }
           }
-        }
       },
       include: {
         items: {
