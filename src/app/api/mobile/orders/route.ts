@@ -79,7 +79,8 @@ export async function POST(req: Request) {
         items: {
           include: { menuItem: true }
         },
-        payment: true
+        payment: true,
+        table: true
       }
     });
 
