@@ -235,12 +235,19 @@ model VendorProfile {
   whatsappConnectedAt           DateTime?
   whatsappApiKey                String?            @unique   // for external API
   
-  // Account management
   // Infrastructure & SEO
   description           String?            @db.Text
   isLocked              Boolean            @default(false)
   lockPassword          String?
   metaTags              String?            @db.Text
+  
+  // Public Profile / Marketplace
+  isPubliclyListed      Boolean            @default(false)
+  businessType          String?            // e.g., "RESTAURANT", "TIFFIN_SERVICE", "CAFE"
+  cuisineTypes          String[]           // e.g., ["Indian", "Fast Food"]
+  coverImageUrl         String?            // Banner image for the public directory
+  city                  String?            // For local discovery
+  state                 String?
   
   accountManagerId      String?
   createdAt             DateTime           @default(now())

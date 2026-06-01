@@ -17,6 +17,12 @@ export async function updateVendorSettings(data: {
   isLocked?: boolean;
   lockPassword?: string;
   logoUrl?: string;
+  isPubliclyListed?: boolean;
+  businessType?: string;
+  cuisineTypes?: string[];
+  coverImageUrl?: string;
+  city?: string;
+  state?: string;
 }) {
   const vendor = await requireVendor();
 

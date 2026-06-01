@@ -46,6 +46,16 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-pulse-glow: pulse-glow 4s ease-in-out infinite;
+  --animate-fade-in-up: fade-in-up 0.8s ease-out both;
+  --animate-fade-in-left: fade-in-left 0.8s ease-out both;
+  --animate-fade-in-right: fade-in-right 0.8s ease-out both;
+  --animate-slide-down: slide-down 0.5s ease-out;
+  --animate-float-up: float-up 4s ease-in-out infinite;
+  --animate-rotate-gradient: rotate-gradient 8s linear infinite;
+  --animate-grow-up: grow-up 1s ease-out forwards;
+  --animate-dash: dash 4s ease-in-out infinite;
+  --animate-slide-infinite-reverse: slide-infinite 30s linear infinite reverse;
 }
 
 :root {
@@ -227,4 +237,48 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-left {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fade-in-right {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-down {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes float-up {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes rotate-gradient {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes grow-up {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes dash {
+  to { stroke-dashoffset: 0; }
 }

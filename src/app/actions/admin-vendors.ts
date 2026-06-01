@@ -90,6 +90,7 @@ export async function updateVendor(vendorId: string, data: {
   businessPhone: string;
   subscriptionPlan: string;
   address: string;
+  isPubliclyListed?: boolean;
 }) {
   try {
     // 1. Check if slug exists on a different vendor
@@ -113,6 +114,7 @@ export async function updateVendor(vendorId: string, data: {
         businessPhone: data.businessPhone,
         subscriptionPlan: data.subscriptionPlan,
         address: data.address,
+        isPubliclyListed: data.isPubliclyListed,
       }
     });
 

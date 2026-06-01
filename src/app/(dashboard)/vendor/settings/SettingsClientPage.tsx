@@ -147,7 +147,13 @@ export function SettingsClientPage({
     metaTags: vendor.metaTags || '',
     isLocked: vendor.isLocked || false,
     lockPassword: vendor.lockPassword || '',
-    logoUrl: vendor.logoUrl || ''
+    logoUrl: vendor.logoUrl || '',
+    isPubliclyListed: vendor.isPubliclyListed || false,
+    businessType: vendor.businessType || 'RESTAURANT',
+    cuisineTypes: vendor.cuisineTypes || [],
+    coverImageUrl: vendor.coverImageUrl || '',
+    city: vendor.city || '',
+    state: vendor.state || ''
   });
 
   const [inventoryCategories, setInventoryCategories] = useState<any[]>([]);
@@ -514,6 +520,70 @@ export function SettingsClientPage({
                            />
                         </div>
                      </div>
+                  </div>
+
+                  <div className="pt-8 border-t border-zinc-800/50 space-y-6">
+                     <div className="flex items-center justify-between">
+                        <div>
+                           <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">Public Profile</h3>
+                           <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Make your business discoverable on the ForkStack customer directory.</p>
+                        </div>
+                        <div className="flex items-center gap-4 bg-zinc-950 px-4 py-2 rounded-2xl border border-zinc-800">
+                           <span className={`text-[10px] font-black uppercase tracking-widest ${formData.isPubliclyListed ? 'text-emerald-500' : 'text-zinc-600'}`}>
+                              {formData.isPubliclyListed ? 'Listed' : 'Hidden'}
+                           </span>
+                           <Switch 
+                             checked={formData.isPubliclyListed}
+                             onCheckedChange={v => setFormData({...formData, isPubliclyListed: v})}
+                             className="data-[state=checked]:bg-emerald-500"
+                           />
+                        </div>
+                     </div>
+
+                     {formData.isPubliclyListed && (
+                        <div className="grid gap-6 md:grid-cols-2 animate-in slide-in-from-top-4 duration-300">
+                           <div className="space-y-2">
+                              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 px-1">Business Type</Label>
+                              <Select value={formData.businessType} onValueChange={v => setFormData({...formData, businessType: v})}>
+                                 <SelectTrigger className="bg-zinc-950 border-zinc-800 h-14 rounded-2xl text-zinc-100 font-bold">
+                                    <SelectValue placeholder="Select Business Type" />
+                                 </SelectTrigger>
+                                 <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                                    <SelectItem value="RESTAURANT" className="font-bold">Restaurant</SelectItem>
+                                    <SelectItem value="TIFFIN_SERVICE" className="font-bold">Tiffin Service</SelectItem>
+                                    <SelectItem value="CAFE" className="font-bold">Cafe / Bakery</SelectItem>
+                                 </SelectContent>
+                              </Select>
+                           </div>
+                           <div className="space-y-2">
+                              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 px-1">Cuisine / Tags (comma separated)</Label>
+                              <Input 
+                                value={formData.cuisineTypes.join(', ')}
+                                onChange={e => setFormData({...formData, cuisineTypes: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                className="bg-zinc-950 border-zinc-800 h-14 text-zinc-100 font-bold rounded-2xl focus:border-emerald-500/50" 
+                                placeholder="e.g. Indian, Fast Food, Vegan"
+                              />
+                           </div>
+                           <div className="space-y-2">
+                              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 px-1">City</Label>
+                              <Input 
+                                value={formData.city}
+                                onChange={e => setFormData({...formData, city: e.target.value})}
+                                className="bg-zinc-950 border-zinc-800 h-14 text-zinc-100 font-bold rounded-2xl focus:border-emerald-500/50" 
+                                placeholder="e.g. New Delhi"
+                              />
+                           </div>
+                           <div className="space-y-2">
+                              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 px-1">State / Region</Label>
+                              <Input 
+                                value={formData.state}
+                                onChange={e => setFormData({...formData, state: e.target.value})}
+                                className="bg-zinc-950 border-zinc-800 h-14 text-zinc-100 font-bold rounded-2xl focus:border-emerald-500/50" 
+                                placeholder="e.g. Delhi"
+                              />
+                           </div>
+                        </div>
+                     )}
                   </div>
 
                   <div className="space-y-2">

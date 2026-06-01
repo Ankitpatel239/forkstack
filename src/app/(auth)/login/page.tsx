@@ -73,9 +73,9 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex relative overflow-hidden font-sans text-zinc-900 dark:text-white transition-colors duration-300">
       {/* Background Decor */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-20">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-40 dark:opacity-20">
         <div className="absolute top-40 left-[-10%] w-[40%] h-[40%] bg-emerald-500/20 blur-[120px] rounded-full" />
         <div className="absolute bottom-20 right-[-10%] w-[30%] h-[30%] bg-blue-500/10 blur-[100px] rounded-full" />
       </div>
@@ -87,14 +87,14 @@ function LoginForm() {
               <div className="bg-emerald-500 p-2 rounded-xl shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform">
                 <ChefHat className="h-6 w-6 text-zinc-950" />
               </div>
-              <span className="text-2xl font-black tracking-tighter text-white">ForkStack</span>
+              <span className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-white">ForkStack</span>
             </Link>
-            <h2 className="mt-8 text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="mt-8 text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
               Welcome back
             </h2>
             <p className="mt-2 text-sm text-zinc-500 font-medium leading-relaxed">
               Don't have a vendor account yet?{' '}
-              <Link href="/register" className="font-bold text-emerald-500 hover:text-emerald-400 transition-colors">
+              <Link href="/register" className="font-bold text-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                 Join our network
               </Link>
             </p>
@@ -108,12 +108,12 @@ function LoginForm() {
                   variant="outline" 
                   onClick={handleGithubLogin}
                   disabled={githubLoading || loading || googleLoading}
-                  className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 h-11 text-xs font-bold uppercase tracking-widest text-zinc-400 transition-all"
+                  className="rounded-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 h-11 text-xs font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-400 transition-all shadow-sm"
                 >
                   {githubLoading ? (
                     <Loader2 size={16} className="animate-spin mr-2" />
                   ) : (
-                    <GitBranch size={16} className="mr-2" />
+                    <GitBranch size={16} className="mr-2 text-zinc-900 dark:text-zinc-400" />
                   )}
                   Github
                 </Button>
@@ -122,7 +122,7 @@ function LoginForm() {
                   variant="outline" 
                   onClick={handleGoogleLogin}
                   disabled={googleLoading || loading || githubLoading}
-                  className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 h-11 text-xs font-bold uppercase tracking-widest text-zinc-400 transition-all"
+                  className="rounded-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 h-11 text-xs font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-400 transition-all shadow-sm"
                 >
                   {googleLoading ? (
                     <Loader2 size={16} className="animate-spin mr-2" />
@@ -135,10 +135,10 @@ function LoginForm() {
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="w-full border-t border-zinc-800" />
+                  <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
                 </div>
                 <div className="relative flex justify-center text-xs font-black uppercase tracking-widest leading-none">
-                  <span className="bg-zinc-950 px-4 text-zinc-600">Or continue with email</span>
+                  <span className="bg-zinc-50 dark:bg-zinc-950 px-4 text-zinc-500 dark:text-zinc-600">Or continue with email</span>
                 </div>
               </div>
 
@@ -148,14 +148,14 @@ function LoginForm() {
                     Work Email
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-600" size={18} />
                     <input
                       id="email"
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-10 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all"
+                      className="w-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-10 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all shadow-sm"
                       placeholder="name@company.com"
                     />
                   </div>
@@ -171,14 +171,14 @@ function LoginForm() {
                     </Link>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-600" size={18} />
                     <input
                       id="password"
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-10 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all"
+                      className="w-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-10 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all shadow-sm"
                       placeholder="••••••••"
                     />
                   </div>
@@ -202,25 +202,26 @@ function LoginForm() {
             </div>
           </div>
           
-          <p className="mt-10 text-center text-[10px] text-zinc-700 font-bold uppercase tracking-widest">
-            Protected by reCAPTCHA & Privacy Policy
+          <p className="mt-10 text-center text-[10px] text-zinc-700 font-bold uppercase tracking-widest leading-loose">
+            By signing in, you agree to our <br/>
+            <Link href="/privacy-policy" className="hover:text-emerald-500 transition-colors">Privacy Policy</Link> and <Link href="/terms-and-conditions" className="hover:text-emerald-500 transition-colors">Terms and Conditions</Link>
           </p>
         </div>
       </div>
 
-      <div className="hidden lg:block relative w-0 flex-1 bg-zinc-900 overflow-hidden">
+      <div className="hidden lg:block relative w-0 flex-1 bg-zinc-200 dark:bg-zinc-900 overflow-hidden">
         <img
-          className="absolute inset-0 h-full w-full object-cover opacity-40 grayscale mix-blend-overlay"
+          className="absolute inset-0 h-full w-full object-cover opacity-50 dark:opacity-40 grayscale mix-blend-multiply dark:mix-blend-overlay"
           src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=2070"
           alt="Restaurant environment"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-100/90 via-zinc-100/40 dark:from-zinc-950 dark:via-zinc-950/20 to-transparent" />
         <div className="absolute bottom-20 left-20 right-20">
           <Badge className="bg-emerald-500 text-zinc-950 mb-6 font-black uppercase italic animate-bounce">Live Update</Badge>
-          <h3 className="text-4xl font-extrabold text-white leading-tight mb-4 drop-shadow-2xl">
+          <h3 className="text-4xl font-extrabold text-zinc-900 dark:text-white leading-tight mb-4 drop-shadow-2xl">
             "ForkStack is the secret ingredient to our 20% efficiency boost."
           </h3>
-          <p className="text-emerald-500 font-black uppercase tracking-[0.3em] text-sm">
+          <p className="text-emerald-600 dark:text-emerald-500 font-black uppercase tracking-[0.3em] text-sm">
             Chef Marco Rossi, The Italian Bistro
           </p>
         </div>
@@ -232,7 +233,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-white font-sans">
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center text-zinc-900 dark:text-white font-sans transition-colors duration-300">
         <div className="flex flex-col items-center gap-3 animate-pulse">
           <Loader2 className="animate-spin text-emerald-500" size={40} />
           <span className="text-xs font-black uppercase tracking-[0.3em] text-zinc-500">Loading ForkStack...</span>

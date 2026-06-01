@@ -3,7 +3,7 @@ import { Loader2, Zap } from "lucide-react";
 
 export default function Loading() {
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-zinc-950">
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
       {/* Background Glows */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 blur-[120px] rounded-full animate-pulse-glow" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-emerald-500/5 blur-[80px] rounded-full animate-pulse" />
@@ -23,15 +23,15 @@ export default function Loading() {
 
         {/* Textual Feedback */}
         <div className="mt-10 space-y-2 text-center">
-          <h2 className="text-xl font-black text-white uppercase italic tracking-[0.3em] ml-[0.3em] animate-pulse">
+          <h2 className="text-xl font-black text-zinc-900 dark:text-white uppercase italic tracking-[0.3em] ml-[0.3em] animate-pulse">
             ForkStack
           </h2>
           <div className="flex items-center justify-center gap-2">
-            <div className="h-[1px] w-8 bg-zinc-800" />
+            <div className="h-[1px] w-8 bg-zinc-200 dark:bg-zinc-800" />
             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.5em] ml-[0.5em]">
               Initializing System
             </p>
-            <div className="h-[1px] w-8 bg-zinc-800" />
+            <div className="h-[1px] w-8 bg-zinc-200 dark:bg-zinc-800" />
           </div>
         </div>
 
@@ -45,7 +45,7 @@ export default function Loading() {
 
       {/* Footer Branding */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-         <span className="text-[9px] font-black text-zinc-700 uppercase tracking-[0.4em]">
+         <span className="text-[9px] font-black text-zinc-400 dark:text-zinc-700 uppercase tracking-[0.4em]">
            Quantum Distribution Layer v2.0.4
          </span>
       </div>

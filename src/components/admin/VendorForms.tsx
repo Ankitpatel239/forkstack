@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { createVendor, updateVendor } from '@/app/actions/admin-vendors';
@@ -27,6 +28,7 @@ const vendorSchema = z.object({
   address: z.string().min(1, "HQ address is required"),
   tenantSlug: z.string().min(2, "Slug too short").regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens"),
   subscriptionPlan: z.string(),
+  isPubliclyListed: z.boolean().optional(),
 });
 
 export function VendorFormModal({
@@ -69,6 +71,7 @@ export function VendorFormModal({
           businessPhone: initialData.businessPhone || '',
           address: initialData.address || '',
           subscriptionPlan: initialData.subscriptionPlan || 'BASIC',
+          isPubliclyListed: initialData.isPubliclyListed || false,
         });
       } else {
         reset({
@@ -78,6 +81,7 @@ export function VendorFormModal({
           businessPhone: '',
           address: '',
           subscriptionPlan: 'BASIC',
+          isPubliclyListed: false,
         });
       }
     }
@@ -197,6 +201,20 @@ export function VendorFormModal({
             />
             {errors.address && <p className="text-[10px] text-red-500 font-bold uppercase px-1">{errors.address.message as string}</p>}
           </div>
+
+          {initialData && (
+            <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl">
+              <div>
+                <Label className="text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-white">Public Directory</Label>
+                <p className="text-[10px] font-bold text-zinc-500 uppercase mt-1">Force toggle vendor visibility in the explore page</p>
+              </div>
+              <Switch 
+                checked={watch("isPubliclyListed")}
+                onCheckedChange={(checked) => setValue("isPubliclyListed", checked)}
+                className="data-[state=checked]:bg-emerald-500"
+              />
+            </div>
+          )}
 
           <DialogFooter className="pt-4 flex flex-col-reverse sm:flex-row gap-3">
             <Button
